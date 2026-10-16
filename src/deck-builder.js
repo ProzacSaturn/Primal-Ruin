@@ -1,4 +1,4 @@
-import catalog from './data/cards.json';
+import catalog from './data/cards.json' with { type: 'json' };
 import { getCardExecutionStatus } from './card-effects.js';
 import { validateDeckIds } from './deck-validation.js';
 

@@ -1,4 +1,4 @@
-import cardCatalog from './src/data/cards.json';
+import cardCatalog from './src/data/cards.json' with { type: 'json' };
 import { clearCustomDeck, loadCustomDeck } from './src/deck-builder.js';
 import { clearGameSave, loadGameSave, persistGame } from './src/save-store.js';
 import { commanderForSet, defaultCommanderId, evaluateCommanderAbility, getCommander } from './src/commanders.js';
