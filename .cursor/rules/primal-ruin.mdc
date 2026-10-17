@@ -1,0 +1,55 @@
+---
+description: Vincoli di lavoro su Primal Ruin. Prototipo esistente, niente ricostruzioni, niente modifiche alle regole ufficiali.
+alwaysApply: true
+---
+
+# Primal Ruin — come lavorare nel repo
+
+Lavora sul prototipo esistente. Non ricostruire il gioco, non riscrivere l'architettura e non duplicare sistemi già presenti.
+
+## Prima di modificare
+
+- Parti da `index.html` e dal punto d'ingresso Vite `src/main.js`. Poi apri solo i file coinvolti dal cambiamento.
+- Leggi il contesto necessario. Non fare scansioni o riscritture dell'intero repo senza un motivo concreto.
+- Non stampare file interi né cataloghi di carte.
+
+## Architettura da rispettare
+
+- UI: `index.html`, `styles.css`, `src/card-library.js`, `src/deck-builder.js`, `src/settings.js`, `src/pixel-art.js`.
+- Dati carte: `src/data/cards.json`, generato da `Set.txt` con `scripts/import-cards.mjs`. Non modificare lo schema né rigenerare il catalogo se il compito non lo richiede.
+- Logica: `game.js`, `src/game-rules.js`, `src/tactics.js`, `src/card-effects.js`, `src/permanent-effects.js`, `src/unit-triggers.js`, `src/commanders.js`, `src/deck-validation.js`, `src/deck-composition.js`, `src/random.js`.
+- Persistenza: `src/save-store.js`.
+- Test: `tests/` per Node, `e2e/` per Playwright.
+- Tieni separati dati carte, logica di gioco, UI e test, come già fa il repo.
+- Mantieni la compatibilità con le API, i moduli e i dati esistenti.
+- Patch piccole, locali e verificabili. Non toccare file non correlati.
+- Niente nuove dipendenze se basta una soluzione semplice già possibile con Node, Vite o il DOM.
+- Niente refactor stilistici.
+
+## Regole di gioco
+
+Non inventare e non cambiare le regole ufficiali, le meccaniche o i dati delle carte.
+
+Se una meccanica è ambigua, consulta nell'ordine:
+
+1. `Regolamento Ufficiale Avanzato Primal Ruin.txt` — regolamento ufficiale.
+2. `Set.txt` — testo originale della carta.
+3. `src/data/cards.json` — solo la carta interessata; modifica solo quelle carte se il compito lo chiede.
+4. `DialogoAi.md` — come il prototipo deve trattare il Core 1.0. Il codice e i dati restano la fonte di verità dell'implementazione.
+5. Il modulo che già implementa quella meccanica.
+
+`guida_strategica_deckbuilding.md` descrive proporzioni consigliate, non una licenza per cambiare la validazione. `CODE_WIKI.md` e `README.md` descrivono il codice e i limiti noti del prototipo, non un nuovo regolamento.
+
+## Verifica e rapporti
+
+- Dopo un cambiamento significativo esegui i test pertinenti (`npm test`, e `npm run test:e2e` se tocchi la UI).
+- Nel rapporto indica solo causa, file modificati, test eseguiti e problemi residui.
+- Non dichiarare un test superato se non è stato eseguito.
+
+## Chiedere prima di procedere
+
+Chiedi conferma prima di cambiare architettura, schema delle carte, regole core o config critica (`package.json` oltre agli script di tooling, `vite.config.js`, formato di `src/data/cards.json`).
+
+## Segreti
+
+Non leggere, modificare, committare o mostrare segreti. Non stampare il contenuto di `.env` o delle sue varianti. `.env.example`, se presente, può essere letto.
