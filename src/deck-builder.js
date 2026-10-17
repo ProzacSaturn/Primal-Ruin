@@ -1,0 +1,168 @@
+import catalog from './data/cards.json' with { type: 'json' };
+import { getCardExecutionStatus } from './card-effects.js';
+import { validateDeckIds } from './deck-validation.js';
+
+const STORAGE_KEY = 'primal-ruin.custom-deck.v1';
+const cardsById = new Map(catalog.cards.map(card => [card.id, card]));
+const CATEGORY_LABELS = {
+    unit: 'Unità',
+    tactic: 'Tattica',
+    equipment: 'Equipaggiamento',
+    site: 'Sito',
+    field: 'Campo'
+};
+
+export function validateDeck(cardIds) {
+    return validateDeckIds(cardIds, cardsById);
+}
+
+export function loadCustomDeck() {
+    let serialized;
+    try {
+        serialized = localStorage.getItem(STORAGE_KEY);
+    } catch (error) {
+        console.error('Impossibile leggere il mazzo salvato.', error);
+        return null;
+    }
+    if (!serialized) return null;
+    let cardIds;
+    try {
+        cardIds = JSON.parse(serialized);
+    } catch (error) {
+        console.error('Il mazzo salvato non è JSON valido.', error);
+        return null;
+    }
+    const validation = validateDeck(cardIds);
+    if (!validation.valid) {
+        console.error(`Il mazzo salvato non è valido: ${validation.message}`);
+        return null;
+    }
+    return cardIds;
+}
+
+export function saveCustomDeck(cardIds) {
+    const validation = validateDeck(cardIds);
+    if (!validation.valid) throw new Error(validation.message);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cardIds));
+}
+
+export function clearCustomDeck() {
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+        console.error('Impossibile rimuovere il mazzo personalizzato.', error);
+        throw error;
+    }
+}
+
+export function initDeckBuilder(onUseDeck) {
+    const root = document.getElementById('deck-builder');
+    const setFilter = document.getElementById('builder-set');
+    const categoryFilter = document.getElementById('builder-category');
+    const searchInput = document.getElementById('builder-search');
+    const catalogList = document.getElementById('builder-catalog');
+    const deckList = document.getElementById('builder-deck');
+    const count = document.getElementById('builder-count');
+    const status = document.getElementById('builder-status');
+    const saveButton = document.getElementById('builder-save');
+    const useButton = document.getElementById('builder-use');
+    let cardIds = loadCustomDeck() || [];
+
+    function render() {
+        const search = searchInput.value.trim().toLocaleLowerCase('it');
+        const visibleCards = catalog.cards.filter(card => {
+            if (setFilter.value !== 'all' && card.setId !== setFilter.value) return false;
+            if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value) return false;
+            return !search || `${card.name} ${card.type || ''} ${card.rulesText}`
+                .toLocaleLowerCase('it').includes(search);
+        });
+        catalogList.replaceChildren();
+        for (const card of visibleCards) {
+            const row = document.createElement('div');
+            row.className = 'builder-card';
+            const details = document.createElement('span');
+            const execution = getCardExecutionStatus(card);
+            details.textContent = `${card.name} · ${CATEGORY_LABELS[card.category]} · costo ${card.cost} · ${execution.label}`;
+            const add = document.createElement('button');
+            add.type = 'button';
+            add.className = 'btn builder-add';
+            add.textContent = 'Aggiungi';
+            add.setAttribute('aria-label', `Aggiungi ${card.name} al mazzo`);
+            add.disabled = cardIds.length >= 40;
+            add.addEventListener('click', () => {
+                if (cardIds.length >= 40) return;
+                cardIds.push(card.id);
+                render();
+            });
+            row.append(details, add);
+            catalogList.appendChild(row);
+        }
+
+        const counts = new Map();
+        cardIds.forEach(id => counts.set(id, (counts.get(id) || 0) + 1));
+        deckList.replaceChildren();
+        for (const [id, quantity] of counts) {
+            const card = cardsById.get(id);
+            const row = document.createElement('div');
+            row.className = 'builder-card';
+            const details = document.createElement('span');
+            details.textContent = `${quantity}× ${card.name}`;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'btn builder-remove';
+            remove.textContent = 'Rimuovi';
+            remove.setAttribute('aria-label', `Rimuovi una copia di ${card.name} dal mazzo`);
+            remove.addEventListener('click', () => {
+                const index = cardIds.lastIndexOf(id);
+                if (index >= 0) cardIds.splice(index, 1);
+                render();
+            });
+            row.append(details, remove);
+            deckList.appendChild(row);
+        }
+
+        const validation = validateDeck(cardIds);
+        const unsupportedCount = cardIds.reduce((count, id) =>
+            count + Number(getCardExecutionStatus(cardsById.get(id)).label === 'Non eseguibile'), 0);
+        count.textContent = `${cardIds.length}/40 carte`;
+        status.textContent = validation.valid && unsupportedCount > 0
+            ? `${validation.message} Avviso: ${unsupportedCount} carte hanno effetti non giocabili in questa build.`
+            : validation.message;
+        status.classList.toggle('valid', validation.valid);
+        status.classList.toggle('warning', validation.valid && unsupportedCount > 0);
+        saveButton.disabled = !validation.valid;
+        useButton.disabled = !validation.valid;
+    }
+
+    for (const control of [setFilter, categoryFilter]) control.addEventListener('change', render);
+    searchInput.addEventListener('input', render);
+    saveButton.addEventListener('click', () => {
+        try {
+            saveCustomDeck(cardIds);
+            status.textContent = 'Mazzo salvato in questo browser.';
+        } catch (error) {
+            status.textContent = `Salvataggio non riuscito: ${error.message}`;
+            console.error('Impossibile salvare il mazzo personalizzato.', error);
+        }
+    });
+    useButton.addEventListener('click', async () => {
+        const validation = validateDeck(cardIds);
+        if (!validation.valid) {
+            status.textContent = validation.message;
+            return;
+        }
+        try {
+            saveCustomDeck(cardIds);
+            await onUseDeck([...cardIds]);
+        } catch (error) {
+            status.textContent = `Impossibile usare il mazzo: ${error.message}`;
+            console.error('Impossibile avviare una partita con il mazzo personalizzato.', error);
+        }
+    });
+    root.addEventListener('toggle', render);
+    document.addEventListener('primal-ruin:demo-decks', () => {
+        cardIds = [];
+        render();
+    });
+    render();
+}

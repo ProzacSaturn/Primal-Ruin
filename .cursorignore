@@ -1,0 +1,56 @@
+# Esclusioni di contesto per Cursor. Sintassi .gitignore.
+# Non esclude sorgenti, test, documenti di regole, config necessarie
+# né src/data/cards.json.
+
+# Dipendenze, cache e output di build
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.cache/
+.eslintcache/
+.parcel-cache/
+.nyc_output/
+
+# Log
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Source map generate e bundle minificati
+*.js.map
+*.css.map
+*.min.js
+*.min.css
+
+# Artefatti di test browser
+playwright-report/
+test-results/
+blob-report/
+
+# Asset binari pesanti non usati come sorgente.
+# La pixel art del prototipo è procedurale in src/pixel-art.js e resta leggibile.
+*.psd
+*.ase
+*.aseprite
+*.zip
+*.tar
+*.gz
+*.7z
+*.mp4
+*.webm
+*.wav
+*.mp3
+*.ogg
+
+# Segreti. .env.example resta disponibile se viene aggiunto.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json

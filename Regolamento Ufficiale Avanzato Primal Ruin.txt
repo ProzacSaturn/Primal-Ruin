@@ -1,0 +1,176 @@
+﻿PRIMAL RUIN
+REGOLAMENTO UFFICIALE AVANZATO
+Edizione Integrata, Aggiornata e Congruente
+
+
+________________
+
+
+1. OBIETTIVO DEL GIOCO E CONDIZIONI DI VITTORIA
+Un giocatore (o una squadra) vince immediatamente la partita quando si verifica ALMENO UNA delle seguenti condizioni:
+
+
+* Sconfitta per Punti Comando (PC): I Punti Comando del Comandante avversario scendono a 0 o meno.
+* Sconfitta per Follia: L'avversario accumula 10 segnalini Follia.
+* Dominio Totale della Mappa: All'inizio del proprio turno, se un giocatore controlla una Linea attiva in tutti e 3 i Fronti E l'avversario non possiede alcuna Unità (né in Linea né in Supporto) su nessun Fronte, ottiene una vittoria immediata.
+
+
+________________
+
+
+2. COMPONENTI, NATURA DELLE CARTE E STRUTTURA DEI MAZZI
+Ogni giocatore utilizza due mazzi distinti ed una riserva di segnalini:
+
+
+* 1 Carta Comandante: Rappresenta il leader dell'armata, determina i PC iniziali e fornisce abilità uniche.
+* Mazzo Esercito (Esattamente 40 carte): Composto da Unità, Tattiche (Standard e Istantanee/Reazioni), Equipaggiamenti, SITI e CAMPI.
+   * Nota di congruenza sui Siti e Campi: Non esiste un mazzo separato per Siti e Campi. Queste carte fanno parte a tutti gli effetti del Mazzo Esercito da 40 carte, vengono pescate normalmente durante la Fase di Rifornimento (o tramite effetti) e vengono giocate dalla mano pagandone il costo in Domini.
+* Mazzo Domini (Esattamente 20 carte, separato): Contiene unicamente le carte risorsa. Non contiene mai Unità, Tattiche, Equipaggiamenti, Siti o Campi.
+* Riserva Segnalini: Danno, Follia, Echo, Rovina (per Siti), Decadenza e Parassita.
+
+
+________________
+
+
+3. ARCHITETTURA DEL CAMPO DI GIOCO E REGOLA DEI SUPPORTI
+Layout del Campo da Gioco
+Zona
+	Sinistra
+	Centro
+	Destra
+	Comandante & Strutture
+	—
+	[ Comandante ][ Campo ] (Max 1)
+	—
+	Siti (Max 3 totali)
+	[ Sito 1 ]
+	[ Sito 2 ]
+	[ Sito 3 ]
+	Linea di Combattimento
+	[ Linea ] (1)
+	[ Linea ] (1)
+	[ Linea ] (1)
+	Supporto A
+	[ Supp. A ] (1)
+	[ Supp. A ] (1)
+	[ Supp. A ] (1)
+	Supporto B
+	[ Supp. B ] (1)
+	[ Supp. B ] (1)
+	[ Supp. B ] (1)
+	Regole di Posizionamento e Limiti
+* Capacità Fronte: Massimo 3 Unità per Fronte (1 in Linea, massimo 2 in Supporto).
+* Assegnazione Standard: Salvo diversa indicazione (es. Assalto o Posizione Difensiva), le Unità entrano in gioco nella posizione di Supporto.
+* Cap Universale dei Supporti (Regola Aurea): Ogni Unità in Supporto fornisce +1 Forza base alla propria Linea. Nessun effetto combinato di carte, Siti o Campi può mai far superare alla Linea un bonus totale dai Supporti superiore a +3 Forza (Cap Assoluto di Fronte).
+* Limiti Siti e Campi: Un giocatore può controllare al massimo 3 Siti totali. Il Campo conta come Sito e ne occupa uno slot (max 1 Campo attivo per giocatore). Se entra in gioco un 4° Sito dalla mano, il giocatore sceglie uno dei precedenti da distruggere. Se entra un nuovo Campo, il precedente viene distrutto.
+
+
+________________
+
+
+4. GESTIONE ESAUSTIVA DEI DOMINI
+I Domini rappresentano la risorsa fondamentale del gioco.
+
+
+* Composizione: Mazzo fisso di esattamente 20 carte, separato dal Mazzo Esercito.
+* Setup Iniziale: Nella fase di preparazione, ogni giocatore mette in gioco 2 Domini in stato attivo.
+* Flusso del Turno: All'inizio della Fase di Rifornimento, tutti i Domini esausti vengono riattivati, quindi si pesca 1 carta dal Mazzo Domini e si mette in gioco attiva.
+* Utilizzo: Per giocare carte o attivare abilità, il giocatore "esaurisce" (ruota) un numero di Domini pari al costo richiesto. I Domini esausti tornano attivi solo nel turno successivo.
+* Esaurimento Mazzo Domini: Se il mazzo si svuota, il giocatore continua a giocare senza pescare nuovi Domini, mantenendo in uso quelli già presenti sul campo.
+
+
+________________
+
+
+5. PREPARAZIONE E REGOLA DEL PRIMO TURNO (BILANCIATA)
+1. Ciascun giocatore posiziona il proprio Comandante scoperto.
+2. Mescolare separatamente il Mazzo Esercito (40) e il Mazzo Domini (20).
+3. Pescare 5 carte dal Mazzo Esercito.
+4. Mulligan: Ciascun giocatore può, una sola volta per partita, riporre in fondo al mazzo qualsiasi numero di carte dalla mano e pescarne altrettante.
+5. Mettere in gioco 2 carte dal Mazzo Domini in stato attivo.
+6. Determinare casualmente il primo giocatore.
+Regola Primo Turno Bilanciata
+Il primo giocatore NON pesca carte dal Mazzo Esercito nel suo primo turno. Pesca comunque 1 carta dal Mazzo Domini, ma tale Dominio entra in gioco ESAUSTO (oppure può essere tenuto in mano), impedendo l'uso immediato di risorse in eccesso al Turno 1.
+
+
+________________
+
+
+6. STRUTTURA DEL TURNO
+Ogni turno si articola in 4 fasi sequenziali:
+1. Fase di Rifornimento
+* Si attivano le abilità "All'inizio del turno".
+* Canalizzare (Opzionale): Converti qualsiasi numero di segnalini Follia in segnalini Echo in rapporto 1:1.
+* Riattiva tutti i Domini esausti.
+* Pesca 1 carta dal Mazzo Domini (entra attiva).
+* Pesca 1 carta dal Mazzo Esercito (eccetto il primo giocatore al Turno 1).
+2. Fase Principale
+In qualsiasi ordine, pagando i relativi costi in Domini/Echo, puoi:
+
+
+* Giocare carte Unità, Tattiche Standard, Siti o Campi (dalla mano).
+* Assegnare Equipaggiamenti alle Unità (max 1 per Unità; se se ne assegna uno nuovo, il precedente viene scartato).
+* Ritirata e Rimpiazzo: Paga 1 Dominio attivo per scartare un'Unità in Supporto, liberando immediatamente lo slot.
+* Purga dei Parassiti: Paga 2 Domini attivi per rimuovere 1 segnalino Parassita dal tuo Comandante.
+* Attivare abilità delle carte in gioco o del Comandante (max una volta per turno per il Comandante).
+3. Fase di Scontro
+La fase si risolve Fronte per Fronte, strettamente da SINISTRA a DESTRA.
+Risoluzione del Fronte ed Uso di Tattiche Istantanee
+1. Dichiarazione dello Scontro nel Fronte.
+2. Finestra di Reazione (Tattiche Istantanee): Entrambi i giocatori, a partire da quello di turno, possono giocare carte "Tattica Istantanea / Reazione" pagandone il costo per modificare il corso del combattimento.
+3. Calcolo della Forza Effettiva:
+$$\text{Forza Totale Linea} = \text{Forza Base} + \text{Modificatori} + \text{Bonus Supporti (Max +3)}$$
+4. Esito:
+   * Vittoria/Sconfitta: La differenza tra le Forze determina i danni. La Linea perdente subisce danni pari alla differenza; se sono pari o superiori alla Forza, l'Unità viene distrutta. Il difensore promuove subito un Supporto a nuova Linea e il danno in eccesso si applica ad esso.
+   * Parità: Entrambe le Linee subiscono 1 danno.
+   5. Fronte Scoperto: Se un giocatore non ha una Linea, l'attaccante infligge l'intera Forza direttamente al Comandante avversario.
+   6. Sacrificio Difensivo: Il difensore può sacrificare Unità in quel Fronte per prevenire il danno al Comandante (1 Forza sacrificata = 1 danno prevenuto).
+4. Fase Finale
+   * Scarta l'eccesso se possiedi più di 7 carte in mano.
+   * Rimuovi tutti i segnalini Echo accumulati.
+   * Gli effetti temporanei ("fino alla fine del turno") terminano.
+
+
+________________
+
+
+7. KEYWORD E MECCANICHE DEI 3 SET
+Set 1: Furia Giurassica
+   * Ferocia: Ottiene +1 Forza durante lo Scontro se controlli meno Unità totali.
+   * Assalto: Può entrare direttamente in posizione di Linea nel turno in cui viene giocata.
+   * Sorvolo: Quando viene assegnata allo Scontro, puoi spostarla in un Fronte adiacente (entra in Supporto).
+Set 2: Risveglio Infernale
+   * Logorare (X): Se in Linea, la Linea avversaria nello stesso Fronte perde X Forza durante lo Scontro.
+   * Eco Spettrale: Giocabile dallo scarto pagando il costo originale +1 Dominio. Se lascia il gioco, viene esiliata.
+   * Tormento (X): In caso di vittoria in Linea, converte il danno al Comandante in X segnalini Follia all'avversario.
+   * Ascensione (X): Richiede il costo in Domini + il consumo di X segnalini Echo nello stesso turno.
+   * Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
+Set 3: Invasione Silente
+   * Mente Collettiva: Ottiene +1 Forza per ogni altra Unità con Mente Collettiva nello stesso Fronte (bonus max +3).
+   * Posizione Difensiva: Deve entrare obbligatoriamente in Linea, se lo slot è libero.
+   * Infiltrazione (X) / Segnalini Parassita: Metti X Parassiti sul Comandante avversario. All'inizio del suo turno, il Comandante perde 1 PC. Se ne ha 3+, ne rimuove uno automaticamente (oppure il difensore usa l'azione Purga nella Fase Principale).
+   * Decadenza (X): Si rimuove 1 segnalino Decadenza all'inizio del turno; a 0 segnalini, il Sito viene distrutto.
+   * Profanare: Metti un segnalino Rovina su un Sito; a 2 segnalini Rovina, il Sito è distrutto.
+
+
+________________
+
+
+8. MODALITÀ MULTIPLAYER: GUERRA A SQUADRE (2 VS 2)
+   * Formazione: Due squadre da 2 giocatori siedono affiancate (A1 + A2 vs B1 + B2).
+   * Gestione Mappa:
+   * Fronte Sinistro: Gestito da A1 vs B1.
+   * Fronte Destro: Gestito da A2 vs B2.
+   * Fronte Centrale (Conteso): Accessibile e supportabile da entrambi i compagni di squadra.
+   * Risorse e Turni: I turni si alternano tra i team (Team A $\rightarrow$ Team B). I compagni giocano le loro Fasi Principali in contemporanea.
+   * Condizione di Vittoria: La squadra condivide il totale Punti Comando o la soglia Follia.
+
+
+________________
+
+
+9. CHIARIMENTI E CASI LIMITI
+   * Forza Minima: La Forza effettiva in combattimento non può mai scendere sotto 0.
+   * Pareggio Simultaneo a 0 PC: Vince il giocatore di turno.
+   * Gestione Equipaggiamenti: Max 1 per Unità. Se l'Unità muore/viene esiliata, l'Equipaggiamento va nello scarto.
+   * Priorità Inneschi: In caso di effetti contemporanei, si usa l'ordine FIFO o la priorità al giocatore di turno.

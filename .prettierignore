@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.vite
+.cache
+package-lock.json
+src/data/cards.json
+Set.txt
+playwright-report
+test-results
+blob-report
