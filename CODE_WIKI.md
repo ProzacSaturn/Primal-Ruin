@@ -39,7 +39,7 @@ The project deliberately separates three concerns:
 
 - **Data** — the card catalog generated from `Set.txt`.
 - **Rules** — small, deterministic, dependency-free modules under `src/`.
-- **Engine + presentation** — the stateful `game.js` and the DOM UI modules.
+- **Engine + presentation** — the stateful modules in `src/engine/` (re-exported by `game.js`) and the DOM UI modules.
 
 Goals (from `DialogoAi.md`): evolve the prototype toward a faithful Core 1.0 implementation, keep
 card data separate from game logic, implement features incrementally and verifiably, and never
@@ -67,7 +67,7 @@ declare a rule complete until it is implemented and tested.
 Primal Ruin/
 ├── index.html                 # Table structure, controls, card archive & deck-builder markup
 ├── styles.css                 # Layout, pixel-art styling, responsive rules, CSS custom props
-├── game.js                    # Core engine: state, turn logic, deployment, combat (largest file)
+├── game.js                    # Facade: re-exports GameController and GameState from src/engine/
 ├── vite.config.js             # Vite config (root '.', outDir dist, dev server port 3000)
 ├── package.json               # Scripts and dev dependency (vite)
 ├── Set.txt                    # Original textual source of the three card sets (360 cards)
@@ -80,6 +80,21 @@ Primal Ruin/
 │   └── card-effect-coverage.mjs # Print declared effect-coverage summary
 ├── src/
 │   ├── main.js                # App entry: wires DOM events to GameController, boots UI
+│   ├── engine/                # Stateful engine split out of the former game.js monolith
+│   │   ├── state.js           # GameState
+│   │   ├── combat.js          # CombatResolver
+│   │   ├── renderer.js        # UIRenderer
+│   │   ├── controller.js      # Composes GameController from the controller-* modules
+│   │   ├── controller-match.js
+│   │   ├── controller-play.js
+│   │   ├── controller-tactics.js
+│   │   ├── controller-combat.js
+│   │   ├── controller-commander.js
+│   │   ├── cards.js           # Deck / card-instance / player factories
+│   │   ├── board.js           # Front and slot names, catalog aliases
+│   │   ├── tactic-choices.js  # Tactic-choice filter
+│   │   ├── logger.js          # Logger
+│   │   └── fx.js              # FX audio
 │   ├── card-costs.js          # Pure cost calculation (equipment, Eco Spettrale, etc.)
 │   ├── card-effects.js        # Effect registries, execution status, immediate tactics
 │   ├── card-library.js        # Card archive: filters + rendering
@@ -130,9 +145,9 @@ top-down dependency direction: UI/engine → rules → data.
              │              └───────────────────┘
              ▼
    ┌───────────────────────────────────────────────────────────────────────┐
-   │                              game.js                                   │
-   │  GameState  ·  UIRenderer  ·  CombatResolver  ·  GameController        │
-   │  Logger  ·  FX                                                         │
+   │                         src/engine/                                    │
+   │  state · combat · renderer · controller-* · cards · logger · fx        │
+   │  game.js re-exports GameController and GameState only                  │
    └───┬─────────┬──────────┬──────────┬──────────┬──────────┬─────────────┘
        │         │          │          │          │          │
        ▼         ▼          ▼          ▼          ▼          ▼
@@ -149,9 +164,9 @@ top-down dependency direction: UI/engine → rules → data.
 
 Key architectural properties:
 
-- **Single mutable state object.** `GameState` in `game.js` holds all match state. Rule modules
-  receive state as arguments and return values; they do not import `game.js`, so there is no import
-  cycle.
+- **Single mutable state object.** `GameState` in `src/engine/state.js` holds all match state. Rule
+  modules receive state as arguments and return values; they do not import `game.js` or `src/engine/`,
+  so there is no cycle between rules and the engine. The engine modules do import each other.
 - **Two "actor" model.** `GameState.players[0]` is always the human; `players[1]` is the automated
   opponent. `currentIndex` toggles who is active via the `current`/`opponent` getters.
 - **Two-sided resolution.** Human actions run through `GameController` methods (driven by DOM
@@ -316,9 +331,31 @@ but not yet their content, so the roster is **provisional** (`provisional: true`
 
 ---
 
-## 6. Engine deep dive (`game.js`)
+## 6. Engine deep dive (`src/engine/`)
 
-`game.js` is the largest module and contains five collaborating singletons plus factory helpers.
+`game.js` is a facade. It re-exports `GameController` and `GameState` so `index.html` / `src/main.js`
+and the tests keep importing `../game.js`. The implementation lives in `src/engine/`. Open only the
+file for the behavior you are changing:
+
+| File | Open it for |
+|---|---|
+| `src/engine/state.js` | `GameState`: match state, setup, snapshot, victory, turn-start and combat-start permanents, unit entry and movement |
+| `src/engine/combat.js` | `CombatResolver`: strength, combat, Torment, sacrifice, destruction, promotion |
+| `src/engine/renderer.js` | `UIRenderer`: board, hand, controls, prompts |
+| `src/engine/controller-match.js` | match lifecycle, mulligan, turn boundaries, slot clicks, prompt dismissal |
+| `src/engine/controller-play.js` | playing units, sites, fields, equipment, discard selection |
+| `src/engine/controller-tactics.js` | the human tactic flow |
+| `src/engine/controller-combat.js` | combat phase, Sorvolo, bonus cleanup, enemy turn |
+| `src/engine/controller-commander.js` | Commander abilities |
+| `src/engine/controller.js` | assembles `GameController` from the `controller-*` method groups |
+| `src/engine/cards.js` | deck, card-instance and player factories |
+| `src/engine/board.js` | front/slot names and catalog aliases |
+| `src/engine/tactic-choices.js` | tactic-choice filter |
+| `src/engine/logger.js` | `Logger` |
+| `src/engine/fx.js` | `FX` audio |
+
+The five collaborating singletons are unchanged: `GameState`, `Logger`, `FX`, `UIRenderer`,
+`CombatResolver`, plus `GameController`. Factory helpers live in `src/engine/cards.js`.
 
 ### Factory helpers
 
@@ -401,19 +438,20 @@ Reads `GameState` and renders; contains **no** rule logic beyond display.
 
 The single surface the UI (and tests, indirectly) interact with.
 
-| Group | Methods |
-|---|---|
-| Lifecycle | `init`, `newGame`, `resetWithDeck`, `useDemoDecks`, `mulligan`, `startGame` |
-| Turn flow | `beginTurn`, `enterMainPhase`, `channelMadness`, `resolveCombat`, `continueCombat`, `endTurn`, `runEnemyTurn` |
-| Card play | `selectCard`, `selectDiscardCard`, `deploy`, `playSite`, `playEquipment`, `commitPermanentCard`, `onPermanentEntry`, `playImmediateTactic`, `commitTactic` |
-| Site abilities | `canActivateSite`, `activateSite` |
-| Prompt resolution | `confirmTactic`, `cancelTactic`, `chooseTorment`, `choosePromotionSlot`, `finishSacrifice` |
-| Sorvolo | `useSorvolo`, `skipSorvolo` |
-| AI | `findEnemySlot`, `scoreEnemyPlay` |
-| Commander | `activateCommanderAbility`, `applyCommanderEffects`, `resolveCommanderRifornimento` |
-| Misc | `getCardCost`, `drawCards`, `handleSlotClick`, `cancelSelection`, `removeCombatBonuses` |
+| Group | File | Methods |
+|---|---|---|
+| Lifecycle | `controller-match.js` | `init`, `newGame`, `resetWithDeck`, `useDemoDecks`, `mulligan`, `startGame` |
+| Turn flow | `controller-match.js`, `controller-combat.js` | `beginTurn`, `enterMainPhase`, `channelMadness`, `endTurn`; `resolveCombat`, `continueCombat`, `runEnemyTurn` |
+| Card play | `controller-play.js`, `controller-tactics.js` | `selectCard`, `selectDiscardCard`, `deploy`, `playSite`, `playEquipment`, `commitPermanentCard`, `onPermanentEntry`; `playImmediateTactic`, `commitTactic` |
+| Site abilities | `controller-play.js` | `canActivateSite`, `activateSite` |
+| Prompt resolution | `controller-tactics.js`, `controller-match.js` | `confirmTactic`, `cancelTactic`; `chooseTorment`, `choosePromotionSlot`, `finishSacrifice` |
+| Sorvolo | `controller-combat.js` | `useSorvolo`, `skipSorvolo` |
+| AI | `controller-combat.js` | `findEnemySlot`, `scoreEnemyPlay`, `runEnemyTurn` |
+| Commander | `controller-commander.js` | `activateCommanderAbility`, `applyCommanderEffects`, `resolveCommanderRifornimento` |
+| Misc | `controller-play.js`, `controller-match.js`, `controller-combat.js` | `getCardCost`, `drawCards`; `handleSlotClick`, `cancelSelection`; `removeCombatBonuses` |
 
-The module ends with `export { GameController, GameState }`.
+`src/engine/controller.js` assembles `GameController` and `game.js` ends with
+`export { GameController, GameState }`.
 
 ---
 
@@ -505,7 +543,7 @@ arrays, 3 valid fronts, valid phase, indices, and a `randomState` in `(0, 0xffff
 `setup → rifornimento → principale → scontro → finale → (next player's rifornimento) → … → gameover`
 
 Phase labels shown in the UI: `PREPARAZIONE`, `RIFORNIMENTO`, `FASE PRINCIPALE`, `SCONTRO`,
-`FASE FINALE`, `PARTITA TERMINATA` ([renderControls](game.js)).
+`FASE FINALE`, `PARTITA TERMINATA` (`UIRenderer.renderControls` in `src/engine/renderer.js`).
 
 ### Turn lifecycle
 
@@ -555,7 +593,9 @@ After deploying all it can, it runs the same `CombatResolver.resolveAll()` and e
 
 ## 9. Dependency graph
 
-Import edges (who imports whom). No module under `src/` imports `game.js`, so the graph is acyclic.
+Import edges (who imports whom). No rule module under `src/` imports `game.js` or `src/engine/`.
+The engine modules import each other; that cycle stays inside `src/engine/` and is only used from
+method bodies, not at module initialization. `game.js` re-exports the public singletons.
 
 ```
 index.html ──<script>──► src/main.js
@@ -565,19 +605,10 @@ src/main.js ─► styles.css
             ─► src/deck-builder.js                                    │
             ─► src/settings.js                                        │
                                                                       │
-game.js ─► src/data/cards.json                                        │
-        ─► src/deck-builder.js  (loadCustomDeck, clearCustomDeck)     │
-        ─► src/save-store.js    (load/persist/clear)                  │
-        ─► src/settings.js      (getSettings)                         │
-        ─► src/random.js        (seed/next/get/restore)               │
-        ─► src/pixel-art.js     (drawCardPixelArt)                    │
-        ─► src/card-costs.js    (calculateCardCost, markUsed)         │
-        ─► src/commanders.js    (roster, evaluate, per-set resolve)   │
-        ─► src/card-effects.js  (status, resolve, choices, temp force)│
-        ─► src/tactics.js       (restoreControlledUnits, requiresChoice)
-        ─► src/permanent-effects.js (keywords/force/support/tokens)   │
-        ─► src/game-rules.js    (strength/compare/deployment/torment) │
-        ─► src/unit-triggers.js (entry/destruction/sorvolo triggers)  │
+game.js ─► src/engine/controller.js ─► src/engine/* ─► the same rule modules:
+        src/data/cards.json, deck-builder, save-store, settings, random,
+        pixel-art, card-costs, commanders, card-effects, tactics,
+        permanent-effects, game-rules, unit-triggers
 
 src/card-library.js ─► src/data/cards.json, src/card-effects.js
 src/deck-builder.js ─► src/data/cards.json, src/card-effects.js, src/deck-validation.js
@@ -591,8 +622,8 @@ scripts/*.mjs ─► Set.txt / src/data/cards.json / src/card-effects.js
 tests/*.test.js ─► src/**  (the pure modules, plus the catalog)
 ```
 
-Rule of thumb: **`game.js` depends on everything; the `src/*.js` rule modules depend on nothing (or
-only on each other downward) and never on `game.js`.**
+Rule of thumb: **`src/engine/` depends on the rule modules; the rule modules never depend on
+`game.js` or `src/engine/`.** `tests/game-engine*.test.js` still import `../game.js`.
 
 ---
 

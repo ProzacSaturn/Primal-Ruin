@@ -17,7 +17,25 @@ Lavora sul prototipo esistente. Non ricostruire il gioco, non riscrivere l'archi
 
 - UI: `index.html`, `styles.css`, `src/card-library.js`, `src/deck-builder.js`, `src/settings.js`, `src/pixel-art.js`.
 - Dati carte: `src/data/cards.json`, generato da `Set.txt` con `scripts/import-cards.mjs`. Non modificare lo schema né rigenerare il catalogo se il compito non lo richiede.
-- Logica: `game.js`, `src/game-rules.js`, `src/tactics.js`, `src/card-effects.js`, `src/permanent-effects.js`, `src/unit-triggers.js`, `src/commanders.js`, `src/deck-validation.js`, `src/deck-composition.js`, `src/random.js`.
+- Logica: `game.js` è solo la facciata che riesporta `GameController` e `GameState`. L'engine è in `src/engine/`. Le regole pure restano `src/game-rules.js`, `src/tactics.js`, `src/card-effects.js`, `src/permanent-effects.js`, `src/unit-triggers.js`, `src/commanders.js`, `src/deck-validation.js`, `src/deck-composition.js`, `src/random.js`.
+- Apri un solo modulo dell'engine, quello della responsabilità che cambi. Non aprire `game.js` per leggere la logica e non aprire gli altri file di `src/engine/` se non servono.
+
+| File | Aprilo per |
+|---|---|
+| `src/engine/state.js` | `GameState`: stato, setup, snapshot, vittoria, permanenti a inizio turno/scontro, ingresso e movimento unità |
+| `src/engine/combat.js` | `CombatResolver`: forza, scontro, tormento, sacrificio, distruzione, promozione |
+| `src/engine/renderer.js` | `UIRenderer`: DOM di tavolo, mano, controlli e prompt |
+| `src/engine/controller-match.js` | partita, mulligan, inizio/fine turno, click sugli slot, chiusura dei prompt |
+| `src/engine/controller-play.js` | giocare unità, siti, campi, equipaggiamenti, scarti |
+| `src/engine/controller-tactics.js` | tattiche del giocatore |
+| `src/engine/controller-combat.js` | scontro, sorvolo, fine bonus, turno dell'avversario |
+| `src/engine/controller-commander.js` | abilità del Comandante |
+| `src/engine/controller.js` | composizione di `GameController` (non contiene regole) |
+| `src/engine/cards.js` | mazzi, istanze di carta, `makePlayer` |
+| `src/engine/board.js` | nomi di fronti e slot, accesso al catalogo |
+| `src/engine/tactic-choices.js` | filtro delle scelte tattiche |
+| `src/engine/logger.js` | `Logger` |
+| `src/engine/fx.js` | suoni `FX` |
 - Persistenza: `src/save-store.js`.
 - Test: `tests/` per Node, `e2e/` per Playwright.
 - Tieni separati dati carte, logica di gioco, UI e test, come già fa il repo.
