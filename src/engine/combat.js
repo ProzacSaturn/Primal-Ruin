@@ -328,6 +328,7 @@ const CombatResolver = {
             Logger.log(`${enemy.field.name}: ${player.name} perde 1 PC perché un Fronte diventa scoperto.`);
             GameState.checkVictory();
         }
+        return unit;
     },
 
     destroyUnit(player, frontName, slotName, reason = 'effect-destroy') {
