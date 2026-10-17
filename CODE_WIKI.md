@@ -349,7 +349,7 @@ interaction slots (`sacrifice`, `pendingTactic`, `pendingTorment`, `pendingPromo
 | `resolveSiteActivation(site, choice)` | Executes activatable sites (`set-1-102`, `set-2-088`, `set-3-082`, `set-3-089`). |
 | `snapshot()` / `restore(snapshot)` | Serialize/deserialize the persistable core (players + turn scalars + PRNG state). |
 | `countUnits` / `unitsInFront` | Occupancy helpers. |
-| `checkVictory()` | Ends the game when a player reaches `pc <= 0` or `follia >= 10`; logs, shows the result, persists. |
+| `checkVictory()` | Ends the game on `pc <= 0` / `follia >= 10` (simultaneous defeat: the turn player wins), or on Total Map Dominance (turn player holds a Line in all 3 Fronts and the opponent has no Units); logs, shows the result, persists. |
 
 ### `Logger`
 

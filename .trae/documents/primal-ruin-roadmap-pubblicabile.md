@@ -1,7 +1,7 @@
 # Primal Ruin — Piano di rifinitura verso una versione pubblicabile
 
 > **Ruolo assunto:** senior game developer / technical lead / game designer (giochi di carte strategici browser, HTML5 + JS + Vite).
-> **Fonti canoniche:** [regolamento_ufficiale_primal_ruin_avanzato.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/regolamento_ufficiale_primal_ruin_avanzato.txt) (nuova fonte ufficiale "Edizione Integrata e Aggiornata", sostituisce i precedenti `Regolamento.txt` e `regolamento_ufficiale_primal_ruin.txt`, ora rimossi), [Set.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/Set.txt), [cards.json](file:///c:/Users/alessio/Desktop/Primal%20Ruin/src/data/cards.json).
+> **Fonti canoniche:** [Regolamento Ufficiale Avanzato Primal Ruin.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/Regolamento%20Ufficiale%20Avanzato%20Primal%20Ruin.txt) (fonte ufficiale "Edizione Integrata, Aggiornata e Congruente", sostituisce i precedenti `Regolamento.txt`, `regolamento_ufficiale_primal_ruin.txt` e `regolamento_ufficiale_primal_ruin_avanzato.txt`, ora rimossi), [Set.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/Set.txt), [cards.json](file:///c:/Users/alessio/Desktop/Primal%20Ruin/src/data/cards.json).
 > **Vincoli inviolabili:** non modificare `Set.txt`; non inventare né alterare `cards.json`. Ogni effetto non implementato o testo ambiguo va **segnalato**. Le interpretazioni sono marcate `[DECISIONE]`.
 
 **Revisione 4.** Riscritta sulla **nuova fonte avanzata** `regolamento_ufficiale_primal_ruin_avanzato.txt` (199 righe, letta integralmente). Rispetto alla REV3 il regolamento introduce **migliorie logiche** che generano nuove divergenze verificate: (a) **terza condizione di vittoria "Dominio Totale della Mappa"** (§1); (b) **Cap Assoluto dei Supporti +3** (§3); (c) **primo turno bilanciato: il Dominio pescato entra esausto** (§5); (d) **nuove azioni di Fase Principale**: *Ritirata e Rimpiazzo* e *Purga dei Parassiti* (§6); (e) **Finestra di Reazione con Tattiche Istantanee** durante lo Scontro (§6.3); (f) **modalità multiplayer 2 vs 2** (§8). Sono confermate le 5 divergenze della REV3 (composizione Mazzo Esercito, mulligan parziale, sconfitta contemporanea, equipaggiamento allo scarto, FIFO).
@@ -33,7 +33,7 @@ I conteggi dichiarati in [DialogoAi.md](file:///c:/Users/alessio/Desktop/Primal%
 | Persistenza | `localStorage`, `SAVE_VERSION = 3`, chiavi `primal-ruin.game-save.v1`, `primal-ruin.custom-deck.v1`, `primal-ruin.settings.v1` |
 | Sicurezza | **nessun uso di `innerHTML`/`eval`** nel codice applicativo |
 
-### 1.3 Conformità a `regolamento_ufficiale_primal_ruin_avanzato.txt` — riverificata sul codice
+### 1.3 Conformità a `Regolamento Ufficiale Avanzato Primal Ruin.txt` — riverificata sul codice
 
 Ogni riga è verificata contro il **nuovo** testo ufficiale. `✅` conforme · `⚠️` divergenza/parziale · `[DECISIONE]` interpretazione non esplicitata dal regolamento.
 

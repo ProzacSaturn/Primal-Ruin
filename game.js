@@ -14,13 +14,15 @@ import {
     restoreTemporaryForce
 } from './src/card-effects.js';
 import { restoreControlledUnits, tacticRequiresChoice } from './src/tactics.js';
+import { composeArmyDeck } from './src/deck-composition.js';
 import {
     createToken,
     getDamageReduction,
     getFerocityBonus,
     getSupportBonus,
     getUnitForceBonus,
-    getUnitKeywords
+    getUnitKeywords,
+    playerUnits
 } from './src/permanent-effects.js';
 import {
     calculateUnitCombatStrength,
@@ -138,11 +140,15 @@ function makeDeck(owner, setId, customCardIds = null) {
             return makeCardInstance(card, `${owner}-${card.id}-${index}`, owner);
         }));
     }
-    const units = shuffled(CARD_DATA.filter(card => card.setId === setId && card.category === 'unit'));
-    if (units.length < 40) {
-        throw new Error(`Il set ${setId} ha solo ${units.length} Unità: un mazzo richiede 40 carte.`);
+    const picks = composeArmyDeck(
+        CARD_DATA.filter(card => card.setId === setId),
+        { label: setId }
+    );
+    if (!picks.exact) {
+        console.warn(`Il set ${setId} non copre tutti gli intervalli della curva dei costi (§2): composizione approssimata.`);
     }
-    return units.slice(0, 40).map(card => makeUnit(card, `${owner}-${card.id}`, owner));
+    return shuffled(picks.cards).map((card, index) =>
+        makeCardInstance(card, `${owner}-${card.id}-${index}`, owner));
 }
 
 function makeDomainDeck(owner) {
@@ -191,6 +197,7 @@ const GameState = {
     firstPlayerIndex: 0,
     firstTurn: true,
     mulliganUsed: false,
+    mulliganMarks: new Set(),
     selectedCard: null,
     selectedFromDiscard: false,
     gameOver: false,
@@ -231,6 +238,7 @@ const GameState = {
         this.turnNumber = 0;
         this.firstTurn = true;
         this.mulliganUsed = false;
+        this.mulliganMarks = new Set();
         this.selectedCard = null;
         this.selectedFromDiscard = false;
         this.gameOver = false;
@@ -249,8 +257,8 @@ const GameState = {
 
     onEquipmentPositionEntry(player, unit, slotName) {
         const id = unit.equipment?.catalogId || unit.equipment?.id;
-        if (id === 'set-2-107' && slotName === 'line') this.drawCards(player, 1, unit.equipment.name);
-        if (id === 'set-3-107' && slotName !== 'line') this.drawCards(player, 1, unit.equipment.name);
+        if (id === 'set-2-107' && slotName === 'line') GameController.drawCards(player, 1, unit.equipment.name);
+        if (id === 'set-3-107' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
         if (id === 'set-3-111' && slotName === 'line') {
             const opponent = GameState.players[1 - GameState.players.indexOf(player)];
             const target = FRONT_NAMES.find(name => opponent.fronts[name].line);
@@ -264,7 +272,7 @@ const GameState = {
         if (slotName === 'line') {
             for (const site of [...player.sites]) {
                 if (site.catalogId !== 'set-1-092') continue;
-                this.drawCards(player, 1, site.name);
+                GameController.drawCards(player, 1, site.name);
                 player.sites.splice(player.sites.indexOf(site), 1);
                 player.discard.push(site);
                 Logger.log(`${site.name} si distrugge dopo l’ingresso in Linea.`);
@@ -332,7 +340,7 @@ const GameState = {
         }
         if (fromDiscard && unit.keywords.includes('Eco Spettrale') &&
             player.sites?.some(site => site.catalogId === 'set-2-087')) {
-            this.drawCards(player, 1, 'Altare della Putrefazione');
+            GameController.drawCards(player, 1, 'Altare della Putrefazione');
         }
         if (slotName !== 'line' &&
             player.sites?.some(site => site.catalogId === 'set-3-097')) {
@@ -425,7 +433,7 @@ const GameState = {
         Logger.log(`${count} Parassit${count === 1 ? 'a' : 'i'} assegnat${count === 1 ? 'o' : 'i'} a ${targetPlayer.name}.`);
         for (const owner of GameState.players) {
             const sporeWells = owner.sites?.filter(site => site.catalogId === 'set-3-088') || [];
-            for (const site of sporeWells) this.drawCards(owner, count, site.name);
+            for (const site of sporeWells) GameController.drawCards(owner, count, site.name);
             const parasiteSanctuaries =
                 owner.sites?.filter(site => site.catalogId === 'set-3-093') || [];
             targetPlayer.pc = Math.max(
@@ -516,6 +524,7 @@ const GameState = {
         this.firstPlayerIndex = snapshot.firstPlayerIndex;
         this.firstTurn = snapshot.firstTurn;
         this.mulliganUsed = snapshot.mulliganUsed === true;
+        this.mulliganMarks = new Set();
         this.gameOver = snapshot.gameOver === true;
         this.selectedCard = null;
         this.selectedFromDiscard = false;
@@ -540,18 +549,298 @@ const GameState = {
     },
 
     checkVictory() {
-        for (const player of this.players) {
-            if (player.pc <= 0 || player.follia >= 10) {
-                this.gameOver = true;
-                this.phase = 'gameover';
-                const winner = this.players.find(candidate => candidate !== player);
-                Logger.log(`${player.name} ha perso. ${winner.name} vince la partita!`);
-                UIRenderer.showGameOver(winner);
-                persistGame(this.snapshot());
-                return true;
-            }
+        const defeated = this.players.filter(player => player.pc <= 0 || player.follia >= 10);
+        if (defeated.length > 1) {
+            // §9: nella sconfitta simultanea vince il giocatore di turno.
+            const winner = this.players[this.currentIndex];
+            this.gameOver = true;
+            this.phase = 'gameover';
+            Logger.log(`Sconfitta simultanea: ${winner.name} vince la partita (giocatore di turno).`);
+            UIRenderer.showGameOver(winner);
+            persistGame(this.snapshot());
+            return true;
+        }
+        if (defeated.length === 1) {
+            const winner = this.players.find(player => player !== defeated[0]);
+            this.gameOver = true;
+            this.phase = 'gameover';
+            Logger.log(`${defeated[0].name} ha perso. ${winner.name} vince la partita!`);
+            UIRenderer.showGameOver(winner);
+            persistGame(this.snapshot());
+            return true;
+        }
+        // §1.3: Dominio Totale della Mappa — il giocatore di turno controlla una
+        // Linea in tutti e 3 i Fronti e l'avversario non ha alcuna Unità in campo.
+        const dominant = this.players[this.currentIndex];
+        const exposed = this.players.find(player => player !== dominant);
+        if (dominant && exposed && this.countUnits(exposed) === 0 &&
+            FRONT_NAMES.every(name => dominant.fronts[name].line)) {
+            this.gameOver = true;
+            this.phase = 'gameover';
+            Logger.log(`${dominant.name} controlla l'intera mappa. Dominio Totale della Mappa!`);
+            UIRenderer.showGameOver(dominant);
+            persistGame(this.snapshot());
+            return true;
         }
         return false;
+    },
+
+    resolvePermanentTurnStart(playerIndex) {
+        const player = GameState.players[playerIndex];
+        const opponent = GameState.players[1 - playerIndex];
+        const expiredSites = [];
+        for (const site of [...(player.sites || [])]) {
+            if (!Number.isInteger(site.decayRemaining)) continue;
+            site.decayRemaining = Math.max(0, site.decayRemaining - 1);
+            if (site.decayRemaining === 0) expiredSites.push(site);
+        }
+        for (const site of expiredSites) {
+            player.sites.splice(player.sites.indexOf(site), 1);
+            player.discard.push(site);
+            Logger.log(`${site.name}: l’ultima Decadenza viene rimossa; il Sito è distrutto.`);
+            if (site.catalogId === 'set-1-094') {
+                const frontName = FRONT_NAMES.find(name =>
+                    !player.fronts[name].supA || !player.fronts[name].supB
+                );
+                if (frontName) {
+                    const slot = player.fronts[frontName].supA ? 'supB' : 'supA';
+                    createToken(player, frontName, slot, 'Pedina Raptor', 2);
+                }
+            }
+        }
+        const line = FRONT_NAMES.map(name => player.fronts[name].line).find(Boolean);
+        const enemyLine = FRONT_NAMES.map(name => opponent.fronts[name].line).find(Boolean);
+        for (const site of player.sites) {
+            const id = site.catalogId;
+            if (id === 'set-1-091' && line) this.applyTemporaryForce(line, 1, `${site.name}`);
+            if (['set-1-093', 'set-2-082'].includes(id) && enemyLine) {
+                this.applyForceLoss(opponent, FRONT_NAMES.find(name =>
+                    opponent.fronts[name].line === enemyLine
+                ), 1, site.name, player);
+            }
+            if (id === 'set-1-108') {
+                const raptor = player.armyDeck.findIndex(card => /raptor/i.test(card.type || ''));
+                if (raptor >= 0) {
+                    const [card] = player.armyDeck.splice(raptor, 1);
+                    player.armyDeck.push(card);
+                    Logger.log(`${site.name}: ${card.name} cercata e messa in cima al mazzo.`);
+                }
+            }
+            if (id === 'set-2-079' && player.armyDeck.length) {
+                Logger.log(`${site.name}: prima carta del mazzo ${player.armyDeck.at(-1).name}.`);
+            }
+            if (id === 'set-2-090' || id === 'set-2-119') {
+                if (player.discard.length) player.armyDeck.unshift(player.discard.shift());
+            }
+            if (id === 'set-2-093') {
+                FRONT_NAMES.forEach(frontName => {
+                    if (opponent.fronts[frontName].line) {
+                        this.applyForceLoss(opponent, frontName, 1, site.name, player);
+                    }
+                });
+            }
+            if (id === 'set-2-100') {
+                const index = player.discard.findIndex(card =>
+                    card.keywords?.includes('Eco Spettrale')
+                );
+                if (index >= 0) player.hand.push(...player.discard.splice(index, 1));
+            }
+            if (id === 'set-3-081') {
+                const frontName = FRONT_NAMES.find(name =>
+                    player.fronts[name].line && (!player.fronts[name].supA || !player.fronts[name].supB)
+                );
+                if (frontName) {
+                    const front = player.fronts[frontName];
+                    createToken(player, frontName, front.supA ? 'supB' : 'supA');
+                }
+            }
+            if (id === 'set-3-084') {
+                Logger.log(`${site.name}: mano avversaria — ${opponent.hand.map(card => card.name).join(', ') || 'vuota'}.`);
+            }
+            if (id === 'set-3-092') {
+                const sourceName = FRONT_NAMES.find((name, index) => {
+                    const unit = opponent.fronts[name].line;
+                    return unit &&
+                        !isProtectedFromEnemyMovement(opponent, unit, name) &&
+                        [index - 1, index + 1].some(targetIndex =>
+                        FRONT_NAMES[targetIndex] && !opponent.fronts[FRONT_NAMES[targetIndex]].line
+                    );
+                });
+                if (sourceName) {
+                    const sourceIndex = FRONT_NAMES.indexOf(sourceName);
+                    const destinationIndex = [sourceIndex - 1, sourceIndex + 1].find(index =>
+                        FRONT_NAMES[index] && !opponent.fronts[FRONT_NAMES[index]].line
+                    );
+                    const unit = opponent.fronts[sourceName].line;
+                    opponent.fronts[sourceName].line = null;
+                    opponent.fronts[FRONT_NAMES[destinationIndex]].line = unit;
+                    unit.front = FRONT_NAMES[destinationIndex];
+                    this.onUnitMoved(opponent, unit, sourceName, FRONT_NAMES[destinationIndex], true);
+                }
+            }
+            if (id === 'set-3-102' && this.countCollective(player) >= 3) {
+                GameController.drawCards(player, 1, site.name);
+            }
+            if (id === 'set-3-104') {
+                FRONT_NAMES.forEach(frontName => {
+                    const front = player.fronts[frontName];
+                    if (!front.line && !front.supA && !front.supB) return;
+                    const slot = !front.supA ? 'supA' : !front.supB ? 'supB' : null;
+                    if (slot) createToken(player, frontName, slot);
+                });
+            }
+        }
+        const sunkenCities = GameState.players.flatMap(owner =>
+            (owner.sites || []).filter(site => site.catalogId === 'set-2-103')
+        );
+        for (const site of sunkenCities) {
+            if (!player.armyDeck.length) break;
+            const drawn = GameController.drawCards(player, 1, site.name);
+            if (!drawn) continue;
+            player.pc = Math.max(0, player.pc - 1);
+            Logger.log(`${player.name} perde 1 PC per ${site.name}.`);
+        }
+        if (player.field?.catalogId === 'set-1-120') {
+            const frontName = FRONT_NAMES.find(name => !player.fronts[name].supA || !player.fronts[name].supB);
+            if (frontName) {
+                const front = player.fronts[frontName];
+                createToken(player, frontName, front.supA ? 'supB' : 'supA', 'Pedina Raptor', 3);
+            }
+        }
+        if (player.field?.catalogId === 'set-3-120' &&
+            FRONT_NAMES.every(frontName => SLOT_NAMES.some(slot => player.fronts[frontName][slot]))) {
+            opponent.pc = Math.max(0, opponent.pc - 1);
+            Logger.log(`${player.field.name}: il Comandante avversario perde 1 PC.`);
+        }
+        if (player.field?.catalogId === 'set-2-119' && player.discard.length) {
+            player.armyDeck.unshift(player.discard.shift());
+        }
+    },
+
+    countCollective(player) {
+        return FRONT_NAMES.reduce((count, frontName) => count +
+            SLOT_NAMES.filter(slotName =>
+                player.fronts[frontName][slotName] &&
+                getUnitKeywords(player, player.fronts[frontName][slotName], frontName, slotName)
+                    .some(keyword => keyword.startsWith('Mente Collettiva'))
+            ).length, 0);
+    },
+
+    resolvePermanentCombatStart(playerIndex) {
+        for (let attackerIndex = 0; attackerIndex < 2; attackerIndex++) {
+            const player = GameState.players[attackerIndex];
+            const opponent = GameState.players[1 - attackerIndex];
+            for (const site of player.sites || []) {
+                if (site.catalogId === 'set-1-099') {
+                    const frontName = FRONT_NAMES.find(name => opponent.fronts[name].line);
+                    if (frontName) this.applyForceLoss(opponent, frontName, 1, site.name, player);
+                }
+            }
+            if (player.field?.catalogId === 'set-3-116') {
+                for (const frontName of FRONT_NAMES) {
+                    const count = SLOT_NAMES.filter(slot =>
+                        player.fronts[frontName][slot] &&
+                        getUnitKeywords(player, player.fronts[frontName][slot], frontName, slot)
+                            .some(keyword => keyword.startsWith('Mente Collettiva'))
+                    ).length;
+                    if (count && opponent.fronts[frontName].line) {
+                        this.applyForceLoss(opponent, frontName, Math.min(2, count), player.field.name, player);
+                    }
+                }
+            }
+        }
+    },
+
+    applyTemporaryForce(unit, modifier, source) {
+        const previous = unit.currentForce;
+        unit.currentForce = Math.max(0, unit.currentForce + modifier);
+        const applied = unit.currentForce - previous;
+        unit.temporaryForce = (unit.temporaryForce || 0) + applied;
+        if (applied < 0) unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) - applied;
+        Logger.log(`${source}: ${unit.name} ${applied >= 0 ? 'ottiene' : 'perde'} ${Math.abs(applied)} Forza fino a fine turno.`);
+    },
+
+    applyForceLoss(owner, frontName, amount, source, sourcePlayer, triggerEquipment = true) {
+        const unit = owner.fronts[frontName]?.line;
+        if (!unit) return;
+        const applied = Math.min(amount, Math.max(0, unit.currentForce));
+        if (!applied) return;
+        unit.currentForce -= applied;
+        unit.temporaryForce = (unit.temporaryForce || 0) - applied;
+        unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) + applied;
+        Logger.log(`${source}: ${unit.name} perde ${applied} Forza.`);
+        CombatResolver.onForceLoss(owner, unit, applied, sourcePlayer, triggerEquipment);
+        if (unit.currentForce <= 0 && owner.fronts[frontName]?.line === unit) {
+            CombatResolver.removeUnit(owner, frontName, 'line', 'effect-destroy', sourcePlayer);
+        }
+    },
+
+    onUnitMoved(player, unit, sourceFront, targetFront, wasLine = false, usedSorvolo = false) {
+        this.onEquipmentPositionEntry(player, unit, unit.position);
+        if (usedSorvolo) this.resolveSorvoloEntryEffects(player, unit, targetFront);
+        if (!wasLine && unit.position === 'line') {
+            this.applyCollectiveEntryBonus(player, unit, targetFront, unit.position);
+        }
+        if (wasLine) {
+            for (const fieldOwner of GameState.players) {
+                if (fieldOwner.field?.catalogId !== 'set-3-117') continue;
+                if (unit.currentForce <= 0 ||
+                    player.fronts[targetFront][unit.position] !== unit) break;
+                const applied = Math.min(1, Math.max(0, unit.currentForce));
+                if (!applied) continue;
+                unit.currentForce -= applied;
+                unit.temporaryForce = (unit.temporaryForce || 0) - applied;
+                unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) + applied;
+                CombatResolver.onForceLoss(player, unit, applied, fieldOwner);
+                Logger.log(`${fieldOwner.field.name}: ${unit.name} perde ${applied} Forza.`);
+                if (unit.currentForce <= 0) {
+                    CombatResolver.removeUnit(player, targetFront, unit.position, 'effect-destroy', fieldOwner);
+                }
+            }
+        }
+        if (player.sites?.some(site => site.catalogId === 'set-3-085') &&
+            getUnitKeywords(player, unit, targetFront, unit.position).includes('Sorvolo')) {
+            const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
+            const frontName = FRONT_NAMES.find(name => enemy.fronts[name].line);
+            if (frontName) this.applyForceLoss(enemy, frontName, 1, 'Fenditura Dimensionale', player);
+        }
+        const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
+        if (wasLine && !player.fronts[sourceFront].line &&
+            enemy.field?.catalogId === 'set-1-117') {
+            player.pc = Math.max(0, player.pc - 1);
+            Logger.log(`${enemy.field.name}: ${player.name} perde 1 PC perché un Fronte diventa scoperto.`);
+            GameState.checkVictory();
+        }
+    },
+
+    resolveSorvoloEntryEffects(player, unit, targetFront) {
+        const opponent = GameState.players[1 - GameState.players.indexOf(player)];
+        for (const effect of getSorvoloEntryEffects(unit)) {
+            if (effect.type === 'boost-own-line') {
+                const line = player.fronts[targetFront].line;
+                if (!line) continue;
+                line.currentForce += effect.amount;
+                line.temporaryForce = (line.temporaryForce || 0) + effect.amount;
+            } else if (effect.type === 'damage-enemy-line-in-front') {
+                if (opponent.fronts[targetFront].line) {
+                    CombatResolver.damageLine(opponent, targetFront, effect.amount, player, true);
+                }
+            } else if (effect.type === 'add-opponent-parasite') {
+                this.addParasites(player, opponent, 1);
+            } else if (effect.type === 'weaken-enemy-line') {
+                const frontName = FRONT_NAMES.find(name => opponent.fronts[name].line);
+                if (frontName) {
+                    this.applyForceLoss(opponent, frontName, effect.amount, unit.name, player);
+                }
+            } else if (effect.type === 'destroy-weak-enemy-line') {
+                const frontName = FRONT_NAMES.find(name =>
+                    opponent.fronts[name].line?.currentForce <= effect.maximumForce
+                );
+                if (frontName) {
+                    CombatResolver.destroyUnit(opponent, frontName, 'line', 'effect-destroy');
+                }
+            }
+        }
     }
 };
 
@@ -742,21 +1031,35 @@ const UIRenderer = {
     renderHand() {
         const area = document.getElementById('hand-area');
         area.replaceChildren();
-        if (!GameState.players.length || GameState.phase === 'setup') {
+        if (!GameState.players.length) {
             area.textContent = 'La tua mano iniziale contiene 5 carte.';
             return;
         }
         const player = GameState.players[0];
-        const spectralDiscard = player.discard.filter(card => card.keywords.includes('Eco Spettrale'));
-        if (player.hand.length === 0 && spectralDiscard.length === 0) {
+        const mulliganSetup = GameState.phase === 'setup';
+        if (!mulliganSetup && player.hand.length === 0 &&
+            !player.discard.some(card => card.keywords.includes('Eco Spettrale'))) {
             area.textContent = 'Mano vuota.';
             return;
         }
+        if (mulliganSetup) {
+            const hint = document.createElement('div');
+            hint.className = 'hand-hint';
+            hint.textContent = 'Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.';
+            area.appendChild(hint);
+        }
+        const spectralDiscard = mulliganSetup
+            ? []
+            : player.discard.filter(card => card.keywords.includes('Eco Spettrale'));
         const renderCard = (card, fromDiscard = false) => {
+            const marked = mulliganSetup && GameState.mulliganMarks.has(card.id);
             const element = document.createElement('button');
             element.type = 'button';
-            element.className = `card${fromDiscard ? ' spectral-card' : ''}${GameState.selectedCard?.id === card.id ? ' selected' : ''}`;
-            element.disabled = GameState.currentIndex !== 0 || GameState.phase !== 'principale' ||
+            element.className = `card${fromDiscard ? ' spectral-card' : ''}` +
+                `${marked ? ' mulligan-marked' : ''}` +
+                `${GameState.selectedCard?.id === card.id ? ' selected' : ''}`;
+            element.disabled = mulliganSetup ? false : GameState.currentIndex !== 0 ||
+                GameState.phase !== 'principale' ||
                 GameState.sacrifice !== null || GameState.pendingTorment !== null ||
                 GameState.pendingTactic !== null ||
                 (card.category !== 'unit' && !['site', 'field', 'equipment'].includes(card.category) &&
@@ -791,8 +1094,14 @@ const UIRenderer = {
                     : `${executionStatus.label}: ${executionStatus.detail}`;
             element.title = card.rulesText;
             element.append(cost, name, art, stats, rules);
-            element.addEventListener('click', () => fromDiscard
-                ? GameController.selectDiscardCard(card) : GameController.selectCard(card));
+            element.addEventListener('click', () => {
+                if (mulliganSetup) {
+                    GameController.toggleMulliganMark(card);
+                    return;
+                }
+                if (fromDiscard) GameController.selectDiscardCard(card);
+                else GameController.selectCard(card);
+            });
             area.appendChild(element);
         };
         player.hand.forEach(card => renderCard(card));
@@ -832,264 +1141,6 @@ const UIRenderer = {
         }
     },
 
-    resolvePermanentTurnStart(playerIndex) {
-        const player = GameState.players[playerIndex];
-        const opponent = GameState.players[1 - playerIndex];
-        const expiredSites = [];
-        for (const site of [...(player.sites || [])]) {
-            if (!Number.isInteger(site.decayRemaining)) continue;
-            site.decayRemaining = Math.max(0, site.decayRemaining - 1);
-            if (site.decayRemaining === 0) expiredSites.push(site);
-        }
-        for (const site of expiredSites) {
-            player.sites.splice(player.sites.indexOf(site), 1);
-            player.discard.push(site);
-            Logger.log(`${site.name}: l’ultima Decadenza viene rimossa; il Sito è distrutto.`);
-            if (site.catalogId === 'set-1-094') {
-                const frontName = FRONT_NAMES.find(name =>
-                    !player.fronts[name].supA || !player.fronts[name].supB
-                );
-                if (frontName) {
-                    const slot = player.fronts[frontName].supA ? 'supB' : 'supA';
-                    createToken(player, frontName, slot, 'Pedina Raptor', 2);
-                }
-            }
-        }
-        const line = FRONT_NAMES.map(name => player.fronts[name].line).find(Boolean);
-        const enemyLine = FRONT_NAMES.map(name => opponent.fronts[name].line).find(Boolean);
-        for (const site of player.sites) {
-            const id = site.catalogId;
-            if (id === 'set-1-091' && line) this.applyTemporaryForce(line, 1, `${site.name}`);
-            if (['set-1-093', 'set-2-082'].includes(id) && enemyLine) {
-                this.applyForceLoss(opponent, FRONT_NAMES.find(name =>
-                    opponent.fronts[name].line === enemyLine
-                ), 1, site.name, player);
-            }
-            if (id === 'set-1-108') {
-                const raptor = player.armyDeck.findIndex(card => /raptor/i.test(card.type || ''));
-                if (raptor >= 0) {
-                    const [card] = player.armyDeck.splice(raptor, 1);
-                    player.armyDeck.push(card);
-                    Logger.log(`${site.name}: ${card.name} cercata e messa in cima al mazzo.`);
-                }
-            }
-            if (id === 'set-2-079' && player.armyDeck.length) {
-                Logger.log(`${site.name}: prima carta del mazzo ${player.armyDeck.at(-1).name}.`);
-            }
-            if (id === 'set-2-090' || id === 'set-2-119') {
-                if (player.discard.length) player.armyDeck.unshift(player.discard.shift());
-            }
-            if (id === 'set-2-093') {
-                FRONT_NAMES.forEach(frontName => {
-                    if (opponent.fronts[frontName].line) {
-                        this.applyForceLoss(opponent, frontName, 1, site.name, player);
-                    }
-                });
-            }
-            if (id === 'set-2-100') {
-                const index = player.discard.findIndex(card =>
-                    card.keywords?.includes('Eco Spettrale')
-                );
-                if (index >= 0) player.hand.push(...player.discard.splice(index, 1));
-            }
-            if (id === 'set-3-081') {
-                const frontName = FRONT_NAMES.find(name =>
-                    player.fronts[name].line && (!player.fronts[name].supA || !player.fronts[name].supB)
-                );
-                if (frontName) {
-                    const front = player.fronts[frontName];
-                    createToken(player, frontName, front.supA ? 'supB' : 'supA');
-                }
-            }
-            if (id === 'set-3-084') {
-                Logger.log(`${site.name}: mano avversaria — ${opponent.hand.map(card => card.name).join(', ') || 'vuota'}.`);
-            }
-            if (id === 'set-3-092') {
-                const sourceName = FRONT_NAMES.find((name, index) => {
-                    const unit = opponent.fronts[name].line;
-                    return unit &&
-                        !isProtectedFromEnemyMovement(opponent, unit, name) &&
-                        [index - 1, index + 1].some(targetIndex =>
-                        FRONT_NAMES[targetIndex] && !opponent.fronts[FRONT_NAMES[targetIndex]].line
-                    );
-                });
-                if (sourceName) {
-                    const sourceIndex = FRONT_NAMES.indexOf(sourceName);
-                    const destinationIndex = [sourceIndex - 1, sourceIndex + 1].find(index =>
-                        FRONT_NAMES[index] && !opponent.fronts[FRONT_NAMES[index]].line
-                    );
-                    const unit = opponent.fronts[sourceName].line;
-                    opponent.fronts[sourceName].line = null;
-                    opponent.fronts[FRONT_NAMES[destinationIndex]].line = unit;
-                    unit.front = FRONT_NAMES[destinationIndex];
-                    this.onUnitMoved(opponent, unit, sourceName, FRONT_NAMES[destinationIndex], true);
-                }
-            }
-            if (id === 'set-3-102' && this.countCollective(player) >= 3) {
-                this.drawCards(player, 1, site.name);
-            }
-            if (id === 'set-3-104') {
-                FRONT_NAMES.forEach(frontName => {
-                    const front = player.fronts[frontName];
-                    if (!front.line && !front.supA && !front.supB) return;
-                    const slot = !front.supA ? 'supA' : !front.supB ? 'supB' : null;
-                    if (slot) createToken(player, frontName, slot);
-                });
-            }
-        }
-        const sunkenCities = GameState.players.flatMap(owner =>
-            (owner.sites || []).filter(site => site.catalogId === 'set-2-103')
-        );
-        for (const site of sunkenCities) {
-            if (!player.armyDeck.length) break;
-            const drawn = this.drawCards(player, 1, site.name);
-            if (!drawn) continue;
-            player.pc = Math.max(0, player.pc - 1);
-            Logger.log(`${player.name} perde 1 PC per ${site.name}.`);
-        }
-        if (player.field?.catalogId === 'set-1-120') {
-            const frontName = FRONT_NAMES.find(name => !player.fronts[name].supA || !player.fronts[name].supB);
-            if (frontName) {
-                const front = player.fronts[frontName];
-                createToken(player, frontName, front.supA ? 'supB' : 'supA', 'Pedina Raptor', 3);
-            }
-        }
-        if (player.field?.catalogId === 'set-3-120' &&
-            FRONT_NAMES.every(frontName => SLOT_NAMES.some(slot => player.fronts[frontName][slot]))) {
-            opponent.pc = Math.max(0, opponent.pc - 1);
-            Logger.log(`${player.field.name}: il Comandante avversario perde 1 PC.`);
-        }
-        if (player.field?.catalogId === 'set-2-119' && player.discard.length) {
-            player.armyDeck.unshift(player.discard.shift());
-        }
-    },
-
-    countCollective(player) {
-        return FRONT_NAMES.reduce((count, frontName) => count +
-            SLOT_NAMES.filter(slotName =>
-                player.fronts[frontName][slotName] &&
-                getUnitKeywords(player, player.fronts[frontName][slotName], frontName, slotName)
-                    .some(keyword => keyword.startsWith('Mente Collettiva'))
-            ).length, 0);
-    },
-
-    resolvePermanentCombatStart(playerIndex) {
-        for (let attackerIndex = 0; attackerIndex < 2; attackerIndex++) {
-            const player = GameState.players[attackerIndex];
-            const opponent = GameState.players[1 - attackerIndex];
-            for (const site of player.sites || []) {
-                if (site.catalogId === 'set-1-099') {
-                    const frontName = FRONT_NAMES.find(name => opponent.fronts[name].line);
-                    if (frontName) this.applyForceLoss(opponent, frontName, 1, site.name, player);
-                }
-            }
-            if (player.field?.catalogId === 'set-3-116') {
-                for (const frontName of FRONT_NAMES) {
-                    const count = SLOT_NAMES.filter(slot =>
-                        player.fronts[frontName][slot] &&
-                        getUnitKeywords(player, player.fronts[frontName][slot], frontName, slot)
-                            .some(keyword => keyword.startsWith('Mente Collettiva'))
-                    ).length;
-                    if (count && opponent.fronts[frontName].line) {
-                        this.applyForceLoss(opponent, frontName, Math.min(2, count), player.field.name, player);
-                    }
-                }
-            }
-        }
-    },
-
-    applyTemporaryForce(unit, modifier, source) {
-        const previous = unit.currentForce;
-        unit.currentForce = Math.max(0, unit.currentForce + modifier);
-        const applied = unit.currentForce - previous;
-        unit.temporaryForce = (unit.temporaryForce || 0) + applied;
-        if (applied < 0) unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) - applied;
-        Logger.log(`${source}: ${unit.name} ${applied >= 0 ? 'ottiene' : 'perde'} ${Math.abs(applied)} Forza fino a fine turno.`);
-    },
-
-    applyForceLoss(owner, frontName, amount, source, sourcePlayer, triggerEquipment = true) {
-        const unit = owner.fronts[frontName]?.line;
-        if (!unit) return;
-        const applied = Math.min(amount, Math.max(0, unit.currentForce));
-        if (!applied) return;
-        unit.currentForce -= applied;
-        unit.temporaryForce = (unit.temporaryForce || 0) - applied;
-        unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) + applied;
-        Logger.log(`${source}: ${unit.name} perde ${applied} Forza.`);
-        CombatResolver.onForceLoss(owner, unit, applied, sourcePlayer, triggerEquipment);
-        if (unit.currentForce <= 0 && owner.fronts[frontName]?.line === unit) {
-            CombatResolver.removeUnit(owner, frontName, 'line', 'effect-destroy', sourcePlayer);
-        }
-    },
-
-    onUnitMoved(player, unit, sourceFront, targetFront, wasLine = false, usedSorvolo = false) {
-        this.onEquipmentPositionEntry(player, unit, unit.position);
-        if (usedSorvolo) this.resolveSorvoloEntryEffects(player, unit, targetFront);
-        if (!wasLine && unit.position === 'line') {
-            this.applyCollectiveEntryBonus(player, unit, targetFront, unit.position);
-        }
-        if (wasLine) {
-            for (const fieldOwner of GameState.players) {
-                if (fieldOwner.field?.catalogId !== 'set-3-117') continue;
-                if (unit.currentForce <= 0 ||
-                    player.fronts[targetFront][unit.position] !== unit) break;
-                const applied = Math.min(1, Math.max(0, unit.currentForce));
-                if (!applied) continue;
-                unit.currentForce -= applied;
-                unit.temporaryForce = (unit.temporaryForce || 0) - applied;
-                unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) + applied;
-                CombatResolver.onForceLoss(player, unit, applied, fieldOwner);
-                Logger.log(`${fieldOwner.field.name}: ${unit.name} perde ${applied} Forza.`);
-                if (unit.currentForce <= 0) {
-                    CombatResolver.removeUnit(player, targetFront, unit.position, 'effect-destroy', fieldOwner);
-                }
-            }
-        }
-        if (player.sites?.some(site => site.catalogId === 'set-3-085') &&
-            getUnitKeywords(player, unit, targetFront, unit.position).includes('Sorvolo')) {
-            const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
-            const frontName = FRONT_NAMES.find(name => enemy.fronts[name].line);
-            if (frontName) this.applyForceLoss(enemy, frontName, 1, 'Fenditura Dimensionale', player);
-        }
-        const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
-        if (wasLine && !player.fronts[sourceFront].line &&
-            enemy.field?.catalogId === 'set-1-117') {
-            player.pc = Math.max(0, player.pc - 1);
-            Logger.log(`${enemy.field.name}: ${player.name} perde 1 PC perché un Fronte diventa scoperto.`);
-            GameState.checkVictory();
-        }
-    },
-
-    resolveSorvoloEntryEffects(player, unit, targetFront) {
-        const opponent = GameState.players[1 - GameState.players.indexOf(player)];
-        for (const effect of getSorvoloEntryEffects(unit)) {
-            if (effect.type === 'boost-own-line') {
-                const line = player.fronts[targetFront].line;
-                if (!line) continue;
-                line.currentForce += effect.amount;
-                line.temporaryForce = (line.temporaryForce || 0) + effect.amount;
-            } else if (effect.type === 'damage-enemy-line-in-front') {
-                if (opponent.fronts[targetFront].line) {
-                    CombatResolver.damageLine(opponent, targetFront, effect.amount, player, true);
-                }
-            } else if (effect.type === 'add-opponent-parasite') {
-                this.addParasites(player, opponent, 1);
-            } else if (effect.type === 'weaken-enemy-line') {
-                const frontName = FRONT_NAMES.find(name => opponent.fronts[name].line);
-                if (frontName) {
-                    this.applyForceLoss(opponent, frontName, effect.amount, unit.name, player);
-                }
-            } else if (effect.type === 'destroy-weak-enemy-line') {
-                const frontName = FRONT_NAMES.find(name =>
-                    opponent.fronts[name].line?.currentForce <= effect.maximumForce
-                );
-                if (frontName) {
-                    CombatResolver.destroyUnit(opponent, frontName, 'line', 'effect-destroy');
-                }
-            }
-        }
-    },
-
     renderControls() {
         const setup = GameState.phase === 'setup';
         const playerTurn = GameState.currentIndex === 0 && !GameState.gameOver;
@@ -1101,7 +1152,14 @@ const UIRenderer = {
         commanderBtn.disabled = Boolean(GameState.players[0]?.commanderAbilityUsed) ||
             GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment ||
             GameState.pendingPromotion;
-        document.getElementById('btn-mulligan').hidden = !setup || GameState.mulliganUsed;
+        const mulliganBtn = document.getElementById('btn-mulligan');
+        mulliganBtn.hidden = !setup || GameState.mulliganUsed;
+        if (!mulliganBtn.hidden) {
+            const marked = GameState.mulliganMarks.size;
+            mulliganBtn.textContent = marked === 0
+                ? '🔁 MULLIGAN'
+                : `🔁 MULLIGAN (${marked} da rimpiazzare)`;
+        }
         document.getElementById('btn-start').hidden = !setup;
         document.getElementById('btn-principale').hidden = !playerTurn || GameState.phase !== 'rifornimento';
         document.getElementById('btn-attack').hidden = !playerTurn || GameState.phase !== 'principale';
@@ -1642,7 +1700,7 @@ const CombatResolver = {
             } else if (effect.type === 'draw-card') {
                 GameController.drawCards(sourcePlayer, 1, activeLine.name);
             } else if (effect.type === 'add-parasite') {
-                GameController.addParasites(sourcePlayer, owner, 1);
+                GameState.addParasites(sourcePlayer, owner, 1);
             } else if (effect.type === 'exile-from-discard') {
                 const discardOwner = [sourcePlayer, owner].find(candidate => candidate.discard.length);
                 if (discardOwner) {
@@ -1693,11 +1751,11 @@ const CombatResolver = {
                 enemy.fronts[FRONT_NAMES[targetIndex]].line = movedUnit;
                 movedUnit.front = FRONT_NAMES[targetIndex];
                 movedUnit.position = 'line';
-                GameController.onUnitMoved(enemy, movedUnit, movedFrom, FRONT_NAMES[targetIndex], true);
+                GameState.onUnitMoved(enemy, movedUnit, movedFrom, FRONT_NAMES[targetIndex], true);
                 Logger.log(`${sourcePlayer.sites.find(site => site.catalogId === 'set-3-100').name}: ${movedUnit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[targetIndex]]}.`);
             }
         }
-        if (equipmentId === 'set-3-108') this.addParasites(sourcePlayer, owner, 1);
+        if (equipmentId === 'set-3-108') GameState.addParasites(sourcePlayer, owner, 1);
         if (equipmentId === 'set-2-108') {
             const slot = ['supA', 'supB'].find(name => {
                 const unit = enemy.fronts[frontName][name];
@@ -1714,7 +1772,7 @@ const CombatResolver = {
                     enemy.fronts[destination.targetFront][destination.targetSlot] = moved;
                     moved.front = destination.targetFront;
                     moved.position = destination.targetSlot;
-                    GameController.onUnitMoved(
+                    GameState.onUnitMoved(
                         enemy,
                         moved,
                         frontName,
@@ -1737,7 +1795,7 @@ const CombatResolver = {
             (sourcePlayer.field?.catalogId === 'set-3-118' &&
                 getUnitKeywords(sourcePlayer, activeLine, frontName, 'line')
                     .some(keyword => keyword.startsWith('Mente Collettiva')))) {
-            this.drawCards(sourcePlayer, 1, sourcePlayer.field.name);
+            GameController.drawCards(sourcePlayer, 1, sourcePlayer.field.name);
         }
         if (sourcePlayer.sites?.some(site => site.catalogId === 'set-1-106') &&
             sourcePlayer.sites.find(site => site.catalogId === 'set-1-106').lastKillTurn !== GameState.turnNumber) {
@@ -1775,7 +1833,7 @@ const CombatResolver = {
                 unit.equipment?.catalogId === 'set-2-110') {
                 const targetPlayer = owner === GameState.players[0]
                     ? GameState.players[1] : GameState.players[0];
-                GameController.applyForceLoss(
+                GameState.applyForceLoss(
                     targetPlayer,
                     unit.front,
                     1,
@@ -1815,7 +1873,7 @@ const CombatResolver = {
         front[next] = next === 'supA' ? front.supB : null;
         if (next === 'supA') front.supB = null;
         if (front.supA) front.supA.position = 'supA';
-        GameController.onEquipmentPositionEntry(player, front.line, 'line');
+        GameState.onEquipmentPositionEntry(player, front.line, 'line');
         Logger.log(`${front.line.name} viene promosso a Linea.`);
     },
 
@@ -1967,16 +2025,38 @@ const GameController = {
         }
     },
 
-    mulligan() {
+    // §5.4: il Mulligan è parziale — si può rimpiazzare qualsiasi numero di carte
+    // (0 incluse). Le carte scelte vanno in fondo al mazzo e se ne pescano altrettante.
+    mulligan(selection) {
         if (GameState.phase !== 'setup' || GameState.mulliganUsed) return;
         const player = GameState.players[0];
-        player.armyDeck.push(...player.hand);
-        player.hand = [];
-        player.armyDeck = shuffled(player.armyDeck);
-        for (let i = 0; i < 5; i++) player.hand.push(player.armyDeck.pop());
+        const targets = Array.isArray(selection)
+            ? [...new Set(selection)].filter(index => Number.isInteger(index) && player.hand[index])
+            : player.hand
+                .map((card, index) => GameState.mulliganMarks.has(card.id) ? index : -1)
+                .filter(index => index >= 0);
+        const replaced = targets.map(index => player.hand[index]);
+        player.hand = player.hand.filter((_, index) => !targets.includes(index));
+        if (replaced.length > 0) {
+            player.armyDeck.unshift(...replaced);
+            for (let i = 0; i < replaced.length; i++) player.hand.push(player.armyDeck.pop());
+        }
         GameState.mulliganUsed = true;
-        Logger.log('Mulligan effettuato: 5 carte rimescolate e pescate.');
+        GameState.mulliganMarks = new Set();
+        Logger.log(replaced.length === 0
+            ? 'Mulligan saltato: nessuna carta rimpiazzata.'
+            : `Mulligan: ${replaced.length} carte in fondo al mazzo, altrettante pescate.`);
         UIRenderer.refresh();
+    },
+
+    // Marca/smarca una carta della mano come "da rimpiazzare" durante il Mulligan.
+    toggleMulliganMark(card) {
+        if (GameState.phase !== 'setup' || GameState.mulliganUsed) return;
+        const marks = GameState.mulliganMarks;
+        if (marks.has(card.id)) marks.delete(card.id);
+        else marks.add(card.id);
+        UIRenderer.renderHand();
+        UIRenderer.renderControls();
     },
 
     async startGame() {
@@ -2003,7 +2083,7 @@ const GameController = {
             }
         }
         player.domains.forEach(domain => { domain.tapped = false; });
-        this.resolvePermanentTurnStart(playerIndex);
+        GameState.resolvePermanentTurnStart(playerIndex);
         for (const siteOwner of GameState.players) {
             if (siteOwner.sites?.some(site => site.catalogId === 'set-1-110')) {
                 const unit = FRONT_NAMES.flatMap(frontName => SLOT_NAMES.map(slotName =>
@@ -2035,8 +2115,10 @@ const GameController = {
         }
         const domain = player.domainDeck.pop();
         if (domain) {
+            // §5: al Turno 1 il primo giocatore pesca sì 1 Dominio, ma entra ESAUSTO.
+            if (GameState.firstTurn) domain.tapped = true;
             player.domains.push(domain);
-            Logger.log(`${player.name} pesca un Dominio.`);
+            Logger.log(`${player.name} pesca un Dominio${GameState.firstTurn ? ' (esausto)' : ''}.`);
         }
         if (!GameState.firstTurn && player.armyDeck.length > 0) {
             player.hand.push(player.armyDeck.pop());
@@ -2430,7 +2512,7 @@ const GameController = {
             onForceLoss: (target, unit, amount) =>
                 CombatResolver.onForceLoss(target, unit, amount, player),
             onUnitPlayed: (owner, unit) => {
-                this.onUnitEntry(owner, unit, unit.front, unit.position, true);
+                GameState.onUnitEntry(owner, unit, unit.front, unit.position, true);
             },
             removeUnit: (target, frontName, slotName) =>
                 CombatResolver.removeUnit(target, frontName, slotName, 'sacrifice'),
@@ -2455,7 +2537,7 @@ const GameController = {
             );
             if (!player || !site) throw new Error('Il Sito Portale Silente non è più in gioco.');
             GameState.pendingTactic = null;
-            this.resolveSiteSupportMove(player, choice.value, site);
+            GameState.resolveSiteSupportMove(player, choice.value, site);
             UIRenderer.refresh();
             return;
         }
@@ -2500,7 +2582,7 @@ const GameController = {
         }
         if (pending.mode === 'active-site') {
             GameState.pendingTactic = null;
-            this.resolveSiteActivation(pending.card, choice.value);
+            GameState.resolveSiteActivation(pending.card, choice.value);
             return;
         }
         if (pending.mode === 'discard') {
@@ -2659,7 +2741,7 @@ const GameController = {
         GameState.selectedCard = null;
         GameState.selectedFromDiscard = false;
         Logger.log(`${unit.name} entra in ${FRONT_LABELS[frontName]} (${slotName === 'line' ? 'Linea' : 'Supporto'}).`);
-        this.onUnitEntry(player, unit, frontName, slotName, spectral);
+        GameState.onUnitEntry(player, unit, frontName, slotName, spectral);
         FX.play('play');
         UIRenderer.refresh();
     },
@@ -2710,7 +2792,7 @@ const GameController = {
         target[option.targetSlot] = option.unit;
         option.unit.front = option.targetFront;
         option.unit.position = option.targetSlot;
-        this.onUnitMoved(player, option.unit, option.frontName, option.targetFront,
+        GameState.onUnitMoved(player, option.unit, option.frontName, option.targetFront,
             option.slotName === 'line', true);
         GameState.sorvoloUsed.add(option.unit.id);
         Logger.log(`${option.unit.name} usa Sorvolo: entra in Supporto a ${FRONT_LABELS[option.targetFront]}.`);
@@ -2727,7 +2809,7 @@ const GameController = {
     async continueCombat() {
         GameState.pendingSorvolo = false;
         UIRenderer.renderControls();
-        this.resolvePermanentCombatStart(GameState.currentIndex);
+        GameState.resolvePermanentCombatStart(GameState.currentIndex);
         await CombatResolver.resolveAll();
         this.removeCombatBonuses();
         if (!GameState.gameOver) {
@@ -2831,7 +2913,7 @@ const GameController = {
                         onUnitPlayed: (owner, unit) => {
                             const frontName = unit.front;
                             const slotName = unit.position;
-                            this.onUnitEntry(owner, unit, frontName, slotName, true);
+                            GameState.onUnitEntry(owner, unit, frontName, slotName, true);
                         },
                         removeUnit: (target, frontName, slotName) =>
                             CombatResolver.removeUnit(target, frontName, slotName, 'sacrifice'),
@@ -2858,7 +2940,7 @@ const GameController = {
             unit.position = deployment.slotName;
             enemy.fronts[deployment.frontName][deployment.slotName] = unit;
             Logger.log(`Avversario gioca ${unit.name} in ${FRONT_LABELS[deployment.frontName]}.`);
-            this.onUnitEntry(enemy, unit, deployment.frontName, deployment.slotName);
+            GameState.onUnitEntry(enemy, unit, deployment.frontName, deployment.slotName);
         }
         if (GameState.gameOver) return;
         UIRenderer.refresh();
