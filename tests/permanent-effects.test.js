@@ -246,7 +246,3 @@ test('Unit Support abilities apply force reduction and damage prevention', () =>
     player.fronts.left.supA.catalogId = 'set-2-042';
     assert.equal(getDamageReduction(player, line, 'left', 'line'), 2);
 });
-
-function catalogId(unit) {
-    return unit?.catalogId;
-}
