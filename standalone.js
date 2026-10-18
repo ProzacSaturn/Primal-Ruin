@@ -12039,7 +12039,7 @@
 			const label = FRONT_LABELS$1[frontName];
 			const slotLabel = slotName === "line" ? "Linea" : `Supporto ${slotName === "supA" ? "A" : "B"}`;
 			if (!unit) {
-				element.textContent = "Vuoto";
+				element.textContent = slotLabel;
 				element.setAttribute("aria-label", `Fronte ${label}, ${slotLabel} ${side}: vuoto`);
 				element.setAttribute("role", "button");
 				element.tabIndex = prefix === "p" ? 0 : -1;
@@ -12096,6 +12096,13 @@
 				const hint = document.createElement("div");
 				hint.className = "hand-hint";
 				hint.textContent = "Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.";
+				area.appendChild(hint);
+			} else if (GameState.selectedCard?.category === "unit") {
+				const keywords = GameState.selectedCard.keywords || [];
+				const hint = document.createElement("div");
+				hint.className = "hand-hint";
+				if (keywords.includes("Assalto") || keywords.includes("Posizione Difensiva")) hint.textContent = "Questa Unità può entrare in Linea. Gli slot evidenziati sono legali.";
+				else hint.textContent = "Le Unità entrano in Supporto. Solo Assalto o Posizione Difensiva possono andare subito in Linea.";
 				area.appendChild(hint);
 			}
 			const renderCard = (card) => {
@@ -14440,6 +14447,37 @@
 		render();
 	}
 	//#endregion
+	//#region src/screens.js
+	const SCREENS = [
+		"intro",
+		"deck",
+		"match"
+	];
+	function screenId(name) {
+		if (name === "match") return "tavolo";
+		return `screen-${name}`;
+	}
+	function currentScreen() {
+		const hash = location.hash.replace(/^#/, "");
+		if (hash === "tavolo") return "match";
+		return SCREENS.includes(hash) ? hash : "intro";
+	}
+	function showScreen(name) {
+		const target = SCREENS.includes(name) ? name : "intro";
+		for (const screen of SCREENS) {
+			const element = document.getElementById(screenId(screen));
+			if (!element) continue;
+			element.hidden = screen !== target;
+		}
+		if (location.hash.replace(/^#/, "") !== target) history.replaceState(null, "", `#${target}`);
+		if (target === "match") document.getElementById("tavolo")?.focus({ preventScroll: true });
+		return target;
+	}
+	function initScreens() {
+		showScreen(currentScreen());
+		window.addEventListener("hashchange", () => showScreen(currentScreen()));
+	}
+	//#endregion
 	//#region src/main.js
 	if (window.__primalRuinBooted) {} else {
 		window.__primalRuinBooted = true;
@@ -14448,7 +14486,33 @@
 	function listen(id, type, handler) {
 		document.getElementById(id)?.addEventListener(type, handler);
 	}
+	function openArchive() {
+		showScreen("deck");
+		document.getElementById("card-library-title")?.scrollIntoView({
+			behavior: "smooth",
+			block: "start"
+		});
+		document.getElementById("library-search")?.focus();
+	}
+	function prepareUpdatedDeck() {
+		if (!GameController.useUpdatedDeck()) return;
+		showScreen("deck");
+		const roadmap = document.getElementById("roadmap-panel");
+		if (roadmap) roadmap.open = true;
+	}
+	function useDemoDecks() {
+		if (!GameController.useDemoDecks()) return;
+		document.dispatchEvent(new Event("primal-ruin:demo-decks"));
+		showScreen("match");
+	}
 	function boot() {
+		initScreens();
+		listen("btn-intro-deck", "click", () => showScreen("deck"));
+		listen("btn-intro-match", "click", () => showScreen("match"));
+		listen("btn-deck-intro", "click", () => showScreen("intro"));
+		listen("btn-deck-match", "click", () => showScreen("match"));
+		listen("btn-match-intro", "click", () => showScreen("intro"));
+		listen("btn-match-deck", "click", () => showScreen("deck"));
 		listen("btn-mulligan", "click", () => GameController.mulligan());
 		listen("btn-start", "click", () => GameController.startGame());
 		listen("btn-principale", "click", () => GameController.enterMainPhase());
@@ -14470,24 +14534,16 @@
 			GameController.choosePromotionSlot(document.getElementById("promotion-choice").value);
 		});
 		listen("btn-new-game", "click", () => {
-			if (window.confirm("Iniziare una nuova partita? La partita salvata verrà sostituita.")) GameController.newGame();
-		});
-		listen("btn-demo-decks", "click", () => {
-			if (GameController.useDemoDecks()) document.dispatchEvent(new Event("primal-ruin:demo-decks"));
-		});
-		listen("btn-updated-deck", "click", () => {
-			if (GameController.useUpdatedDeck()) {
-				const roadmap = document.getElementById("roadmap-panel");
-				if (roadmap) roadmap.open = true;
+			if (window.confirm("Iniziare una nuova partita? La partita salvata verrà sostituita.")) {
+				GameController.newGame();
+				showScreen("match");
 			}
 		});
-		listen("btn-open-archive", "click", () => {
-			document.getElementById("card-library-title")?.scrollIntoView({
-				behavior: "smooth",
-				block: "start"
-			});
-			document.getElementById("library-search")?.focus();
-		});
+		listen("btn-demo-decks", "click", () => useDemoDecks());
+		listen("btn-deck-demo", "click", () => useDemoDecks());
+		listen("btn-updated-deck", "click", () => prepareUpdatedDeck());
+		listen("btn-deck-updated", "click", () => prepareUpdatedDeck());
+		listen("btn-open-archive", "click", () => openArchive());
 		const commanderSelect = document.getElementById("player-commander-select");
 		if (commanderSelect) for (const commander of listCommanders()) {
 			const option = document.createElement("option");
@@ -14497,7 +14553,10 @@
 		}
 		initCardLibrary();
 		initSettings();
-		initDeckBuilder((cardIds) => GameController.resetWithDeck(cardIds));
+		initDeckBuilder((cardIds) => {
+			GameController.resetWithDeck(cardIds);
+			showScreen("match");
+		});
 		const fronts = [
 			"left",
 			"center",
