@@ -88,8 +88,8 @@ const GameState = {
 
     onEquipmentPositionEntry(player, unit, slotName) {
         const id = unit.equipment?.catalogId || unit.equipment?.id;
-        if (id === 'set-3-107' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
-        if (id === 'set-3-111' && slotName === 'line') {
+        if (id === 'set-3-083' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
+        if (id === 'set-3-087' && slotName === 'line') {
             const opponent = GameState.players[1 - GameState.players.indexOf(player)];
             const target = FRONT_NAMES.find(name => opponent.fronts[name].line);
             if (target) this.applyForceLoss(opponent, target, 1, unit.equipment.name, player);
@@ -268,7 +268,7 @@ const GameState = {
                 0,
                 targetPlayer.pc - count * parasiteSanctuaries.length
             );
-            if (owner.field?.catalogId === 'set-3-115') {
+            if (owner.field?.catalogId === 'set-3-114') {
                 targetPlayer.pc = Math.max(0, targetPlayer.pc - count);
             }
         }
@@ -612,7 +612,7 @@ const GameState = {
                     if (frontName) this.applyForceLoss(opponent, frontName, 1, site.name, player);
                 }
             }
-            if (player.field?.catalogId === 'set-3-116') {
+            if (player.field?.catalogId === 'set-3-115') {
                 for (const frontName of FRONT_NAMES) {
                     const count = SLOT_NAMES.filter(slot =>
                         player.fronts[frontName][slot] &&
@@ -659,7 +659,7 @@ const GameState = {
         }
         if (wasLine) {
             for (const fieldOwner of GameState.players) {
-                if (fieldOwner.field?.catalogId !== 'set-3-117') continue;
+                if (fieldOwner.field?.catalogId !== 'set-3-116') continue;
                 if (unit.currentForce <= 0 ||
                     player.fronts[targetFront][unit.position] !== unit) break;
                 const applied = Math.min(1, Math.max(0, unit.currentForce));

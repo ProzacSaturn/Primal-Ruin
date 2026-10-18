@@ -234,13 +234,13 @@ test('famiglia Equipaggiamento innescato: pesca, Parassita', async () => {
     );
     assert.equal(player.hand.length, hand + 1);
 
-    host.equipment = { catalogId: 'set-3-108', name: 'Lama' };
+    host.equipment = { catalogId: 'set-3-084', name: 'Lama Infiltratrice' };
     const destroyed = piece('set-1-007', { id: 'morta', position: 'line' });
     CombatResolver.onUnitRemoved(opponent, destroyed, 'left', 'combat-destroy', player);
     assert.equal(opponent.parasites, 1);
 
     player.armyDeck = [{ id: 'supporto-pesca', name: 'Pescata supporto', keywords: [] }];
-    host.equipment = { catalogId: 'set-3-107', name: 'Velo' };
+    host.equipment = { catalogId: 'set-3-083', name: 'Occhio della Collettività' };
     const beforeSupport = player.hand.length;
     GameState.onEquipmentPositionEntry(player, host, 'supA');
     assert.equal(player.hand.length, beforeSupport + 1);
@@ -251,7 +251,7 @@ test('famiglia Equipaggiamento innescato: pesca, Parassita', async () => {
     opponent.fronts.center.line = piece('set-1-007', {
         id: 'artiglio', currentForce: 4, force: 4, keywords: []
     });
-    host.equipment = { catalogId: 'set-3-111', name: 'Artiglio' };
+    host.equipment = { catalogId: 'set-3-087', name: 'Catene Parassitarie' };
     GameState.onEquipmentPositionEntry(player, host, 'line');
     assert.equal(opponent.fronts.center.line.currentForce, 3);
 

@@ -94,6 +94,16 @@
                 <button class="btn" id="builder-save" type="button" disabled>Salva mazzo</button>
                 <button class="btn btn-draw" id="builder-use" type="button" disabled>Avvia con questo mazzo</button>
             </details>
+            <details class="roadmap-panel" id="roadmap-panel">
+                <summary>Percorso interno</summary>
+                <p>Questa è la fetta già giocabile da questo tavolo. Il registro completo sta in <code>ROADMAP.md</code>.</p>
+                <ol>
+                    <li>Regole di nucleo, Ritirata, Purga e finestra di reazione: già in partita.</li>
+                    <li>Equipaggiamenti del Risveglio Infernale (79-90) e dell’Invasione Silente (81-88), Mausoleo, Ncrospira, Città, Spira, Abisso, Velo, Era e i Campi 112-116: sul testo stampato.</li>
+                    <li>Poi: Siti e Campi ancora parziali, Unità il cui testo è una keyword già nota, le 26 Tattiche del set 4. Il 2 contro 2 resta fuori.</li>
+                </ol>
+                <p>Apri l’archivio per leggere la carta. «Gioca la parte aggiornata» prepara un mazzo con queste carte e resta in preparazione.</p>
+            </details>
             <details class="settings-panel">
                 <summary>Impostazioni</summary>
                 <label><input id="settings-audio" type="checkbox"> Audio</label>
@@ -123,7 +133,7 @@
                 </select>
                 <label for="player-commander-select">Il tuo Comandante</label>
                 <select id="player-commander-select"></select>
-                <p>Ogni mazzo demo contiene 40 Unità distinte del set selezionato. Usa il deck builder per una lista personalizzata.</p>
+                <p>Ogni mazzo demo ha 22 Unità, 12 Tattiche, 4 Equipaggiamenti, 1 Sito e 1 Campo del set selezionato. Usa il deck builder per una lista personalizzata, oppure gioca la parte aggiornata.</p>
             </div>
             <div class="commander" id="player-commander">
                 <div class="commander-name" id="player-commander-name">IL TUO COMANDANTE</div>
@@ -180,6 +190,8 @@
                 <button class="btn btn-end-turn" id="btn-sacrifice-end" hidden>✅ CONFERMA SACRIFICI</button>
                 <button class="btn" id="btn-new-game" type="button">↻ NUOVA PARTITA</button>
                 <button class="btn" id="btn-demo-decks" type="button">MAZZI DEMO</button>
+                <button class="btn" id="btn-updated-deck" type="button">GIOCA PARTE AGGIORNATA</button>
+                <button class="btn" id="btn-open-archive" type="button">APRI ARCHIVIO</button>
                 <div class="sorvolo-panel" id="sorvolo-panel" hidden>
                     <label for="sorvolo-choice">Scegli lo spostamento Sorvolo:</label>
                     <select id="sorvolo-choice"></select>

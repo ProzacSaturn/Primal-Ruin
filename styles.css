@@ -66,18 +66,22 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
 }
 .turn-status span { color: #ddd; font-size: 0.85em; }
 .save-status { color: #aab; text-align: right; font-size: 0.72em; }
-.deck-builder, .settings-panel {
+.deck-builder, .settings-panel, .roadmap-panel {
     border: 2px solid #4a4a7a;
     background: rgba(0, 0, 0, 0.35);
     padding: 10px;
 }
-.deck-builder summary, .settings-panel summary {
+.deck-builder summary, .settings-panel summary, .roadmap-panel summary {
     color: #05d9e8;
     cursor: pointer;
     font-weight: bold;
     padding: 4px;
 }
-.deck-builder > p { color: #bbb; font-size: 0.82em; line-height: 1.5; margin: 10px 0; }
+.deck-builder > p, .roadmap-panel > p, .roadmap-panel li {
+    color: #bbb; font-size: 0.82em; line-height: 1.5; margin: 10px 0;
+}
+.roadmap-panel ol { margin: 8px 0 8px 18px; }
+.roadmap-panel code { color: #f5d300; }
 .builder-filters, .settings-panel {
     display: flex;
     align-items: center;

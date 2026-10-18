@@ -516,7 +516,7 @@ const CombatResolver = {
                 Logger.log(`${sourcePlayer.sites.find(site => site.catalogId === 'set-3-108').name}: ${movedUnit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[targetIndex]]}.`);
             }
         }
-        if (equipmentId === 'set-3-108') GameState.addParasites(sourcePlayer, owner, 1);
+        if (equipmentId === 'set-3-084') GameState.addParasites(sourcePlayer, owner, 1);
         if (sourcePlayer.sites?.some(site => site.catalogId === 'set-2-102')) {
             const index = owner.discard.findIndex(card => card.id === unit.id);
             if (index >= 0) {

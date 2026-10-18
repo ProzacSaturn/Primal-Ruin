@@ -40,14 +40,14 @@ export const registeredEquipmentIds = new Set([
     'set-2-088',
     'set-2-089',
     'set-2-090',
-    'set-3-105',
-    'set-3-106',
-    'set-3-107',
-    'set-3-108',
-    'set-3-109',
-    'set-3-110',
-    'set-3-111',
-    'set-3-112'
+    'set-3-081',
+    'set-3-082',
+    'set-3-083',
+    'set-3-084',
+    'set-3-085',
+    'set-3-086',
+    'set-3-087',
+    'set-3-088'
 ]);
 
 export const registeredSiteIds = new Set([
@@ -63,6 +63,7 @@ export const registeredSiteIds = new Set([
 export const registeredFieldIds = new Set([
     ...Array.from({ length: 10 }, (_, index) => `set-1-${String(index + 111).padStart(3, '0')}`),
     ...Array.from({ length: 8 }, (_, index) => `set-2-${String(index + 113).padStart(3, '0')}`),
+    'set-3-112',
     ...Array.from({ length: 8 }, (_, index) => `set-3-${String(index + 113).padStart(3, '0')}`)
 ]);
 

@@ -1,3 +1,4 @@
+import { UPDATED_MATCH_DECK } from '../deck-composition.js';
 import { clearCustomDeck } from '../deck-builder.js';
 import { playerUnits } from '../permanent-effects.js';
 import { clearGameSave, loadGameSave, persistGame } from '../save-store.js';
@@ -64,6 +65,25 @@ const matchMethods = {
         } catch (error) {
             Logger.log(`Impossibile passare ai mazzi demo: ${error.message}`);
             console.error('Impossibile passare ai mazzi demo.', error);
+            return false;
+        }
+    },
+
+    useUpdatedDeck() {
+        if (GameState.phase !== 'setup' &&
+            !window.confirm('Passare al mazzo della parte aggiornata e preparare una nuova partita?')) {
+            return false;
+        }
+        try {
+            clearGameSave();
+            GameState.reset(UPDATED_MATCH_DECK);
+            document.getElementById('game-result').hidden = true;
+            UIRenderer.refresh();
+            Logger.log('Mazzo della parte aggiornata pronto. Puoi fare Mulligan e iniziare.');
+            return true;
+        } catch (error) {
+            Logger.log(`Impossibile preparare il mazzo aggiornato: ${error.message}`);
+            console.error('Impossibile preparare il mazzo aggiornato.', error);
             return false;
         }
     },

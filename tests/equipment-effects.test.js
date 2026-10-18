@@ -47,8 +47,8 @@ test('all static Equipment force bonuses resolve from their equipped position', 
         ['set-2-088', 3],
         ['set-2-089', 2],
         ['set-2-090', 3],
-        ['set-3-109', 2],
-        ['set-3-112', 2]
+        ['set-3-085', 2],
+        ['set-3-088', 2]
     ]);
 
     const opponent = {
@@ -77,7 +77,7 @@ test('all static Equipment force bonuses resolve from their equipped position', 
             player.fronts.left.supA = { keywords: [], equipment: null };
             player.fronts.left.supB = { keywords: [], equipment: null };
         }
-        if (cardId === 'set-3-109' || cardId === 'set-3-112') {
+        if (cardId === 'set-3-085' || cardId === 'set-3-088') {
             player.fronts.left.supA = {
                 keywords: ['Mente Collettiva'],
                 equipment: null
@@ -122,8 +122,8 @@ test('Equipment-granted keywords are included in the equipped Unit keyword set',
         ['set-2-089', 'Eco Spettrale'],
         ['set-2-090', 'Logorare (1)'],
         ['set-2-090', 'Ascensione'],
-        ['set-3-105', 'Logorare (1)'],
-        ['set-3-110', 'Sorvolo']
+        ['set-3-081', 'Logorare (1)'],
+        ['set-3-086', 'Sorvolo']
     ];
 
     for (const [cardId, keyword] of expectedKeywords) {
@@ -182,7 +182,7 @@ test('all Equipment damage-reduction values match their printed text', () => {
         ['set-1-085', 2],
         ['set-2-080', 1],
         ['set-2-086', 2],
-        ['set-3-106', 1]
+        ['set-3-082', 1]
     ]);
 
     for (const [cardId, reduction] of expectedReductions) {

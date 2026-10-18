@@ -190,8 +190,8 @@ test('famiglia bonus di Forza e keyword da Unità, Siti e Campi', () => {
         ['set-1-118', card('set-1-007'), 1, 'line'],
         ['set-2-113', card('set-2-025', { keywords: ['Logorare (1)'] }), 1, 'line'],
         ['set-2-120', card('set-2-025', { keywords: ['Logorare (1)'] }), 2, 'line'],
-        ['set-3-113', card('set-3-001', { keywords: ['Mente Collettiva'] }), 1, 'line'],
-        ['set-3-114', card('set-1-007', { keywords: ['Sorvolo'] }), 1, 'line']
+        ['set-3-112', card('set-3-001', { keywords: ['Mente Collettiva'] }), 1, 'line'],
+        ['set-3-113', card('set-1-007', { keywords: ['Sorvolo'] }), 1, 'line']
     ];
     for (const [id, unit, expected] of fieldCases) {
         const player = board();
@@ -429,7 +429,7 @@ test('famiglia attivazione Siti e abilità di Scontro', () => {
     assert.equal(GameState.players[1].fronts.right.line.currentForce, 3);
 
     prepare();
-    GameState.players[0].field = permanent('set-3-116');
+    GameState.players[0].field = permanent('set-3-115');
     GameState.players[0].fronts.left.line = card('set-3-001', { keywords: ['Mente Collettiva'] });
     GameState.players[0].fronts.left.supA = card('set-3-001', { id: 'b', keywords: ['Mente Collettiva'] });
     GameState.players[1].fronts.left.line = card('set-1-007', { currentForce: 4, force: 4 });
@@ -592,7 +592,7 @@ test('famiglia movimento, schieramento e limite tattiche', async () => {
     assert.equal(opponent.fronts.left.line.currentForce, 2);
 
     prepare();
-    opponent.field = permanent('set-3-117');
+    opponent.field = permanent('set-3-116');
     const moved = card('set-1-007', { position: 'line', currentForce: 3, force: 3 });
     player.fronts.center.line = moved;
     GameState.onUnitMoved(player, moved, 'left', 'center', true);
@@ -655,7 +655,7 @@ test('famiglia Parassiti da Sito e Campo', () => {
     assert.equal(GameState.players[0].pc, 18);
 
     prepare();
-    GameState.players[0].field = permanent('set-3-115');
+    GameState.players[0].field = permanent('set-3-114');
     GameState.addParasites(GameState.players[0], GameState.players[1], 1);
     assert.equal(GameState.players[1].pc, 19);
 });

@@ -35,6 +35,15 @@ document.getElementById('btn-demo-decks').addEventListener('click', () => {
         document.dispatchEvent(new Event('primal-ruin:demo-decks'));
     }
 });
+document.getElementById('btn-updated-deck').addEventListener('click', () => {
+    if (GameController.useUpdatedDeck()) {
+        document.getElementById('roadmap-panel').open = true;
+    }
+});
+document.getElementById('btn-open-archive').addEventListener('click', () => {
+    document.getElementById('card-library-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('library-search').focus();
+});
 const commanderSelect = document.getElementById('player-commander-select');
 for (const commander of listCommanders()) {
     const option = document.createElement('option');

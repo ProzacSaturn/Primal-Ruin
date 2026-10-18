@@ -126,3 +126,19 @@ test('archivio e salvataggio mostrano gli errori di interfaccia già previsti', 
         'Salvataggio non riuscito: quota di prova'
     );
 });
+
+test('la roadmap si apre e la parte aggiornata si prepara dal tavolo', async ({ page }) => {
+    const roadmap = page.locator('#roadmap-panel');
+    await expect(roadmap).toHaveJSProperty('open', false);
+    await roadmap.locator('summary').click();
+    await expect(roadmap).toContainText('Equipaggiamenti');
+    await expect(page.locator('#deck-selection')).toContainText('22 Unità, 12 Tattiche');
+
+    await page.locator('#btn-open-archive').click();
+    await expect(page.locator('#library-search')).toBeFocused();
+
+    await page.locator('#btn-updated-deck').click();
+    await expect(page.locator('#log')).toContainText('Mazzo della parte aggiornata pronto');
+    await expect(page.locator('#phase-label')).toHaveText('PREPARAZIONE');
+    await expect(roadmap).toHaveJSProperty('open', true);
+});
