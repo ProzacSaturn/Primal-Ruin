@@ -1,6 +1,7 @@
 import { calculateCardCost, markCardCostDiscountUsed } from '../card-costs.js';
 import { isImmediateTacticSupported } from '../card-effects.js';
 import { checkDeployment } from '../game-rules.js';
+import { tacticTiming } from '../tactics.js';
 import { createToken, getUnitKeywords } from '../permanent-effects.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
 import { FX } from './fx.js';
@@ -13,7 +14,7 @@ const playMethods = {
         if (GameState.reactionWindow?.playerIndex === 0) {
             if (GameState.pendingTactic || GameState.sacrifice || GameState.pendingTorment ||
                 GameState.pendingPromotion) return;
-            if (!isImmediateTacticSupported(card)) {
+            if (!isImmediateTacticSupported(card) || tacticTiming(card) === 'standard') {
                 Logger.log(`${card.name}: in questa finestra puoi giocare solo una Tattica Istantanea.`);
                 return;
             }
@@ -32,6 +33,10 @@ const playMethods = {
                 return;
             }
             if (isImmediateTacticSupported(card)) {
+                if (tacticTiming(card) === 'instant') {
+                    Logger.log(`${card.name}: è una Tattica Istantanea e si gioca nella finestra di reazione.`);
+                    return;
+                }
                 this.playImmediateTactic(card);
                 return;
             }

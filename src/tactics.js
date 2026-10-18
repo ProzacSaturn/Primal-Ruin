@@ -122,6 +122,16 @@ export function tacticRequiresChoice(card) {
     return TACTICS_REQUIRING_CHOICE.has(idOf(card));
 }
 
+// I file in sets/ non stampano la velocità. Si legge solo se il testo della
+// carta dice Istantanea/Reazione oppure Standard. Altrimenti la velocità è assente.
+export function tacticTiming(card) {
+    const text = `${card?.name || ''} ${card?.type || ''} ${card?.rulesText || ''}`;
+    const instant = /\bistantane\w*\b|\breazion\w*\b/i.test(text);
+    const standard = /\bstandard\b/i.test(text);
+    if (instant === standard) return null;
+    return instant ? 'instant' : 'standard';
+}
+
 function anyLineChoices(player, opponent) {
     return [
         ...lineChoices(player, 'Tua Linea', 'player'),

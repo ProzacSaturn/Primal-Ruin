@@ -7,6 +7,7 @@ import { installHeadlessEnvironment } from './helpers/headless-env.js';
 import { validateDeckIds } from '../src/deck-validation.js';
 import { applyTemporaryForce } from '../src/card-effects.js';
 import { calculateUnitCombatStrength } from '../src/game-rules.js';
+import { tacticTiming } from '../src/tactics.js';
 import catalog from '../src/data/cards.json' with { type: 'json' };
 
 const env = installHeadlessEnvironment({ seed: 1 });
@@ -622,6 +623,57 @@ test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', async ()
     assert.equal(GameState.reactionWindow, null);
     assert.equal(player.fronts.left.line.currentForce, 1);
     assert.equal(opponent.fronts.left.line.currentForce, 1);
+});
+
+test('la velocità della Tattica si legge solo se il testo la stampa', async () => {
+    const printed = catalog.cards.filter(card => card.category === 'tactic');
+    assert.ok(printed.length > 0);
+    assert.ok(printed.every(card => tacticTiming(card) === null));
+
+    fresh();
+    clearFronts();
+    const source = catalog.cards.find(item => item.id === 'set-1-067');
+    const instant = {
+        ...source,
+        id: 'velo',
+        catalogId: 'set-1-067',
+        keywords: [],
+        rulesText: `${source.rulesText} Tattica Istantanea.`
+    };
+    const standard = {
+        ...source,
+        id: 'piano',
+        catalogId: 'set-1-067',
+        keywords: [],
+        rulesText: `${source.rulesText} Tattica Standard.`
+    };
+    assert.equal(tacticTiming(instant), 'instant');
+    assert.equal(tacticTiming(standard), 'standard');
+
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const player = GameState.players[0];
+    player.hand = [instant];
+    GameController.selectCard(instant);
+    assert.equal(player.hand.some(card => card.id === 'velo'), true);
+
+    player.hand = [standard];
+    GameController.selectCard(standard);
+    assert.equal(player.hand.some(card => card.id === 'piano'), false);
+
+    fresh();
+    clearFronts();
+    GameState.phase = 'scontro';
+    GameState.currentIndex = 0;
+    const standardAgain = { ...standard };
+    GameState.players[0].hand = [standardAgain];
+    GameState.players[1].hand = [];
+    GameState.players[0].fronts.left.line = unit(2, { id: 'att', name: 'Att' });
+    GameState.players[1].fronts.left.line = unit(2, { id: 'def', name: 'Def' });
+    const pending = CombatResolver.resolveAll();
+    assert.equal(GameState.reactionWindow, null);
+    assert.equal(GameState.players[0].hand.some(card => card.id === 'piano'), true);
+    await pending;
 });
 
 test('Guerra a Squadre 2v2', {

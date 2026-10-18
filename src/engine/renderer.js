@@ -4,6 +4,7 @@ import { checkDeployment } from '../game-rules.js';
 import { getUnitKeywords } from '../permanent-effects.js';
 import { drawCardPixelArt } from '../pixel-art.js';
 import { persistGame } from '../save-store.js';
+import { tacticTiming } from '../tactics.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
 import { GameController } from './controller.js';
 import { GameState } from './state.js';
@@ -174,7 +175,7 @@ const UIRenderer = {
             element.disabled = mulliganSetup ? false : reaction
                 ? Boolean(GameState.pendingTactic || GameState.sacrifice ||
                     GameState.pendingTorment || GameState.pendingPromotion) ||
-                    !isImmediateTacticSupported(card)
+                    !isImmediateTacticSupported(card) || tacticTiming(card) === 'standard'
                 : GameState.currentIndex !== 0 ||
                 GameState.phase !== 'principale' ||
                 GameState.sacrifice !== null || GameState.pendingTorment !== null ||

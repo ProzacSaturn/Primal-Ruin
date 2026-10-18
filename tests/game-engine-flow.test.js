@@ -223,7 +223,7 @@ test('un salvataggio illeggibile viene ignorato', () => {
 
 // DV-7bis — criterio di qualità "migrazioni dei salvataggi": un salvataggio di
 // una versione precedente viene MIGRATO, non scartato.
-test('un salvataggio di versione precedente viene migrato', { todo: 'DV-7bis: src/save-store.js:43 scarta se version !== 3' }, async () => {
+test('un salvataggio di versione precedente viene migrato', async () => {
     freshGame();
 
     await GameController.beginTurn(0);
@@ -231,7 +231,13 @@ test('un salvataggio di versione precedente viene migrato', { todo: 'DV-7bis: sr
     const save = JSON.parse(env.storage.getItem(SAVE_KEY));
     env.storage.setItem(SAVE_KEY, JSON.stringify({ ...save, version: 2 }));
 
-    assert.ok(loadGameSave(), 'il salvataggio v2 dovrebbe essere migrato');
+    const recovered = loadGameSave();
+    assert.ok(recovered, 'il salvataggio v2 dovrebbe essere migrato');
+    assert.equal(recovered.turnNumber, save.snapshot.turnNumber);
+    assert.equal(recovered.players[0].hand.length, save.snapshot.players[0].hand.length);
+    const upgraded = JSON.parse(env.storage.getItem(SAVE_KEY));
+    assert.equal(upgraded.version, 3);
+    assert.equal(upgraded.migratedFrom, 2);
 });
 
 test('snapshot e restore ricostruiscono lo stato della partita', async () => {

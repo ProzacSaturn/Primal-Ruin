@@ -5,7 +5,7 @@ import {
 } from '../card-effects.js';
 import { markCardCostDiscountUsed } from '../card-costs.js';
 import { checkDeployment } from '../game-rules.js';
-import { tacticRequiresChoice } from '../tactics.js';
+import { tacticRequiresChoice, tacticTiming } from '../tactics.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
 import { CombatResolver } from './combat.js';
 import { Logger } from './logger.js';
@@ -57,7 +57,7 @@ const combatMethods = {
     },
 
     canPlayInstant(player, opponent, card) {
-        if (!isImmediateTacticSupported(card)) return false;
+        if (!isImmediateTacticSupported(card) || tacticTiming(card) === 'standard') return false;
         const siteTacticLimit = GameState.players.some(owner =>
             owner.sites?.some(site => site.catalogId === 'set-2-095')
         );
@@ -179,6 +179,7 @@ const combatMethods = {
                 .filter(({ card }) => {
                     if (card.category !== 'unit' && !isImmediateTacticSupported(card)) return false;
                     if (card.category === 'tactic') {
+                        if (tacticTiming(card) === 'instant') return false;
                         const siteTacticLimit = GameState.players.some(owner =>
                             owner.sites?.some(site => site.catalogId === 'set-2-095')
                         );

@@ -51,8 +51,8 @@ Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 4. L’Equipaggiamento di un’Unità distrutta va negli scarti come carta a sé. Fatto: viene staccato quando l’Unità lascia il campo, anche se l’Unità viene esiliata.
 5. Ritirata e Rimpiazzo: azione vera, non solo un nome. Fatto: in Fase Principale, 1 Dominio attivo scarta un tuo Supporto e libera lo slot.
 6. Purga dei Parassiti pagata con 2 Domini. Fatto: in Fase Principale, 2 Domini attivi tolgono 1 Parassita dal tuo Comandante. La rimozione automatica a inizio turno resta un’altra regola.
-7. Finestra di reazione: le Tattiche Istantanee durante lo Scontro, un Fronte alla volta. Fatto: prima della Forza, il giocatore di turno e poi l’altro possono giocare una Tattica che il motore sa risolvere. Il passaggio chiude la propria parte di finestra.
-8. Un salvataggio di versione precedente viene migrato, non buttato (`DV-7bis`).
+7. Finestra di reazione: le Tattiche Istantanee durante lo Scontro, un Fronte alla volta. Fatto: prima della Forza, il giocatore di turno e poi l’altro possono giocare. Il passaggio chiude la propria parte di finestra. La velocità si legge solo se il testo stampa «Istantanea/Reazione» o «Standard»; i file in `sets/` oggi non la stampano, quindi una Tattica senza quella parola resta giocabile in Fase Principale e nella finestra.
+8. Un salvataggio di versione precedente viene migrato, non buttato (`DV-7bis`). Fatto: una busta valida più vecchia della versione 3 viene riletta e riscritta come versione 3.
 
 ### B. Effetti già nominati
 
