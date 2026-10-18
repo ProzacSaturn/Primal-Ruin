@@ -7,6 +7,7 @@
         "dev": "vite",
         "build": "vite build",
         "standalone": "rolldown src/main.js --format iife --file standalone.js --platform browser --name PrimalRuin",
+        "play": "node scripts/play-standalone.mjs",
         "preview": "vite preview",
         "cards:import": "node scripts/import-cards.mjs",
         "cards:coverage": "node scripts/card-effect-coverage.mjs",
