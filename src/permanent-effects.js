@@ -191,19 +191,23 @@ export function getDamageReduction(player, unit, frontName, slotName) {
     return reduction;
 }
 
+function ownSupport(unit) {
+    return Boolean(unit) && !unit.infiltrated;
+}
+
 export function getSupportBonus(player, frontName) {
     const front = player.fronts[frontName];
-    let total = Number(Boolean(front.supA)) + Number(Boolean(front.supB));
+    let total = Number(ownSupport(front.supA)) + Number(ownSupport(front.supB));
     const supportEnhancers = ['set-1-030', 'set-1-049', 'set-3-046'];
     const frontHasEnhancer = frontHasUnit(player, frontName, supportEnhancers);
     const extraSupportSites = (player.sites || []).filter(site =>
         ['set-1-101', 'set-3-096'].includes(cardId(site))
     ).length;
     total += extraSupportSites *
-        (Number(Boolean(front.supA)) + Number(Boolean(front.supB)));
+        (Number(ownSupport(front.supA)) + Number(ownSupport(front.supB)));
     for (const slot of ['supA', 'supB']) {
         const unit = front[slot];
-        if (!unit) continue;
+        if (!ownSupport(unit)) continue;
         if (hasUnitCard(unit, ['set-1-009', 'set-1-043', 'set-3-009']) ||
             cardId(unit.equipment) === 'set-1-082' ||
             frontHasEnhancer ||

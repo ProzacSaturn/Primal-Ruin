@@ -138,10 +138,12 @@ export function hasSeminatoreSilente(units) {
 }
 
 export function isProtectedFromEffectDestruction(unit, slotName) {
+    if (unit?.keywords?.includes('Divinità')) return true;
     return cardId(unit) === 'set-1-057' && slotName === 'line';
 }
 
 export function isProtectedFromEnemyTactic(unit, slotName, tacticCost) {
+    if (unit?.keywords?.includes('Divinità')) return true;
     return slotName === 'line' &&
         (cardId(unit) === 'set-1-051' ||
             (cardId(unit) === 'set-3-032' && tacticCost === 1));

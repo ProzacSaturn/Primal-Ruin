@@ -241,7 +241,7 @@ const playMethods = {
         const alreadySelected = GameState.selectedCard?.id === card.id && GameState.selectedFromDiscard;
         GameState.selectedCard = alreadySelected ? null : card;
         GameState.selectedFromDiscard = !alreadySelected;
-        if (GameState.selectedCard) Logger.log(`${card.name} dagli scarti: costa 1 Dominio aggiuntivo.`);
+        if (GameState.selectedCard) Logger.log(`${card.name} selezionata dagli scarti.`);
         UIRenderer.renderHand();
         UIRenderer.updateBoardInteractivity();
     },
@@ -300,20 +300,13 @@ const playMethods = {
         if (!deployment.legal) return;
         const available = player.domains.filter(domain => !domain.tapped);
         const spectral = GameState.selectedFromDiscard && card.keywords.includes('Eco Spettrale');
-        const ascension = card.keywords.find(keyword => keyword.startsWith('Ascensione'));
-        const echoCost = ascension ? Number(ascension.match(/\((\d+)\)/)?.[1] || 0) : 0;
         const cost = this.getCardCost(player, card, spectral);
         if (available.length < cost) {
             Logger.log(`Domini insufficienti: servono ${cost}, ne hai ${available.length} attivi.`);
             return;
         }
-        if (player.echo < echoCost) {
-            Logger.log(`Echo insufficienti: servono ${echoCost}, ne hai ${player.echo}.`);
-            return;
-        }
         available.slice(0, cost).forEach(domain => { domain.tapped = true; });
         markCardCostDiscountUsed(player, card, GameState.turnNumber, spectral);
-        player.echo -= echoCost;
         if (deployment.assaultSwap) {
             const openSupport = front.supA === null ? 'supA' : 'supB';
             front[openSupport] = front.line;
@@ -336,6 +329,48 @@ const playMethods = {
         GameState.selectedFromDiscard = false;
         Logger.log(`${unit.name} entra in ${FRONT_LABELS[frontName]} (${slotName === 'line' ? 'Linea' : 'Supporto'}).`);
         GameState.onUnitEntry(player, unit, frontName, slotName, spectral);
+        FX.play('play');
+        UIRenderer.refresh();
+    },
+
+    playInfiltratedUnit(frontName, slotName) {
+        if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.sacrifice) return;
+        if (slotName !== 'supA' && slotName !== 'supB') return;
+        const card = GameState.selectedCard;
+        if (!card?.keywords?.some(keyword => keyword.startsWith('Infiltrazione'))) return;
+        const player = GameState.players[0];
+        const opponent = GameState.players[1];
+        const front = opponent.fronts[frontName];
+        if (!front || front.line || front[slotName]) {
+            Logger.log('Infiltrazione: il Fronte avversario deve essere scoperto e il Supporto libero.');
+            return;
+        }
+        const available = player.domains.filter(domain => !domain.tapped);
+        const cost = this.getCardCost(player, card, false);
+        if (available.length < cost) {
+            Logger.log(`Domini insufficienti: servono ${cost}, ne hai ${available.length} attivi.`);
+            return;
+        }
+        available.slice(0, cost).forEach(domain => { domain.tapped = true; });
+        markCardCostDiscountUsed(player, card, GameState.turnNumber, false);
+        if (GameState.selectedFromDiscard) {
+            const index = player.discard.findIndex(unit => unit.id === card.id);
+            if (index >= 0) player.discard.splice(index, 1);
+        } else {
+            const index = player.hand.findIndex(unit => unit.id === card.id);
+            if (index >= 0) player.hand.splice(index, 1);
+        }
+        const unit = card;
+        unit.currentForce = unit.force;
+        unit.front = frontName;
+        unit.position = slotName;
+        unit.infiltrated = true;
+        unit.owner = player.id;
+        front[slotName] = unit;
+        GameState.selectedCard = null;
+        GameState.selectedFromDiscard = false;
+        Logger.log(`${unit.name} si infiltra nel Fronte di ${FRONT_LABELS[frontName]}.`);
+        GameState.onUnitEntry(player, unit, frontName, slotName, false);
         FX.play('play');
         UIRenderer.refresh();
     }

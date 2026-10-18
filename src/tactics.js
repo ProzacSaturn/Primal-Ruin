@@ -346,14 +346,17 @@ export function getTacticChoices(card, player, opponent) {
         return choices;
     }
     if (id === 'set-2-063') {
-        const lines = lineChoices(player, 'Tua Linea', 'player');
-        return lines.flatMap((first, index) => lines.slice(index + 1).map(second => ({
-            label: `${first.label} ↔ ${second.label}`,
-            value: {
-                firstFront: first.value.frontName,
-                secondFront: second.value.frontName
-            }
-        })));
+        return FRONT_NAMES.flatMap(frontName =>
+            SLOTS
+                .filter(slotName => {
+                    const unit = opponent.fronts[frontName][slotName];
+                    return unit && !unit.keywords?.includes('Divinità');
+                })
+                .map(slotName => ({
+                    label: `${FRONT_LABELS[frontName]} avversario · ${opponent.fronts[frontName][slotName].name}`,
+                    value: { frontName, slotName, owner: 'opponent' }
+                }))
+        );
     }
     if (id === 'set-2-071') {
         return [
@@ -851,15 +854,12 @@ export function resolveRegisteredTactic(card, choice, player, opponent, context 
         return `${card.name}: ${selected.name} viene rimessa in cima al mazzo avversario.`;
     }
     if (id === 'set-2-063') {
-        const first = player.fronts[choice.firstFront];
-        const second = player.fronts[choice.secondFront];
-        if (!first?.line || !second?.line) throw new Error('Le due Linee da scambiare non sono più presenti.');
-        [first.line, second.line] = [second.line, first.line];
-        first.line.front = choice.firstFront;
-        second.line.front = choice.secondFront;
-        first.line.position = 'line';
-        second.line.position = 'line';
-        return `${card.name}: le Linee di ${FRONT_LABELS[choice.firstFront]} e ${FRONT_LABELS[choice.secondFront]} si scambiano.`;
+        const unit = opponent.fronts[choice.frontName]?.[choice.slotName];
+        if (!unit || unit.keywords?.includes('Divinità')) {
+            throw new Error('L’Unità scelta non può ricevere Tormento.');
+        }
+        unit.tormentTurns = 2;
+        return `${card.name}: ${unit.name} subisce 1 danno all'inizio di ogni turno per 2 turni.`;
     }
     if (id === 'set-2-072') {
         const victims = FRONT_NAMES.flatMap(frontName =>

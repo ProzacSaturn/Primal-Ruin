@@ -218,7 +218,7 @@ No DOM, no sibling imports — highly unit-testable.
 
 ### 5.4 `src/card-costs.js` — pure cost calculation
 
-- `calculateCardCost(player, card, {fromDiscard, turnNumber, players})` — base cost; adds `equipCost` for Equipment; applies Eco Spettrale discounts (`set-2-081`, `set-2-114`, `set-2-096` once-per-turn) and the from-discard surcharge; applies Velo del Silenzio (`set-2-117`) style cost increases for 1-cost tactics under opponent conditions; floors at 1.
+- `calculateCardCost(player, card, {fromDiscard, turnNumber, players})` — base cost; adds `equipCost` for Equipment; applies Eco Spettrale discounts (`set-2-081`, `set-2-114`, `set-2-096` once-per-turn). Eco Spettrale pays its printed cost when it returns from destruction, with no discard surcharge. Applies Velo del Silenzio (`set-2-117`) style cost increases for 1-cost tactics under opponent conditions; floors at 1.
 - `markCardCostDiscountUsed(player, card, turnNumber, fromDiscard)` — marks the once-per-turn site discount (`set-2-096`) as consumed **only if** it actually reduced the payment.
 
 ### 5.5 `src/card-effects.js` — effect registries & execution status
@@ -379,7 +379,7 @@ interaction slots (`sacrifice`, `pendingTactic`, `pendingTorment`, `pendingPromo
 |---|---|
 | `get current` / `get opponent` | Active player and the other one (by `currentIndex`). |
 | `reset(customDeckIds)` | Seeds the PRNG from `crypto`, builds both players, draws 5 cards + 2 domains each, randomly picks `firstPlayerIndex`, resets all transient state and logs the setup. |
-| `onUnitEntry(...)` | Central "unit entered play" hook: equipment position triggers, collective entry bonus, entry effects, Infiltrazione/site parasites, site-driven moves, `set-1-092` self-destruct. |
+| `onUnitEntry(...)` | Central "unit entered play" hook: equipment position triggers, collective entry bonus, entry effects, site parasites, site-driven moves, `set-1-092` self-destruct. Infiltrazione non aggiunge Parassiti. |
 | `applyCollectiveEntryBonus(...)` | `set-3-049` scaling bonus. |
 | `triggerSiteSupportMove` / `resolveSiteSupportMove` | Portale Silente (`set-3-097`) support movement (human prompt vs. AI auto-choice). |
 | `addParasites(source, target, count)` | Adds Parassiti and resolves their site/field side effects; checks victory. |
@@ -409,7 +409,7 @@ Reads `GameState` and renders; contains **no** rule logic beyond display.
 - `renderDomains(player, containerId)` — domains + sites + field; makes activatable sites focusable/clickable.
 - `renderSlot(prefix, frontName, slotName, unit)` — a single board slot (icon, name, keywords, `currentForce/force`).
 - `renderBoard()` — all slots + domains + stats + controls + interactivity.
-- `renderHand()` — hand cards and the "Eco Spettrale" playable-from-discard cards; disables cards that cannot be played.
+- `renderHand()` — hand cards; disables cards that cannot be played. Eco Spettrale non si gioca dagli scarti: al momento della distruzione può tornare in Supporto.
 - `updateBoardInteractivity()` — marks legal deployment slots using `checkDeployment`.
 - `resolvePermanentTurnStart(playerIndex)` — resolves all `turn-start` site/field effects (decay, tokens, forced moves, draws, force loss, etc.).
 - `resolvePermanentCombatStart(playerIndex)` — resolves combat-start site/field effects.
@@ -429,7 +429,7 @@ Reads `GameState` and renders; contains **no** rule logic beyond display.
 - `chooseTorment(...)` / `chooseTormentOutcome(...)` — Torment decision (AI deterministic, human prompted via a Promise).
 - `promptPromotionSlot(...)` / `choosePromotionSlot(...)` — when the human Line is destroyed with two Supports, the player chooses which one is promoted (`defaultPromotionSlot` in `game-rules.js` resolves the AI's deterministic choice).
 - `dealCommanderDamage(defender, frontName, amount)` — AI pre-sacrifice logic; human sacrifice prompt via `GameState.sacrifice` + Promise.
-- `removeUnit(...)` / `destroyUnit(...)` — remove with zone routing (Divinità → discard "Sigillata", Eco Spettrale → exile, else discard), promotion of Support to Line (explicit slot or `defaultPromotionSlot`), and `set-1-117` penalties.
+- `removeUnit(...)` / `destroyUnit(...)` — Divinità non cade per effetti; a 0 Forza in Scontro va negli scarti come Sigillata. Eco Spettrale, se distrutta, può pagare il costo e tornare in Supporto a Forza 1. Promotion of Support to Line (explicit slot or `defaultPromotionSlot`), and `set-1-117` penalties. Logorare infligge danni all'inizio dello Scontro.
 - `onUnitRemoved(...)` — the large destruction-trigger dispatcher (site/field/equipment reactions, unit destruction reactions, Line-destruction effects, control transfers).
 - `onForceLoss(...)` — force-loss triggers (Eco del Dolore draw, `set-2-110` reflect, `set-2-118` field damage, `set-2-098` destroy).
 - `restoreControlledUnits()` / `promoteSupport(...)` / `damageLine(...)` / `sacrifice(...)` / `finishSacrifice()`.

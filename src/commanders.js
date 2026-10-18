@@ -11,7 +11,14 @@
 //   addParasite { target, amount }              -> il bersaglio guadagna Parassiti
 //   drawArmy { amount }                         -> l'attore pesca carte Esercito
 //   announce { amount }                         -> il testo viene annunciato, il tavolo non cambia
+//   note { amount }                             -> effetto passivo, risolto durante lo Scontro
+//   swarmOrParasite { amount }                  -> pedina Sciame in Supporto, oppure 1 Parassita
+//   grantFerocity { amount }                    -> Ferocia a una Linea, oppure +1 Forza
+//   grantLogorare { amount }                    -> Logorare a una Linea, oppure -1 Forza avversaria
+//   collectiveBurst { amount }                  -> +2 Forza a Mente Collettiva e 1 Parassita
+//   ascendOrTorment { amount }                  -> Ascensione, oppure 1 segnalino Tormento
 // Un'abilità può avere una `condition` valutata sull'attore.
+// `activation.cost` è { domains } oppure { pc }.
 
 export const COMMANDERS = [
     {
@@ -22,12 +29,13 @@ export const COMMANDERS = [
         provisional: true,
         rifornimento: {
             text: 'Istinto del Branco: se controlli meno Unità dell\'avversario, le tue Unità in Linea ottengono +1 Forza durante la Fase di Scontro.',
-            ops: [{ type: 'announce', amount: 1 }]
+            ops: [{ type: 'note', amount: 1 }]
         },
         activation: {
             name: 'Abilità attiva',
             text: 'Una volta per turno, costo 2: scegli un tuo Fronte. Fino alla fine del turno, l\'Unità in Linea ottiene Ferocia (se l\'ha già, ottiene +1 Forza).',
-            ops: [{ type: 'announce', amount: 1 }]
+            cost: { domains: 2 },
+            ops: [{ type: 'grantFerocity', amount: 1 }]
         }
     },
     {
@@ -38,12 +46,13 @@ export const COMMANDERS = [
         provisional: true,
         rifornimento: {
             text: 'Maledizione dell\'Erebo: quando un effetto Tormento danneggia il Comandante avversario, pesca 1 carta se controlli una Linea.',
-            ops: [{ type: 'announce', amount: 1 }]
+            ops: [{ type: 'note', amount: 1 }]
         },
         activation: {
             name: 'Abilità attiva',
             text: 'Una volta per turno, costo 2: una tua Unità in Linea ottiene Logorare (se ce l\'ha già, la Linea avversaria perde 1 Forza).',
-            ops: [{ type: 'announce', amount: 1 }]
+            cost: { domains: 2 },
+            ops: [{ type: 'grantLogorare', amount: 1 }]
         }
     },
     {
@@ -54,12 +63,13 @@ export const COMMANDERS = [
         provisional: true,
         rifornimento: {
             text: 'Crea una pedina Sciame con Forza 1 in Supporto oppure metti 1 segnalino Parassita sul Comandante avversario.',
-            ops: [{ type: 'announce', amount: 1 }]
+            ops: [{ type: 'swarmOrParasite', amount: 1 }]
         },
         activation: {
             name: 'Abilità attiva',
             text: 'Una volta per turno, paga 2 Domini attivi: un\'Unità con Mente Collettiva ottiene +2 Forza fino alla fine dello Scontro e applica 1 Parassita.',
-            ops: [{ type: 'announce', amount: 1 }]
+            cost: { domains: 2 },
+            ops: [{ type: 'collectiveBurst', amount: 1 }]
         }
     },
     {
@@ -75,14 +85,22 @@ export const COMMANDERS = [
         activation: {
             name: 'Abilità attiva',
             text: 'Una volta per turno, costo 2 PC: un\'Unità idonea subisce Ascensione; altrimenti infliggi 1 segnalino Tormento a un Comandante avversario.',
-            ops: [{ type: 'announce', amount: 1 }]
+            cost: { pc: 2 },
+            ops: [{ type: 'ascendOrTorment', amount: 1 }]
         }
     }
 ];
 
-const KNOWN_OPS = new Set(['gainEcho', 'addMadness', 'addParasite', 'drawArmy', 'announce']);
+const KNOWN_OPS = new Set([
+    'gainEcho', 'addMadness', 'addParasite', 'drawArmy', 'announce',
+    'note', 'swarmOrParasite', 'grantFerocity', 'grantLogorare',
+    'collectiveBurst', 'ascendOrTorment'
+]);
 const KNOWN_CONDITIONS = new Set(['madnessAtMost']);
-const SELF_OPS = new Set(['gainEcho', 'drawArmy', 'announce']);
+const SELF_OPS = new Set([
+    'gainEcho', 'drawArmy', 'announce', 'note', 'swarmOrParasite',
+    'grantFerocity', 'grantLogorare', 'collectiveBurst', 'ascendOrTorment'
+]);
 
 export function listCommanders() {
     return COMMANDERS.map(commander => ({

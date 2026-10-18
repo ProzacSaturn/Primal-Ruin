@@ -1,0 +1,54 @@
+const STANDARD_ASCENSION =
+    'Quando questa Unità vince un Fronte o riceve un potenziamento';
+
+export function keywordValue(keywords, name, fallback = 1) {
+    const match = (keywords || []).find(keyword =>
+        new RegExp(`^${name}\\b`, 'i').test(keyword)
+    );
+    if (!match) return 0;
+    return Number(match.match(/\((\d+)\)/)?.[1] || fallback);
+}
+
+export function hasKeyword(keywords, name) {
+    return (keywords || []).some(keyword =>
+        new RegExp(`^${name}\\b`, 'i').test(keyword)
+    );
+}
+
+export function hasAscension(unit) {
+    if (!unit) return false;
+    return hasKeyword(unit.keywords, 'Ascensione') ||
+        /\bAscensione\b/i.test(unit.rulesText || '');
+}
+
+// La condizione stampata dal set divino. Una parentesi diversa («Ascensione (Se …)»)
+// resta sulla carta e non usa questo innesco.
+export function usesStandardAscension(rulesText = '', keywords = []) {
+    const text = rulesText || '';
+    const mentioned = hasKeyword(keywords, 'Ascensione') || /\bAscensione\b/i.test(text);
+    if (!mentioned) return false;
+    if (new RegExp(`Ascensione\\s*\\((?!${STANDARD_ASCENSION})`, 'i').test(text)) return false;
+    if (text.includes(STANDARD_ASCENSION)) return true;
+    if (/\bAscensione\s*\(/i.test(text)) return false;
+    return hasKeyword(keywords, 'Ascensione') || /\bAscensione\b/i.test(text);
+}
+
+export function grantDivinityAscension(unit) {
+    if (!unit || unit._ascending) return false;
+    unit._ascending = true;
+    const printed = Number.isFinite(unit.force) ? unit.force : (unit.currentForce || 0);
+    unit.force = printed + 1;
+    unit.currentForce = (unit.currentForce || 0) + 1;
+    unit.keywords = unit.keywords || [];
+    if (!unit.keywords.includes('Divinità')) unit.keywords.push('Divinità');
+    if (!/\bDivinità\b/i.test(unit.type || '')) {
+        unit.type = unit.type ? `${unit.type} – Divinità` : 'Divinità';
+    }
+    unit._ascending = false;
+    return true;
+}
+
+export function applyStandardAscension(unit) {
+    if (!usesStandardAscension(unit?.rulesText, unit?.keywords)) return false;
+    return grantDivinityAscension(unit);
+}

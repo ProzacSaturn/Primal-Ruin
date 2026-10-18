@@ -5,6 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { installHeadlessEnvironment } from './helpers/headless-env.js';
 import { validateDeckIds } from '../src/deck-validation.js';
+import { applyTemporaryForce } from '../src/card-effects.js';
 import { calculateUnitCombatStrength } from '../src/game-rules.js';
 import catalog from '../src/data/cards.json' with { type: 'json' };
 
@@ -186,53 +187,56 @@ test('Assalto entra in Linea; Posizione Difensiva rifiuta il Supporto se la Line
     assert.equal(player.fronts.center.line?.id, 'difesa');
 });
 
-test('Eco Spettrale si gioca dagli scarti a costo +1 ed è esiliata se lascia il gioco', () => {
+test('Eco Spettrale, se distrutta, torna in Supporto pagando il costo e con Forza 1', () => {
     fresh();
+    clearFronts();
     const player = GameState.players[0];
-    const card = unit(2, {
+    const card = unit(3, {
         id: 'spettro',
+        name: 'Spettro',
         category: 'unit',
         cost: 1,
         keywords: ['Eco Spettrale']
     });
-    player.discard = [card];
-    player.hand = [];
-    while (player.domains.length < 2) player.domains.push({ id: `d-${player.domains.length}`, tapped: false });
-    player.domains.forEach(domain => { domain.tapped = false; });
-    GameState.phase = 'principale';
-    GameState.currentIndex = 0;
-    GameState.selectedCard = card;
-    GameState.selectedFromDiscard = true;
-    GameController.deploy('left', 'supA');
+    player.fronts.left.line = card;
+    player.domains = [{ id: 'd1', tapped: false }];
+    CombatResolver.removeUnit(player, 'left', 'line', 'effect-destroy');
+    assert.equal(player.exile.some(item => item.id === 'spettro'), false);
     assert.equal(player.fronts.left.supA?.id, 'spettro');
-    assert.equal(player.domains.filter(domain => domain.tapped).length, 2);
-    assert.equal(player.discard.length, 0);
-    CombatResolver.removeUnit(player, 'left', 'supA', 'effect-destroy');
-    assert.equal(player.exile.some(item => item.id === 'spettro'), true);
+    assert.equal(player.fronts.left.supA.currentForce, 1);
+    assert.equal(player.domains[0].tapped, true);
     assert.equal(player.discard.some(item => item.id === 'spettro'), false);
 });
 
-test('Ascensione spende anche gli Echo indicati', () => {
+test('Ascensione divina dà +1 Forza permanente e Divinità, senza spendere Echo', async () => {
     fresh();
+    clearFronts();
     const player = GameState.players[0];
+    player.echo = 2;
+    const rulesText = 'Ascensione (Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).';
     const card = unit(2, {
         id: 'ascesa',
-        category: 'unit',
-        cost: 1,
-        keywords: ['Ascensione (2)']
+        name: 'Ascesa',
+        rulesText,
+        keywords: ['Ascensione']
     });
-    player.hand = [card];
-    player.echo = 1;
-    GameState.phase = 'principale';
+    GameState.phase = 'scontro';
     GameState.currentIndex = 0;
-    GameState.selectedCard = card;
-    GameController.deploy('left', 'supA');
-    assert.equal(player.fronts.left.supA, null, 'Echo insufficienti: la carta resta in mano');
-    player.echo = 2;
-    GameState.selectedCard = card;
-    GameController.deploy('left', 'supA');
-    assert.equal(player.fronts.left.supA?.id, 'ascesa');
-    assert.equal(player.echo, 0);
+    player.fronts.left.line = card;
+    GameState.players[1].fronts.left.line = unit(1, { id: 'debole', name: 'Debole' });
+    await CombatResolver.resolveFront('left');
+    assert.equal(player.echo, 2);
+    assert.equal(card.force, 3);
+    assert.ok(card.keywords.includes('Divinità'));
+    const custom = unit(2, {
+        id: 'custom',
+        name: 'Custom',
+        rulesText: 'Ascensione (Se sopravvive a due Scontri, ottiene +2 Forza).',
+        keywords: ['Ascensione']
+    });
+    applyTemporaryForce(custom, 2);
+    assert.equal(custom.force, 2);
+    assert.equal(custom.keywords.includes('Divinità'), false);
 });
 
 test('in parità entrambe le Linee subiscono 1 danno e nessun PC', async () => {
@@ -269,10 +273,11 @@ test('la differenza danneggia il Comandante e, in eccesso, il Supporto promosso'
     GameState.players[1].fronts.left.line = unit(1, { id: 'def', name: 'Def' });
     GameState.players[1].fronts.left.supA = unit(4, { id: 'sup', name: 'Sup' });
     await CombatResolver.resolveFront('left');
-    // Il Supporto vale +1: 4 contro 2, margine 2. La Linea da 1 cade e 1 danno prosegue.
-    assert.equal(GameState.players[1].pc, 18);
+    // Kragor dà +1 perché l'attaccante ha meno Unità: 5 contro 2, margine 3.
+    // La Linea da 1 cade e 2 danni proseguono sul Supporto promosso.
+    assert.equal(GameState.players[1].pc, 17);
     assert.equal(GameState.players[1].fronts.left.line?.id, 'sup');
-    assert.equal(GameState.players[1].fronts.left.line.currentForce, 3);
+    assert.equal(GameState.players[1].fronts.left.line.currentForce, 2);
     assert.equal(GameState.players[1].discard.some(card => card.id === 'def'), true);
 });
 
@@ -293,21 +298,30 @@ test('il Sacrificio difensivo previene 1 danno per ogni Forza sacrificata', asyn
     assert.equal(GameState.sacrifice, null);
 });
 
-test('Tormento converte il danno al Comandante in Follia', async () => {
+test('Tormento in Linea danneggia il Comandante avversario all\'inizio del turno', async () => {
     fresh();
     clearFronts();
-    GameState.currentIndex = 1;
-    GameState.phase = 'scontro';
-    GameState.players[1].fronts.left.line = unit(3, {
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    player.fronts.left.line = unit(3, {
         id: 'tor',
         name: 'Tor',
         keywords: ['Tormento (2)']
     });
-    GameState.players[0].fronts.left.line = unit(2, { id: 'def', name: 'Def' });
-    GameState.players[0].follia = 8;
-    await CombatResolver.resolveFront('left');
-    assert.equal(GameState.players[0].follia, 10);
-    assert.equal(GameState.players[0].pc, 20);
+    opponent.fronts.center.supA = unit(3, {
+        id: 'debuff',
+        name: 'Debuff',
+        tormentTurns: 2
+    });
+    opponent.follia = 8;
+    player.armyDeck = [];
+    player.domainDeck = [];
+    const pc = opponent.pc;
+    await GameController.beginTurn(0);
+    assert.equal(opponent.follia, 8);
+    assert.equal(opponent.pc, pc - 2);
+    assert.equal(opponent.fronts.center.supA.currentForce, 2);
+    assert.equal(opponent.fronts.center.supA.tormentTurns, 1);
 });
 
 test('Divinità non cade per un effetto e, a 0 Forza in Scontro, è Sigillata negli scarti', async () => {
@@ -324,6 +338,35 @@ test('Divinità non cade per un effetto e, a 0 Forza in Scontro, è Sigillata ne
     assert.equal(GameState.players[1].fronts.left.line, null);
     assert.equal(GameState.players[1].discard.some(card => card.id === 'dio'), true);
     assert.equal(GameState.players[1].exile.some(card => card.id === 'dio'), false);
+});
+
+test('Infiltrazione entra nel Supporto avversario scoperto e non rafforza la sua Linea', () => {
+    fresh();
+    clearFronts();
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    const card = unit(2, {
+        id: 'spia',
+        name: 'Spia',
+        category: 'unit',
+        cost: 1,
+        keywords: ['Infiltrazione (2)']
+    });
+    player.hand = [card];
+    player.domains = [{ id: 'd1', tapped: false }];
+    opponent.parasites = 0;
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    GameState.selectedCard = card;
+    GameController.deployInfiltration('left', 'supA');
+    assert.equal(opponent.fronts.left.supA?.id, 'spia');
+    assert.equal(opponent.fronts.left.supA.infiltrated, true);
+    assert.equal(opponent.parasites, 0);
+    assert.equal(GameState.countUnits(player), 1);
+    assert.equal(GameState.countUnits(opponent), 0);
+    GameState.phase = 'scontro';
+    opponent.fronts.left.line = unit(2, { id: 'linea', name: 'Linea' });
+    assert.equal(CombatResolver.strength(opponent, 'left', null), 2);
 });
 
 test('tre Parassiti a inizio turno ne rimuovono uno e fanno perdere 1 PC', async () => {
@@ -343,18 +386,18 @@ test('l’abilità del Comandante si attiva una sola volta per turno', () => {
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
     const player = GameState.players[0];
-    const opponent = GameState.players[1];
-    const follia = opponent.follia;
+    const line = unit(2, { id: 'linea', name: 'Linea', keywords: [] });
+    player.fronts.left.line = line;
     const echo = player.echo;
     const pc = player.pc;
     GameController.activateCommanderAbility();
     assert.equal(player.commanderAbilityUsed, true);
-    assert.equal(opponent.follia, follia);
     assert.equal(player.echo, echo);
     assert.equal(player.pc, pc);
+    assert.ok(line.keywords.includes('Ferocia'));
+    assert.equal(player.domains.filter(domain => domain.tapped).length, 2);
     GameController.activateCommanderAbility();
-    assert.equal(player.commanderAbilityUsed, true);
-    assert.equal(opponent.follia, follia);
+    assert.equal(line.keywords.filter(keyword => keyword === 'Ferocia').length, 1);
 });
 
 test('Sorvolo sposta in un Fronte adiacente ed entra in Supporto', () => {

@@ -134,23 +134,26 @@ $$\text{Forza Totale Linea} = \text{Forza Base} + \text{Modificatori} + \text{Bo
 ________________
 
 
-7. KEYWORD E MECCANICHE DEI 3 SET
+7. KEYWORD E MECCANICHE DEI 4 SET
 Set 1: Furia Giurassica
    * Ferocia: Ottiene +1 Forza durante lo Scontro se controlli meno Unità totali.
    * Assalto: Può entrare direttamente in posizione di Linea nel turno in cui viene giocata.
    * Sorvolo: Quando viene assegnata allo Scontro, puoi spostarla in un Fronte adiacente (entra in Supporto).
 Set 2: Risveglio Infernale
-   * Logorare (X): Se in Linea, la Linea avversaria nello stesso Fronte perde X Forza durante lo Scontro.
-   * Eco Spettrale: Giocabile dallo scarto pagando il costo originale +1 Dominio. Se lascia il gioco, viene esiliata.
-   * Tormento (X): In caso di vittoria in Linea, converte il danno al Comandante in X segnalini Follia all'avversario.
-   * Ascensione (X): Richiede il costo in Domini + il consumo di X segnalini Echo nello stesso turno.
-   * Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
+   * Logorare: All'inizio di ogni Scontro, se l'Unità è in Linea, la Linea avversaria in quel Fronte subisce 1 danno. Se la carta stampa un numero, il danno è quel numero. È danno vero, non una perdita temporanea di Forza.
+   * Eco Spettrale: Quando l'Unità viene distrutta, puoi pagare il suo costo e rimetterla in Supporto con Forza 1. Non viene esiliata.
+   * Tormento: Se l'Unità è in Linea, all'inizio del tuo turno il Comandante avversario subisce 1 danno, oppure il numero stampato sulla carta. Un segnalino Tormento, da solo, non fa nulla: lo usano le altre carte. Infliggere Tormento a un'Unità le fa subire 1 danno all'inizio di ogni turno per 2 turni.
 Set 3: Invasione Silente
    * Mente Collettiva: Ottiene +1 Forza per ogni altra Unità con Mente Collettiva nello stesso Fronte (bonus max +3).
    * Posizione Difensiva: Deve entrare obbligatoriamente in Linea, se lo slot è libero.
-   * Infiltrazione (X) / Segnalini Parassita: Metti X Parassiti sul Comandante avversario. All'inizio del suo turno, il Comandante perde 1 PC. Se ne ha 3+, ne rimuove uno automaticamente (oppure il difensore usa l'azione Purga nella Fase Principale).
+   * Infiltrazione (X): Puoi giocare l'Unità in Supporto su un Fronte avversario scoperto (senza Linea), ignorando le restrizioni normali. Il numero è il grado stampato. Non mette Parassiti. L'Unità infiltrata resta tua: occupa il Supporto avversario e non rafforza la sua Linea.
+   * Segnalini Parassita: All'inizio del turno del Comandante che li ha, perde 1 PC. Se ne ha 3 o più, ne rimuove uno automaticamente (oppure il difensore usa l'azione Purga nella Fase Principale).
    * Decadenza (X): Si rimuove 1 segnalino Decadenza all'inizio del turno; a 0 segnalini, il Sito viene distrutto.
    * Profanare: Metti un segnalino Rovina su un Sito; a 2 segnalini Rovina, il Sito è distrutto.
+Set 4: Ascesa Divina
+   * Ascensione: Quando l'Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità. Se la carta stampa una condizione diversa, vale quella condizione.
+   * Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
+   * Il bonus di Divinità è scritto sulle carte che hanno questo tipo o che lo concedono.
 
 
 ________________

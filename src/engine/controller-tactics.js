@@ -117,6 +117,11 @@ const tacticMethods = {
         if (!pending) return;
         const choice = pending.choices[Number(document.getElementById('tactic-choice').value)];
         if (!choice) return;
+        if (pending.mode === 'commander') {
+            GameState.pendingTactic = null;
+            this.commitCommanderActivation(GameState.players[0], pending.kind, choice.value);
+            return;
+        }
         if (pending.mode === 'site-support-move') {
             const player = GameState.players.find(owner => owner.id === pending.playerId);
             const site = player?.sites?.find(item =>
@@ -224,6 +229,12 @@ const tacticMethods = {
     cancelTactic() {
         if (!GameState.pendingTactic) return;
         if (GameState.pendingTactic.mode === 'discard') return;
+        if (GameState.pendingTactic.mode === 'commander') {
+            Logger.log('Abilità del Comandante annullata.');
+            GameState.pendingTactic = null;
+            UIRenderer.refresh();
+            return;
+        }
         Logger.log(`${GameState.pendingTactic.card.name}: scelta annullata, carta non giocata.`);
         GameState.pendingTactic = null;
         UIRenderer.refresh();
