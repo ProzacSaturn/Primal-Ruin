@@ -481,9 +481,7 @@ test('un nuovo Equipaggiamento manda il precedente negli scarti', () => {
     assert.equal(player.discard.some(card => card.catalogId === 'set-1-079'), true);
 });
 
-test('il cap di default del calcolo Forza è +3', {
-    todo: '§3 Cap Assoluto +3. calculateUnitCombatStrength usa supportBonusCap 2 se il chiamante non passa 3; CombatResolver nello scontro passa 3.'
-}, () => {
+test('il cap di default del calcolo Forza è +3', () => {
     assert.equal(calculateUnitCombatStrength({
         line: { currentForce: 1, keywords: [] },
         supportCount: 3,
