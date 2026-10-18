@@ -503,9 +503,7 @@ test('il Dominio Totale scatta solo all’inizio del proprio turno', () => {
     assert.equal(GameState.gameOver, false);
 });
 
-test('un attaccante senza Linea non subisce il Fronte Scoperto', {
-    todo: '§6.3 descrive il Fronte Scoperto solo se manca la Linea del difensore. resolveFront infligge la Forza del difensore all’attaccante.'
-}, async () => {
+test('un attaccante senza Linea non subisce il Fronte Scoperto', async () => {
     fresh();
     clearFronts();
     GameState.currentIndex = 0;

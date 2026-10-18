@@ -147,23 +147,10 @@ const CombatResolver = {
             Logger.log(`${FRONT_LABELS[frontName]}: le Linee cadono prima dello scontro.`);
             return;
         }
-        if (!attackFront.line && defendFront.line) {
-            defender.frontWinsThisTurn = (defender.frontWinsThisTurn || 0) + 1;
-            Logger.log(`${FRONT_LABELS[frontName]}: fronte scoperto.`);
-            this.resolveUnitLineWinEffects(
-                attacker,
-                frontName,
-                defendFront.line
-            );
-            const damage = this.commanderDamage(
-                defender, attacker, frontName, this.strength(defender, frontName, null)
-            );
-            this.noteAscension(defendFront.line);
-            await this.dealCommanderDamage(attacker, frontName, damage);
-            GameState.checkVictory();
+        if (!attackFront.line) {
+            Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea attaccante.`);
             return;
         }
-        if (!attackFront.line) return;
         const attackStrength = this.strength(attacker, frontName, defendFront.line);
         if (!defendFront.line) {
             attacker.frontWinsThisTurn = (attacker.frontWinsThisTurn || 0) + 1;

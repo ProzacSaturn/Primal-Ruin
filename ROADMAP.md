@@ -47,7 +47,7 @@ Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 
 1. Cap dei Supporti a +3 anche quando il calcolo della Forza non riceve il tetto dal chiamante. Fatto: il default di `calculateUnitCombatStrength` è 3.
 2. Dominio Totale della Mappa solo all’inizio del proprio turno, non in Fase Principale. Fatto: scatta in Fase di Rifornimento.
-3. Fronte Scoperto solo quando manca la Linea del difensore.
+3. Fronte Scoperto solo quando manca la Linea del difensore. Fatto: senza Linea attaccante lo scontro su quel Fronte non infligge danni.
 4. L’Equipaggiamento di un’Unità distrutta va negli scarti come carta a sé.
 5. Ritirata e Rimpiazzo: azione vera, non solo un nome.
 6. Purga dei Parassiti pagata con 2 Domini. La rimozione automatica a inizio turno, se c’è già, non la sostituisce.
