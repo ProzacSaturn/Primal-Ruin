@@ -1,18 +1,24 @@
 const STANDARD_ASCENSION =
     'Quando questa Unità vince un Fronte o riceve un potenziamento';
+const keywordPatternCache = new Map();
+
+function keywordPattern(name) {
+    let pattern = keywordPatternCache.get(name);
+    if (!pattern) {
+        pattern = new RegExp(`^${name}\\b`, 'i');
+        keywordPatternCache.set(name, pattern);
+    }
+    return pattern;
+}
 
 export function keywordValue(keywords, name, fallback = 1) {
-    const match = (keywords || []).find(keyword =>
-        new RegExp(`^${name}\\b`, 'i').test(keyword)
-    );
+    const match = (keywords || []).find((keyword) => keywordPattern(name).test(keyword));
     if (!match) return 0;
     return Number(match.match(/\((\d+)\)/)?.[1] || fallback);
 }
 
 export function hasKeyword(keywords, name) {
-    return (keywords || []).some(keyword =>
-        new RegExp(`^${name}\\b`, 'i').test(keyword)
-    );
+    return (keywords || []).some((keyword) => keywordPattern(name).test(keyword));
 }
 
 export function hasAscension(unit) {
@@ -23,7 +29,7 @@ export function hasAscension(unit) {
 
 // La condizione stampata dal set divino. Una parentesi diversa («Ascensione (Se …)»)
 // resta sulla carta e non usa questo innesco.
-export function usesStandardAscension(rulesText = '', keywords = []) {
+function usesStandardAscension(rulesText = '', keywords = []) {
     const text = rulesText || '';
     const mentioned = hasKeyword(keywords, 'Ascensione') || /\bAscensione\b/i.test(text);
     if (!mentioned) return false;

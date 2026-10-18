@@ -6,6 +6,15 @@ const STORAGE_KEY = 'primal-ruin.custom-deck.v1';
 const QUARANTINE_KEY = 'primal-ruin.custom-deck.quarantine';
 const DECK_VERSION = 1;
 const cardsById = new Map(catalog.cards.map((card) => [card.id, card]));
+const preparedCards = new Map(
+    catalog.cards.map((card) => [
+        card.id,
+        {
+            searchText: `${card.name} ${card.type || ''} ${card.rulesText}`.toLocaleLowerCase('it'),
+            executionStatus: getCardExecutionStatus(card)
+        }
+    ])
+);
 const CATEGORY_LABELS = {
     unit: 'Unità',
     tactic: 'Tattica',
@@ -14,7 +23,7 @@ const CATEGORY_LABELS = {
     field: 'Campo'
 };
 
-export function validateDeck(cardIds) {
+function validateDeck(cardIds) {
     return validateDeckIds(cardIds, cardsById);
 }
 
@@ -126,19 +135,14 @@ export function initDeckBuilder(onUseDeck) {
             if (setFilter.value !== 'all' && card.setId !== setFilter.value) return false;
             if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value)
                 return false;
-            return (
-                !search ||
-                `${card.name} ${card.type || ''} ${card.rulesText}`
-                    .toLocaleLowerCase('it')
-                    .includes(search)
-            );
+            return !search || preparedCards.get(card.id).searchText.includes(search);
         });
         catalogList.replaceChildren();
         for (const card of visibleCards) {
             const row = document.createElement('div');
             row.className = 'builder-card';
             const details = document.createElement('span');
-            const execution = getCardExecutionStatus(card);
+            const execution = preparedCards.get(card.id).executionStatus;
             details.textContent = `${card.name} · ${CATEGORY_LABELS[card.category]} · costo ${card.cost} · ${execution.label}`;
             const add = document.createElement('button');
             add.type = 'button';
@@ -181,8 +185,7 @@ export function initDeckBuilder(onUseDeck) {
         const validation = validateDeck(cardIds);
         const unsupportedCount = cardIds.reduce(
             (count, id) =>
-                count +
-                Number(getCardExecutionStatus(cardsById.get(id)).label === 'Non eseguibile'),
+                count + Number(preparedCards.get(id).executionStatus.label === 'Non eseguibile'),
             0
         );
         count.textContent = `${cardIds.length}/40 carte`;

@@ -481,9 +481,7 @@ test('un nuovo Equipaggiamento manda il precedente negli scarti', () => {
     assert.equal(player.discard.some(card => card.catalogId === 'set-1-079'), true);
 });
 
-test('il cap di default del calcolo Forza è +3', {
-    todo: '§3 Cap Assoluto +3. calculateUnitCombatStrength usa supportBonusCap 2 se il chiamante non passa 3; CombatResolver nello scontro passa 3.'
-}, () => {
+test('il cap di default del calcolo Forza è +3', () => {
     assert.equal(calculateUnitCombatStrength({
         line: { currentForce: 1, keywords: [] },
         supportCount: 3,
@@ -493,9 +491,7 @@ test('il cap di default del calcolo Forza è +3', {
     }), 4);
 });
 
-test('il Dominio Totale scatta solo all’inizio del proprio turno', {
-    todo: '§1: la vittoria è all’inizio del proprio turno. checkVictory la applica anche in Fase Principale.'
-}, () => {
+test('il Dominio Totale scatta solo all’inizio del proprio turno', () => {
     fresh();
     clearFronts();
     GameState.phase = 'principale';
@@ -507,9 +503,7 @@ test('il Dominio Totale scatta solo all’inizio del proprio turno', {
     assert.equal(GameState.gameOver, false);
 });
 
-test('un attaccante senza Linea non subisce il Fronte Scoperto', {
-    todo: '§6.3 descrive il Fronte Scoperto solo se manca la Linea del difensore. resolveFront infligge la Forza del difensore all’attaccante.'
-}, async () => {
+test('un attaccante senza Linea non subisce il Fronte Scoperto', async () => {
     fresh();
     clearFronts();
     GameState.currentIndex = 0;
@@ -519,9 +513,7 @@ test('un attaccante senza Linea non subisce il Fronte Scoperto', {
     assert.equal(GameState.players[0].pc, 20);
 });
 
-test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta separata', {
-    todo: '§9: removeUnit scarta l’Unità con l’Equipaggiamento ancora annidato, non la carta Equipaggiamento da sola.'
-}, () => {
+test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta separata', () => {
     fresh();
     clearFronts();
     const gear = { id: 'arma', catalogId: 'set-1-079', name: 'Arma', category: 'equipment' };
@@ -531,16 +523,64 @@ test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta se
     assert.equal(GameState.players[0].discard.some(card => card.id === 'arma'), true);
 });
 
-test('Ritirata: scartare un Supporto pagando 1 Dominio', {
-    todo: '§6.2 Ritirata e Rimpiazzo non ha un’azione nell’engine.'
-}, () => {
+test('Ritirata: scartare un Supporto pagando 1 Dominio', () => {
     assert.equal(typeof GameController.retreat, 'function');
+    fresh();
+    clearFronts();
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const player = GameState.players[0];
+    player.fronts.left.line = unit(3, { id: 'linea', name: 'Linea' });
+    player.fronts.left.supA = unit(2, { id: 'retro', name: 'Retro' });
+    const activeBefore = player.domains.filter(domain => !domain.tapped).length;
+
+    assert.equal(GameController.retreat('left', 'line'), false);
+    assert.equal(player.fronts.left.line.id, 'linea');
+    assert.equal(GameController.retreat('left', 'supA'), true);
+    assert.equal(player.fronts.left.supA, null);
+    assert.equal(player.discard.some(card => card.id === 'retro'), true);
+    assert.equal(player.domains.filter(domain => !domain.tapped).length, activeBefore - 1);
+
+    player.domains.forEach(domain => { domain.tapped = true; });
+    player.fronts.left.supB = unit(1, { id: 'resta', name: 'Resta' });
+    assert.equal(GameController.retreat('left', 'supB'), false);
+    assert.equal(player.fronts.left.supB.id, 'resta');
 });
 
-test('Purga: pagare 2 Domini per rimuovere 1 Parassita', {
-    todo: '§6.2 e §7: la Purga manuale non c’è. A inizio turno, con 3+ Parassiti, se ne rimuove uno e si perde 1 PC.'
-}, () => {
+test('Purga: pagare 2 Domini per rimuovere 1 Parassita', () => {
     assert.equal(typeof GameController.purgeParasite, 'function');
+    fresh();
+    clearFronts();
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    player.parasites = 2;
+    opponent.parasites = 1;
+    const pc = player.pc;
+    const activeBefore = player.domains.filter(domain => !domain.tapped).length;
+
+    assert.equal(GameController.purgeParasite(), true);
+    assert.equal(player.parasites, 1);
+    assert.equal(player.pc, pc);
+    assert.equal(opponent.parasites, 1);
+    assert.equal(player.domains.filter(domain => !domain.tapped).length, activeBefore - 2);
+
+    player.domains.forEach(domain => { domain.tapped = true; });
+    player.domains[0].tapped = false;
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 1);
+
+    player.domains.forEach(domain => { domain.tapped = false; });
+    player.parasites = 0;
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 0);
+    assert.equal(player.domains.every(domain => domain.tapped === false), true);
+
+    player.parasites = 1;
+    GameState.phase = 'rifornimento';
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 1);
 });
 
 test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', {

@@ -4,8 +4,8 @@ globs: src/data/cards.json,src/data/**,sets/**
 alwaysApply: false
 ---
 # Dati carte
-- Consulta solo le carte interessate (cerca per id/nome); non leggere nÃ© stampare l'intero catalogo.
+- Consulta solo le carte interessate (cerca per id/nome); non leggere né stampare l'intero catalogo.
 - Modifica solo le voci richieste con patch puntuali; mai riscrivere o riordinare tutto cards.json.
 - Non cambiare lo schema (campi, nomi, tipi, valori ammessi) senza conferma esplicita.
-- Non inventare carte, valori o effetti: la fonte Ã¨ sets/** e il Regolamento.
+- Non inventare carte, valori o effetti: la fonte è sets/** e il Regolamento.
 - Dopo una modifica verifica che il JSON sia valido ed esegui i test pertinenti (npm test).

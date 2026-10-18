@@ -4,10 +4,10 @@ globs: game.js,src/engine/**,src/*.js
 alwaysApply: false
 ---
 # Motore di gioco
-- Prima individua le funzioni coinvolte (cerca per nome); non leggere tutto game.js.
-- Modifica solo ciÃ² che Ã¨ richiesto: patch minime, niente riscritture di file interi nÃ© astrazioni "per il futuro".
-- Non inventare regole: in caso di dubbio consulta solo la sezione pertinente di "Regolamento Ufficiale Avanzato Primal Ruin.txt", poi Set.txt. Se resta ambiguo, chiedi.
+- Prima individua le funzioni coinvolte (cerca per nome); non leggere tutto l'engine in `src/engine/`.
+- Modifica solo ciò che è richiesto: patch minime, niente riscritture di file interi né astrazioni "per il futuro".
+- Non inventare regole: in caso di dubbio consulta solo la sezione pertinente di "Regolamento Ufficiale Avanzato Primal Ruin.txt", poi i file in `sets/`. Se resta ambiguo, chiedi.
 - Logica di gioco separata da DOM/rendering: niente nuovi accessi a document/window nel motore.
-- Non duplicare sistemi esistenti; riusa le funzioni giÃ  presenti.
+- Non duplicare sistemi esistenti; riusa le funzioni già presenti.
 - Ogni bug corretto riceve un test in tests/ che lo avrebbe rilevato.
 - Cambi architetturali o alle regole fondamentali: chiedi conferma prima.

@@ -16,6 +16,7 @@ import { getTacticChoices } from './tactic-choices.js';
 const combatMethods = {
     async resolveCombat() {
         if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.sacrifice) return;
+        GameState.retreatMode = false;
         GameState.phase = 'scontro';
         GameState.sorvoloUsed.clear();
         if (UIRenderer.getSorvoloOptions().length > 0) {

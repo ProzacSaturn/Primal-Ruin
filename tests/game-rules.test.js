@@ -8,7 +8,7 @@ import {
     shouldUseTorment
 } from '../src/game-rules.js';
 
-test('adds at most two standard support bonuses', () => {
+test('adds at most three standard support bonuses', () => {
     const line = { currentForce: 4, keywords: [] };
     assert.equal(calculateUnitCombatStrength({
         line,
@@ -16,7 +16,14 @@ test('adds at most two standard support bonuses', () => {
         collectiveCount: 0,
         fewerUnits: false,
         logorare: 0
-    }), 6);
+    }), 7);
+    assert.equal(calculateUnitCombatStrength({
+        line,
+        supportCount: 4,
+        collectiveCount: 0,
+        fewerUnits: false,
+        logorare: 0
+    }), 7);
 });
 
 test('enhanced support bonuses are two each but capped at three', () => {

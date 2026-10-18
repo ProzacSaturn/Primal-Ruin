@@ -177,6 +177,7 @@ test('nella sconfitta simultanea vince il giocatore di turno', () => {
 // avversario senza Unità).
 test('il Dominio Totale della Mappa chiude la partita', () => {
     freshGame();
+    GameState.phase = 'rifornimento';
     const unit = { name: 'Segnaposto', currentForce: 1, force: 1, keywords: [], catalogId: 'test' };
     for (const frontName of ['left', 'center', 'right']) {
         GameState.players[0].fronts[frontName].line = { ...unit };

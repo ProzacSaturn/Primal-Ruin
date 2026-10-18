@@ -2,7 +2,7 @@ export function calculateUnitCombatStrength({
     line,
     supportCount,
     supportBonusPerUnit = 1,
-    supportBonusCap = 2,
+    supportBonusCap = 3,
     collectiveCount,
     fewerUnits,
     logorare,

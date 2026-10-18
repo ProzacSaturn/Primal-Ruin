@@ -10,6 +10,14 @@ const CATEGORY_LABELS = {
     commander: 'Comandante'
 };
 
+const libraryCards = catalog.cards.map((card) => ({
+    card,
+    searchText: [card.name, card.setName, card.type || '', card.rarity || '', card.rulesText]
+        .join(' ')
+        .toLocaleLowerCase('it'),
+    executionStatus: getCardExecutionStatus(card)
+}));
+
 export function initCardLibrary() {
     const setFilter = document.getElementById('library-set');
     const categoryFilter = document.getElementById('library-category');
@@ -19,18 +27,12 @@ export function initCardLibrary() {
 
     function render() {
         const query = searchInput.value.trim().toLocaleLowerCase('it');
-        const filtered = catalog.cards.filter(card => {
-            if (setFilter.value !== 'all' && card.setId !== setFilter.value) return false;
-            if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value) return false;
+        const filtered = libraryCards.filter((entry) => {
+            if (setFilter.value !== 'all' && entry.card.setId !== setFilter.value) return false;
+            if (categoryFilter.value !== 'all' && entry.card.category !== categoryFilter.value)
+                return false;
             if (!query) return true;
-            const searchable = [
-                card.name,
-                card.setName,
-                card.type || '',
-                card.rarity || '',
-                card.rulesText
-            ].join(' ').toLocaleLowerCase('it');
-            return searchable.includes(query);
+            return entry.searchText.includes(query);
         });
 
         count.textContent = `${filtered.length} di ${catalog.cards.length} carte`;
@@ -43,7 +45,7 @@ export function initCardLibrary() {
             return;
         }
 
-        for (const card of filtered) {
+        for (const { card, executionStatus } of filtered) {
             const element = document.createElement('article');
             element.className = `library-card category-${card.category}`;
             const title = document.createElement('h3');
@@ -64,7 +66,6 @@ export function initCardLibrary() {
             const rules = document.createElement('p');
             rules.className = 'library-rules';
             rules.textContent = card.rulesText;
-            const executionStatus = getCardExecutionStatus(card);
             const execution = document.createElement('p');
             execution.className = `library-execution ${executionStatus.label === 'Non eseguibile' ? 'unsupported' : ''}`;
             execution.textContent = `Motore: ${executionStatus.label}. ${executionStatus.detail}`;

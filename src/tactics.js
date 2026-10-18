@@ -558,6 +558,10 @@ function removeUnit(player, frontName, slotName) {
             if (next === 'supA') front.supB = null;
         }
     }
+    if (unit.equipment) {
+        player.discard.push(unit.equipment);
+        unit.equipment = null;
+    }
     if (unit.keywords.includes('Divinità')) player.discard.push(unit);
     else if (unit.keywords.includes('Eco Spettrale')) player.exile.push(unit);
     else player.discard.push(unit);
@@ -1221,6 +1225,10 @@ export function restoreControlledUnits(players) {
             }
             if (!unit) {
                 throw new Error(`Unità controllata ${control.unitId} non trovata durante il ripristino.`);
+            }
+            if (unit.equipment && !location) {
+                owner.discard.push(unit.equipment);
+                unit.equipment = null;
             }
             if (location) {
                 if (owner.fronts[control.ownerFront][control.ownerSlot]) {
