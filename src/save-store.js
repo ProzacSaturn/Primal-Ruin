@@ -24,34 +24,62 @@ function quarantineSave(serialized, reason) {
     }
 }
 
+function isRecord(value) {
+    return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isCardRecord(card) {
+    return isRecord(card) && Array.isArray(card.keywords);
+}
+
+// Le carte in mazzo, mano, scarti ed esilio passano dal disegno della mano,
+// che legge `rulesText` sulle Unità. Le pedine in campo non hanno quel testo.
+function isPlayableCard(card) {
+    return (
+        isCardRecord(card) && (card.category !== 'unit' || typeof card.rulesText === 'string')
+    );
+}
+
+function isDomainRecord(domain) {
+    return (
+        isRecord(domain) && typeof domain.name === 'string' && typeof domain.tapped === 'boolean'
+    );
+}
+
+function playerIsValid(player) {
+    if (!isRecord(player)) return false;
+    const piles = [player.armyDeck, player.hand, player.discard, player.exile];
+    return (
+        Number.isFinite(player.pc) &&
+        player.pc >= 0 &&
+        player.pc <= 20 &&
+        Number.isInteger(player.follia) &&
+        player.follia >= 0 &&
+        player.follia <= 10 &&
+        Number.isInteger(player.echo) &&
+        player.echo >= 0 &&
+        typeof player.commanderId === 'string' &&
+        player.commanderId.length > 0 &&
+        typeof player.commanderAbilityUsed === 'boolean' &&
+        piles.every((pile) => Array.isArray(pile) && pile.every(isPlayableCard)) &&
+        Array.isArray(player.domainDeck) &&
+        player.domainDeck.every(isDomainRecord) &&
+        Array.isArray(player.domains) &&
+        player.domains.every(isDomainRecord) &&
+        (player.sites === undefined ||
+            (Array.isArray(player.sites) && player.sites.every(isCardRecord))) &&
+        (player.field == null || isCardRecord(player.field)) &&
+        isRecord(player.fronts) &&
+        ['left', 'center', 'right'].every((front) => stateFrontIsValid(player.fronts[front]))
+    );
+}
+
 function snapshotIsValid(state) {
     return (
-        Array.isArray(state?.players) &&
+        isRecord(state) &&
+        Array.isArray(state.players) &&
         state.players.length === 2 &&
-        state.players.every(
-            (player) =>
-                Number.isFinite(player.pc) &&
-                player.pc >= 0 &&
-                player.pc <= 20 &&
-                Number.isInteger(player.follia) &&
-                player.follia >= 0 &&
-                player.follia <= 10 &&
-                Number.isInteger(player.echo) &&
-                player.echo >= 0 &&
-                typeof player.commanderId === 'string' &&
-                player.commanderId.length > 0 &&
-                typeof player.commanderAbilityUsed === 'boolean' &&
-                Array.isArray(player.armyDeck) &&
-                Array.isArray(player.domainDeck) &&
-                Array.isArray(player.hand) &&
-                Array.isArray(player.discard) &&
-                Array.isArray(player.exile) &&
-                Array.isArray(player.domains) &&
-                player.fronts &&
-                ['left', 'center', 'right'].every((front) =>
-                    stateFrontIsValid(player.fronts[front])
-                )
-        ) &&
+        state.players.every(playerIsValid) &&
         Number.isInteger(state.currentIndex) &&
         [0, 1].includes(state.currentIndex) &&
         ['setup', 'rifornimento', 'principale', 'scontro', 'finale', 'gameover'].includes(
@@ -151,10 +179,8 @@ export function loadGameSave() {
 
 function stateFrontIsValid(front) {
     return (
-        front &&
-        ['line', 'supA', 'supB'].every(
-            (slot) => front[slot] === null || typeof front[slot] === 'object'
-        )
+        isRecord(front) &&
+        ['line', 'supA', 'supB'].every((slot) => front[slot] === null || isCardRecord(front[slot]))
     );
 }
 

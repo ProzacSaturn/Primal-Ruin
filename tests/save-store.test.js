@@ -122,3 +122,52 @@ test('rejects an older envelope whose snapshot is incomplete', () => {
     assert.equal(JSON.parse(localStorage.getItem(QUARANTINE_KEY)).reason, 'invalid');
     assert.equal(localStorage.getItem(STORAGE_KEY), raw);
 });
+
+function saveRaw(snapshot) {
+    return JSON.stringify({ version: 3, snapshot });
+}
+
+test('rejects a save with a hole where a discarded card should be', () => {
+    globalThis.localStorage = new MemoryStorage();
+    const snapshot = validSnapshot();
+    snapshot.players[0].discard = [null];
+    const raw = saveRaw(snapshot);
+    localStorage.setItem(STORAGE_KEY, raw);
+    assert.equal(loadGameSave(), null);
+    assert.equal(JSON.parse(localStorage.getItem(QUARANTINE_KEY)).reason, 'invalid');
+    assert.equal(localStorage.getItem(STORAGE_KEY), raw);
+});
+
+test('rejects a save with a hole where a domain should be', () => {
+    globalThis.localStorage = new MemoryStorage();
+    const snapshot = validSnapshot();
+    snapshot.players[0].domains = [null];
+    const raw = saveRaw(snapshot);
+    localStorage.setItem(STORAGE_KEY, raw);
+    assert.equal(loadGameSave(), null);
+    assert.equal(JSON.parse(localStorage.getItem(QUARANTINE_KEY)).reason, 'invalid');
+});
+
+test('rejects a unit in hand that has no rules text', () => {
+    globalThis.localStorage = new MemoryStorage();
+    const snapshot = validSnapshot();
+    snapshot.players[0].hand = [{ category: 'unit', keywords: [] }];
+    localStorage.setItem(STORAGE_KEY, saveRaw(snapshot));
+    assert.equal(loadGameSave(), null);
+});
+
+test('keeps a board token and a complete hand card', () => {
+    globalThis.localStorage = new MemoryStorage();
+    const snapshot = validSnapshot();
+    snapshot.players[0].hand = [
+        { category: 'unit', name: 'Raptor', rulesText: 'Nessuna abilità.', keywords: [] }
+    ];
+    snapshot.players[0].domains = [{ name: 'Dominio di Fuoco', tapped: false }];
+    snapshot.players[0].fronts.left.line = {
+        category: 'unit',
+        name: 'Pedina Sciame',
+        keywords: []
+    };
+    localStorage.setItem(STORAGE_KEY, saveRaw(snapshot));
+    assert.deepEqual(loadGameSave(), snapshot);
+});
