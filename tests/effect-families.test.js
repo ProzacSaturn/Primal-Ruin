@@ -304,10 +304,20 @@ test('famiglia inizio turno: Decadenza, ricerca, scarti, pedine e spostamento', 
     }
 
     prepare();
-    GameState.players[0].sites = [permanent('set-2-100')];
+    const ncrospira = permanent('set-2-100');
+    GameState.players[0].sites = [ncrospira];
+    GameState.players[0].fronts.left.line = card('set-1-007', {
+        id: 'linea-ncro',
+        currentForce: 3,
+        force: 3
+    });
+    GameState.players[0].fronts.left.supA = card('set-1-007', { id: 'sup-ncro' });
     GameState.players[0].discard = [{ id: 'eco-mano', name: 'Eco', keywords: ['Eco Spettrale'] }];
-    GameState.resolvePermanentTurnStart(0);
-    assert.equal(GameState.players[0].hand[0].id, 'eco-mano');
+    GameState.resolveSiteActivation(ncrospira, { frontName: 'left', slotName: 'supA' });
+    assert.equal(GameState.players[0].fronts.left.supA, null);
+    assert.equal(GameState.players[0].fronts.left.line.currentForce, 5);
+    assert.equal(GameState.players[0].discard.some(item => item.id === 'sup-ncro'), true);
+    assert.equal(GameState.players[0].hand.some(item => item.id === 'eco-mano'), false);
 
     prepare();
     GameState.players[0].sites = [permanent('set-2-108')];
@@ -650,11 +660,9 @@ test('famiglia Parassiti da Sito e Campo', () => {
     assert.equal(GameState.players[1].pc, 19);
 });
 
-test('Spira della Dominazione sposta un’altra Linea avversaria', {
-    todo: 'set-3-100: il testo sposta un’altra Linea avversaria. onUnitRemoved cerca la Linea sul giocatore opposto al proprietario distrutto, cioè su chi controlla il Sito.'
-}, () => {
+test('Spira della Dominazione sposta un’altra Linea avversaria', () => {
     prepare();
-    player.sites = [permanent('set-3-100')];
+    player.sites = [permanent('set-3-108')];
     player.fronts.left.line = card('set-1-007', { id: 'cacciatore' });
     const shifted = card('set-1-007', { id: 'spostata' });
     opponent.fronts.center.line = shifted;
@@ -665,36 +673,60 @@ test('Spira della Dominazione sposta un’altra Linea avversaria', {
         'combat-destroy',
         player
     );
-    assert.equal(opponent.fronts.right.line, shifted);
+    assert.equal(opponent.fronts.left.line, shifted);
+    assert.equal(opponent.fronts.center.line, null);
 });
 
-test('Abisso della Collettività è un Sito: +1 Forza per Supporto alle Unità con Mente Collettiva', {
-    todo: 'set-3-101 è un Sito nel catalogo. getUnitForceBonus lo legge solo come Campo, quindi in gioco come Sito non modifica la Forza.'
-}, () => {
-    const player = board();
-    player.sites = [permanent('set-3-101')];
+test('Abisso della Collettività è un Sito: +1 Forza per Supporto alle Unità con Mente Collettiva', () => {
+    const owner = board();
+    owner.sites = [permanent('set-3-109')];
     const unit = card('set-3-001', { keywords: ['Mente Collettiva'] });
-    player.fronts.left.line = unit;
-    player.fronts.left.supA = card('set-1-007', { id: 'appoggio' });
-    assert.equal(getUnitForceBonus(player, unit, 'left', 'line', board()), 1);
+    owner.fronts.left.line = unit;
+    owner.fronts.left.supA = card('set-1-007', { id: 'appoggio' });
+    assert.equal(getUnitForceBonus(owner, unit, 'left', 'line', board()), 1);
 });
 
-test('Città dell’Invasione è un Sito: Sorvolo può entrare in Linea', {
-    todo: 'set-3-099 è un Sito nel catalogo. getSorvoloOptions concede la Linea solo se quel catalogId è il Campo.'
-}, () => {
+test('Città dell’Invasione è un Sito: Sorvolo può entrare in Linea', () => {
     prepare();
-    GameState.players[0].sites = [permanent('set-3-099')];
+    GameState.players[0].sites = [permanent('set-3-107')];
     GameState.players[0].fronts.left.line = card('set-1-007', { keywords: ['Sorvolo'] });
     assert.ok(UIRenderer.getSorvoloOptions().some(option => option.targetSlot === 'line'));
 });
 
-test('Velo della Conquista lascia il Supporto senza Linea anche con Posizione Difensiva', {
-    todo: 'set-3-119 è un Campo. checkDeployment ignora il Campo e rifiuta ancora Posizione Difensiva se la Linea è vuota.'
-}, () => {
-    assert.equal(checkDeployment(
-        { force: 2, keywords: ['Posizione Difensiva'] },
-        { line: null, supA: null, supB: null },
-        'supA',
-        { ownSites: [permanent('set-3-119')] }
-    ).legal, true);
+test('Velo della Conquista lascia il Supporto senza Linea anche con Posizione Difensiva', () => {
+    const empty = { line: null, supA: null, supB: null };
+    const defensive = { force: 2, keywords: ['Posizione Difensiva'] };
+    assert.equal(checkDeployment(defensive, empty, 'supA', {
+        ownField: permanent('set-3-118')
+    }).legal, true);
+    assert.equal(checkDeployment(defensive, empty, 'supA').legal, false);
+});
+
+test('Cattedrale, Vortice, Santuario del Parassita ed Era usano il testo stampato', () => {
+    const cathedral = board();
+    cathedral.sites = [permanent('set-3-099')];
+    const collective = card('set-3-001', { keywords: ['Mente Collettiva'] });
+    cathedral.fronts.left.line = collective;
+    assert.equal(getUnitForceBonus(cathedral, collective, 'left', 'line', board()), 1);
+
+    prepare();
+    player.sites = [permanent('set-3-100')];
+    const vortex = card('set-1-007', { id: 'vortice' });
+    opponent.fronts.left.line = vortex;
+    GameState.resolvePermanentTurnStart(0);
+    assert.equal(opponent.fronts.center.line, vortex);
+    assert.equal(opponent.fronts.left.line, null);
+
+    prepare();
+    player.sites = [permanent('set-3-101')];
+    GameState.addParasites(opponent, player, 1);
+    assert.equal(player.pc, 19);
+
+    prepare();
+    player.field = permanent('set-3-119');
+    for (const frontName of FRONTS) {
+        player.fronts[frontName].supA = card('set-1-007', { id: frontName });
+    }
+    GameState.resolvePermanentTurnStart(0);
+    assert.equal(opponent.pc, 19);
 });

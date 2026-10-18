@@ -58,11 +58,11 @@ Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 
 Sono i `todo` di `tests/effect-families.test.js` e `tests/effect-groups.test.js`. Un id alla volta, con il testo della carta in `sets/` davanti.
 
-- `set-2-108` — lo spostamento del Supporto avversario guarda il giocatore giusto. Fatto: quel testo è del Cacciatore Yautja (`set-3-004`). Il Mausoleo Reale Spettrale, all’inizio del tuo turno, rimette in mano un’Unità con Eco Spettrale dal cimitero. Gli Equipaggiamenti del set 2 non usano più gli id dei Siti: Forza, Logorare, Tormento e riduzione danni stanno su `set-2-079` e seguenti.
-- `set-3-099` — il Sito, non il Campo, concede la Linea da Sorvolo.
-- `set-3-100` — lo spostamento dell’altra Linea avversaria guarda il giocatore giusto.
-- `set-3-101` — il bonus di Forza vale quando la carta è in gioco come Sito.
-- `set-3-119` — il Campo entra nel controllo di schieramento della Posizione Difensiva.
+- `set-2-108` — lo spostamento del Supporto avversario guarda il giocatore giusto. Fatto: quel testo è del Cacciatore Yautja (`set-3-004`). Il Mausoleo Reale Spettrale rimette in mano un’Unità con Eco Spettrale. Gli Equipaggiamenti `set-2-079`–`set-2-090` usano il testo stampato. La Ncrospira Oscura sacrifica un Supporto e dà +2 Forza alla Linea per questo turno.
+- `set-3-099` — il Sito, non il Campo, concede la Linea da Sorvolo. Fatto: è la Città dell’Invasione (`set-3-107`). La Cattedrale della Mente Suprema dà +1 Forza alle Unità con Mente Collettiva.
+- `set-3-100` — lo spostamento dell’altra Linea avversaria guarda il giocatore giusto. Fatto: è la Spira della Dominazione (`set-3-108`). Il Vortice Stellare sposta una Linea avversaria all’inizio del turno.
+- `set-3-101` — il bonus di Forza vale quando la carta è in gioco come Sito. Fatto: è l’Abisso della Collettività (`set-3-109`). Il Santuario del Parassita fa perdere 1 PC a chi riceve un Parassita.
+- `set-3-119` — il Campo entra nel controllo di schieramento della Posizione Difensiva. Fatto: è il Velo della Conquista (`set-3-118`). L’Era dell’Invasione Totale, se hai un’Unità in ogni Fronte, infligge 1 danno al Comandante avversario all’inizio del turno.
 
 ### C. Il resto della copertura, a fette
 

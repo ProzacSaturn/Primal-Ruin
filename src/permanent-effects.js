@@ -38,6 +38,11 @@ export function getUnitKeywords(player, unit, frontName, slotName) {
             keywords.push('Logorare (1)');
         }
         if (['set-2-079', 'set-2-089'].includes(id)) keywords.push('Tormento');
+        if (id === 'set-2-089' || (id === 'set-2-081' && slotName !== 'line')) {
+            keywords.push('Eco Spettrale');
+        }
+        if (id === 'set-2-085') keywords.push('Posizione Difensiva');
+        if (['set-2-084', 'set-2-090'].includes(id)) keywords.push('Ascensione');
     }
     if (slotName === 'line' && unit.force >= 5 &&
         player.sites?.some(site => cardId(site) === 'set-1-100')) {
@@ -156,7 +161,10 @@ export function getUnitForceBonus(player, unit, frontName, slotName, opponent) {
         getUnitKeywords(player, unit, frontName, slotName).some(keyword => keyword.startsWith('Mente Collettiva'))) bonus += 1;
     if (player.field?.catalogId === 'set-3-114' &&
         getUnitKeywords(player, unit, frontName, slotName).includes('Sorvolo')) bonus += 1;
-    if (player.field?.catalogId === 'set-3-101' &&
+    if (player.sites?.some(site => cardId(site) === 'set-3-099') &&
+        getUnitKeywords(player, unit, frontName, slotName)
+            .some(keyword => keyword.startsWith('Mente Collettiva'))) bonus += 1;
+    if (player.sites?.some(site => cardId(site) === 'set-3-109') &&
         getUnitKeywords(player, unit, frontName, slotName).some(keyword => keyword.startsWith('Mente Collettiva'))) {
         bonus += Number(Boolean(front.supA)) + Number(Boolean(front.supB));
     }
@@ -214,7 +222,7 @@ export function getSupportBonus(player, frontName) {
         const unit = front[slot];
         if (!ownSupport(unit)) continue;
         if (hasUnitCard(unit, ['set-1-009', 'set-1-043', 'set-3-009']) ||
-            cardId(unit.equipment) === 'set-1-082' ||
+            ['set-1-082', 'set-2-081'].includes(cardId(unit.equipment)) ||
             frontHasEnhancer ||
             (hasUnitCard(unit, ['set-1-022']) &&
                 !front[slot === 'supA' ? 'supB' : 'supA'])) {

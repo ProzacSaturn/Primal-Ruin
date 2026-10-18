@@ -250,7 +250,11 @@ const UIRenderer = {
                         { ...GameState.selectedCard, keywords },
                         front,
                         slotName,
-                        { ownSites: player.sites, opposingSites: opponent.sites }
+                        {
+                            ownSites: player.sites,
+                            opposingSites: opponent.sites,
+                            ownField: player.field
+                        }
                     )
                     : { legal: false };
                 element.classList.toggle('selectable',
@@ -429,8 +433,9 @@ const UIRenderer = {
                     if (!adjacentFront) return;
                     const target = player.fronts[adjacentFront];
                     const canEnterLine = !target.line &&
-                        (player.sites?.some(site => site.catalogId === 'set-1-104') ||
-                            player.field?.catalogId === 'set-3-099');
+                        player.sites?.some(site =>
+                            site.catalogId === 'set-1-104' || site.catalogId === 'set-3-107'
+                        );
                     const targetSlots = canEnterLine
                         ? ['line', ...(target.supA === null ? ['supA'] : []),
                             ...(target.supB === null ? ['supB'] : [])]

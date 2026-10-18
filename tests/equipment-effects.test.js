@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { applyStandardAscension } from '../src/keywords.js';
 import {
     getDamageReduction,
     getSupportBonus,
@@ -108,22 +109,50 @@ test('position-dependent Equipment bonuses and Support strength are applied', ()
 });
 
 test('Equipment-granted keywords are included in the equipped Unit keyword set', () => {
-    const expectedKeywords = new Map([
+    const expectedKeywords = [
         ['set-1-083', 'Ferocia'],
         ['set-1-086', 'Sorvolo'],
         ['set-1-090', 'Ferocia'],
         ['set-2-079', 'Tormento'],
         ['set-2-080', 'Logorare (1)'],
         ['set-2-083', 'Logorare (1)'],
+        ['set-2-084', 'Ascensione'],
+        ['set-2-085', 'Posizione Difensiva'],
         ['set-2-089', 'Tormento'],
+        ['set-2-089', 'Eco Spettrale'],
         ['set-2-090', 'Logorare (1)'],
+        ['set-2-090', 'Ascensione'],
         ['set-3-105', 'Logorare (1)'],
         ['set-3-110', 'Sorvolo']
-    ]);
+    ];
 
     for (const [cardId, keyword] of expectedKeywords) {
         const { player, unit } = playerWithUnit(cardId);
         assert.ok(getUnitKeywords(player, unit, 'left', 'line').includes(keyword), cardId);
+    }
+});
+
+test('Anello delle Ombre adds Support strength and Eco Spettrale only in Support', () => {
+    const { player, unit } = playerWithUnit('set-2-081', 'supA');
+    player.fronts.left.line = { keywords: [], equipment: null };
+    assert.equal(getSupportBonus(player, 'left'), 2);
+    assert.ok(getUnitKeywords(player, unit, 'left', 'supA').includes('Eco Spettrale'));
+    const lined = playerWithUnit('set-2-081');
+    assert.equal(
+        getUnitKeywords(lined.player, lined.unit, 'left', 'line').includes('Eco Spettrale'),
+        false
+    );
+});
+
+test('Amuleto dell’Ascensione and Sigillo grant standard Ascension', () => {
+    for (const cardId of ['set-2-084', 'set-2-090']) {
+        const { unit } = playerWithUnit(cardId);
+        unit.force = 3;
+        unit.currentForce = 3;
+        unit.keywords = [];
+        assert.equal(applyStandardAscension(unit), true, cardId);
+        assert.equal(unit.force, 4, cardId);
+        assert.ok(unit.keywords.includes('Divinità'), cardId);
     }
 });
 

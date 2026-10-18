@@ -328,7 +328,8 @@ const combatMethods = {
             const deploymentUnit = { ...card, keywords };
             const rules = {
                 ownSites: enemy.sites,
-                opposingSites: opponent.sites
+                opposingSites: opponent.sites,
+                ownField: enemy.field
             };
             const lineDeployment = checkDeployment(
                 deploymentUnit,

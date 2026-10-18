@@ -54,7 +54,8 @@ export function defaultPromotionSlot(front) {
 
 export function checkDeployment(unit, front, slotName, {
     ownSites = [],
-    opposingSites = []
+    opposingSites = [],
+    ownField = null
 } = {}) {
     if (!front || !['line', 'supA', 'supB'].includes(slotName)) {
         return { legal: false, assaultSwap: false };
@@ -72,7 +73,8 @@ export function checkDeployment(unit, front, slotName, {
     );
     if (lineRestricted) return { legal: false, assaultSwap: false };
     if (front[slotName] && !assaultSwap) return { legal: false, assaultSwap: false };
-    if (defensive && slotName !== 'line' && !front.line) {
+    const supportWithoutLine = ownField?.catalogId === 'set-3-118';
+    if (defensive && slotName !== 'line' && !front.line && !supportWithoutLine) {
         return { legal: false, assaultSwap: false };
     }
     if (slotName === 'line' && !assault &&

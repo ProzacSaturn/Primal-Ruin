@@ -261,7 +261,9 @@ const GameState = {
             const sporeWells = owner.sites?.filter(site => site.catalogId === 'set-3-088') || [];
             for (const site of sporeWells) GameController.drawCards(owner, count, site.name);
             const parasiteSanctuaries =
-                owner.sites?.filter(site => site.catalogId === 'set-3-093') || [];
+                owner.sites?.filter(site =>
+                    site.catalogId === 'set-3-093' || site.catalogId === 'set-3-101'
+                ) || [];
             targetPlayer.pc = Math.max(
                 0,
                 targetPlayer.pc - count * parasiteSanctuaries.length
@@ -283,6 +285,16 @@ const GameState = {
             if (!sacrificed || !line) throw new Error('Non è più possibile sacrificare l’Unità scelta.');
             line.currentForce += 2;
             line.temporaryForce = (line.temporaryForce || 0) + 2;
+        } else if (id === 'set-2-100') {
+            if (!['supA', 'supB'].includes(choice.slotName)) {
+                throw new Error('Ncrospira Oscura sacrifica solo un Supporto.');
+            }
+            const sacrificed = CombatResolver.removeUnit(player, choice.frontName, choice.slotName, 'sacrifice');
+            const line = player.fronts[choice.frontName].line;
+            if (!sacrificed || !line) throw new Error('Non è più possibile sacrificare il Supporto scelto.');
+            line.currentForce += 2;
+            line.temporaryForce = (line.temporaryForce || 0) + 2;
+            Logger.log(`${site.name}: ${line.name} ottiene +2 Forza fino alla fine del turno.`);
         } else if (id === 'set-2-088') {
             const owner = choice.ownerKey === 'player' ? player : opponent;
             const target = choice.zone === 'field'
@@ -475,11 +487,28 @@ const GameState = {
                     }
                 });
             }
-            if (id === 'set-2-100') {
-                const index = player.discard.findIndex(card =>
-                    card.keywords?.includes('Eco Spettrale')
-                );
-                if (index >= 0) player.hand.push(...player.discard.splice(index, 1));
+            if (id === 'set-3-100') {
+                const sourceName = FRONT_NAMES.find((name, index) => {
+                    const unit = opponent.fronts[name].line;
+                    return unit &&
+                        !isProtectedFromEnemyMovement(opponent, unit, name) &&
+                        [index - 1, index + 1].some(targetIndex =>
+                            FRONT_NAMES[targetIndex] && !opponent.fronts[FRONT_NAMES[targetIndex]].line
+                        );
+                });
+                if (sourceName) {
+                    const sourceIndex = FRONT_NAMES.indexOf(sourceName);
+                    const destinationIndex = [sourceIndex - 1, sourceIndex + 1].find(index =>
+                        FRONT_NAMES[index] && !opponent.fronts[FRONT_NAMES[index]].line
+                    );
+                    const unit = opponent.fronts[sourceName].line;
+                    opponent.fronts[sourceName].line = null;
+                    opponent.fronts[FRONT_NAMES[destinationIndex]].line = unit;
+                    unit.front = FRONT_NAMES[destinationIndex];
+                    unit.position = 'line';
+                    this.onUnitMoved(opponent, unit, sourceName, FRONT_NAMES[destinationIndex], true);
+                    Logger.log(`${site.name}: ${unit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[destinationIndex]]}.`);
+                }
             }
             if (id === 'set-2-108') {
                 const index = player.discard.findIndex(card =>
@@ -554,7 +583,7 @@ const GameState = {
                 createToken(player, frontName, front.supA ? 'supB' : 'supA', 'Pedina Raptor', 3);
             }
         }
-        if (player.field?.catalogId === 'set-3-120' &&
+        if (['set-3-119', 'set-3-120'].includes(player.field?.catalogId) &&
             FRONT_NAMES.every(frontName => SLOT_NAMES.some(slot => player.fronts[frontName][slot]))) {
             opponent.pc = Math.max(0, opponent.pc - 1);
             Logger.log(`${player.field.name}: il Comandante avversario perde 1 PC.`);

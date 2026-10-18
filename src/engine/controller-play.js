@@ -185,7 +185,7 @@ const playMethods = {
 
     canActivateSite(site) {
         const id = site.catalogId || site.id;
-        return ['set-1-102', 'set-2-088', 'set-3-082', 'set-3-089'].includes(id) &&
+        return ['set-1-102', 'set-2-088', 'set-2-100', 'set-3-082', 'set-3-089'].includes(id) &&
             site.lastActivatedTurn !== GameState.turnNumber;
     },
 
@@ -202,6 +202,18 @@ const playMethods = {
                     if (unit) choices.push({
                         label: `Sacrifica ${unit.name} · +2 Forza a ${FRONT_LABELS[frontName]}`,
                         value: { mode: 'sacrifice', frontName, slotName }
+                    });
+                }
+            }
+        } else if (id === 'set-2-100') {
+            for (const frontName of FRONT_NAMES) {
+                if (!player.fronts[frontName].line) continue;
+                for (const slotName of ['supA', 'supB']) {
+                    const unit = player.fronts[frontName][slotName];
+                    if (!unit) continue;
+                    choices.push({
+                        label: `Sacrifica ${unit.name} · +2 Forza a ${FRONT_LABELS[frontName]}`,
+                        value: { mode: 'sacrifice-support', frontName, slotName }
                     });
                 }
             }
@@ -294,13 +306,15 @@ const playMethods = {
         }
         const deployment = checkDeployment(unitForDeployment, front, slotName, {
             ownSites: player.sites,
-            opposingSites: opponent.sites
+            opposingSites: opponent.sites,
+            ownField: player.field
         });
         if (front[slotName] && !deployment.assaultSwap) {
             Logger.log('Questa posizione è occupata.');
             return;
         }
-        if (card.keywords.includes('Posizione Difensiva') && slotName !== 'line' && !front.line) {
+        if (keywords.includes('Posizione Difensiva') && slotName !== 'line' && !front.line &&
+            player.field?.catalogId !== 'set-3-118') {
             Logger.log('Posizione Difensiva: devi assegnare questa Unità alla Linea se possibile.');
             return;
         }
