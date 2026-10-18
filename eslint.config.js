@@ -5,6 +5,7 @@ export default [
     {
         ignores: [
             'dist/**',
+            'standalone.js',
             'coverage/**',
             'node_modules/**',
             '.vite/**',

@@ -250,6 +250,15 @@
         <div class="catalog-grid" id="catalog-grid"></div>
     </section>
 
-    <script type="module" src="/src/main.js"></script>
+    <script>
+        var entry = document.createElement('script');
+        if (location.protocol === 'file:') {
+            entry.src = 'standalone.js';
+        } else {
+            entry.type = 'module';
+            entry.src = '/src/main.js';
+        }
+        document.body.appendChild(entry);
+    </script>
 </body>
 </html>
