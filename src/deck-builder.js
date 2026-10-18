@@ -1,5 +1,6 @@
 import catalog from './data/cards.json' with { type: 'json' };
 import { getCardExecutionStatus } from './card-effects.js';
+import { tacticTiming } from './tactics.js';
 import { validateDeckIds } from './deck-validation.js';
 
 const STORAGE_KEY = 'primal-ruin.custom-deck.v1';
@@ -10,7 +11,9 @@ const preparedCards = new Map(
     catalog.cards.map((card) => [
         card.id,
         {
-            searchText: `${card.name} ${card.type || ''} ${card.rulesText}`.toLocaleLowerCase('it'),
+            searchText: `${card.name} ${card.type || ''} ${card.rulesText} ${
+                tacticTiming(card) === 'instant' ? 'istantanea' : tacticTiming(card) === 'standard' ? 'standard' : ''
+            }`.toLocaleLowerCase('it'),
             executionStatus: getCardExecutionStatus(card)
         }
     ])
@@ -143,7 +146,11 @@ export function initDeckBuilder(onUseDeck) {
             row.className = 'builder-card';
             const details = document.createElement('span');
             const execution = preparedCards.get(card.id).executionStatus;
-            details.textContent = `${card.name} · ${CATEGORY_LABELS[card.category]} · costo ${card.cost} · ${execution.label}`;
+            const speed = tacticTiming(card);
+            const kind = speed
+                ? `Tattica ${speed === 'instant' ? 'Istantanea' : 'Standard'}`
+                : CATEGORY_LABELS[card.category];
+            details.textContent = `${card.name} · ${kind} · costo ${card.cost} · ${execution.label}`;
             const add = document.createElement('button');
             add.type = 'button';
             add.className = 'btn builder-add';

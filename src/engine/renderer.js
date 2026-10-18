@@ -198,11 +198,16 @@ const UIRenderer = {
             const stats = document.createElement('span');
             stats.className = 'card-stats';
             const executionStatus = getCardExecutionStatus(card);
+            const tacticSpeed = card.category === 'tactic'
+                ? (tacticTiming(card) === 'instant' ? 'Istantanea' : 'Standard')
+                : '';
             stats.textContent = card.category === 'unit'
                 ? `Forza ${card.force} · ${card.type}`
-                : ['site', 'field', 'equipment'].includes(card.category)
-                    ? `${card.category} · ${executionStatus.label}`
-                    : `${card.category} · ${executionStatus.label}`;
+                : card.category === 'tactic'
+                    ? `Tattica ${tacticSpeed} · ${executionStatus.label}`
+                    : ['site', 'field', 'equipment'].includes(card.category)
+                        ? `${card.category} · ${executionStatus.label}`
+                        : `${card.category} · ${executionStatus.label}`;
             const rules = document.createElement('span');
             rules.className = 'card-rules';
             rules.textContent = card.category === 'unit'

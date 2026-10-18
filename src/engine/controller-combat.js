@@ -179,7 +179,6 @@ const combatMethods = {
                 .filter(({ card }) => {
                     if (card.category !== 'unit' && !isImmediateTacticSupported(card)) return false;
                     if (card.category === 'tactic') {
-                        if (tacticTiming(card) === 'instant') return false;
                         const siteTacticLimit = GameState.players.some(owner =>
                             owner.sites?.some(site => site.catalogId === 'set-2-095')
                         );

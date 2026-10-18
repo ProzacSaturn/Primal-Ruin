@@ -33,10 +33,6 @@ const playMethods = {
                 return;
             }
             if (isImmediateTacticSupported(card)) {
-                if (tacticTiming(card) === 'instant') {
-                    Logger.log(`${card.name}: è una Tattica Istantanea e si gioca nella finestra di reazione.`);
-                    return;
-                }
                 this.playImmediateTactic(card);
                 return;
             }

@@ -1,5 +1,6 @@
 import catalog from './data/cards.json' with { type: 'json' };
 import { getCardExecutionStatus } from './card-effects.js';
+import { tacticTiming } from './tactics.js';
 
 const CATEGORY_LABELS = {
     unit: 'Unità',
@@ -12,9 +13,14 @@ const CATEGORY_LABELS = {
 
 const libraryCards = catalog.cards.map((card) => ({
     card,
-    searchText: [card.name, card.setName, card.type || '', card.rarity || '', card.rulesText]
-        .join(' ')
-        .toLocaleLowerCase('it'),
+    searchText: [
+        card.name,
+        card.setName,
+        card.type || '',
+        card.rarity || '',
+        card.rulesText,
+        tacticTiming(card) === 'instant' ? 'istantanea' : tacticTiming(card) === 'standard' ? 'standard' : ''
+    ].join(' ').toLocaleLowerCase('it'),
     executionStatus: getCardExecutionStatus(card)
 }));
 
@@ -52,7 +58,10 @@ export function initCardLibrary() {
             title.textContent = `${String(card.number).padStart(3, '0')} · ${card.name}`;
             const metadata = document.createElement('p');
             metadata.className = 'library-metadata';
-            metadata.textContent = `${card.setName} · ${CATEGORY_LABELS[card.category]} · ${card.rarity || 'Rarità non indicata'}`;
+            const speed = tacticTiming(card);
+            metadata.textContent = speed
+                ? `${card.setName} · Tattica ${speed === 'instant' ? 'Istantanea' : 'Standard'} · ${card.rarity || 'Rarità non indicata'}`
+                : `${card.setName} · ${CATEGORY_LABELS[card.category]} · ${card.rarity || 'Rarità non indicata'}`;
             const stats = document.createElement('p');
             stats.className = 'library-stats';
             const cardStats = [];
