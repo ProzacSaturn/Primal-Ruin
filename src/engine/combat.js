@@ -4,6 +4,7 @@ import {
     defaultPromotionSlot,
     shouldUseTorment
 } from '../game-rules.js';
+import { applyStandardAscension, keywordValue } from '../keywords.js';
 import {
     createToken,
     getDamageReduction,
@@ -43,16 +44,13 @@ const CombatResolver = {
     },
 
     strength(player, frontName, enemyLine) {
+        void enemyLine;
         const front = player.fronts[frontName];
         if (!front.line) return 0;
         const collective = SLOT_NAMES.map(slot => front[slot])
             .filter(unit => unit?.keywords.includes('Mente Collettiva')).length;
         const opponentPlayer = player === GameState.players[0]
             ? GameState.players[1] : GameState.players[0];
-        const wearMatch = enemyLine && getUnitKeywords(
-            opponentPlayer, enemyLine, frontName, 'line'
-        ).find(keyword => keyword.startsWith('Logorare'));
-        const wearPenalty = wearMatch ? Number(wearMatch.match(/\((\d+)\)/)?.[1] || 1) : 0;
         const keywords = getUnitKeywords(player, front.line, frontName, 'line');
         const effectiveLine = {
             ...front.line,
@@ -61,24 +59,24 @@ const CombatResolver = {
                     player === GameState.players[0] ? GameState.players[1] : GameState.players[0]),
             keywords
         };
+        const fewerUnits = GameState.countUnits(player) < GameState.countUnits(opponentPlayer);
         const staticSupport = getSupportBonus(player, frontName);
         const supportBonus = player.tacticEffects?.supportBonus
-            ? Math.min(3, Number(Boolean(front.supA)) * player.tacticEffects.supportBonus +
-                Number(Boolean(front.supB)) * player.tacticEffects.supportBonus)
+            ? Math.min(3, Number(Boolean(front.supA) && !front.supA.infiltrated) * player.tacticEffects.supportBonus +
+                Number(Boolean(front.supB) && !front.supB.infiltrated) * player.tacticEffects.supportBonus)
             : staticSupport;
-        return calculateUnitCombatStrength({
+        const base = calculateUnitCombatStrength({
             line: effectiveLine,
             supportCount: supportBonus,
             supportBonusPerUnit: 1,
             supportBonusCap: 3,
             collectiveCount: collective,
-            fewerUnits: GameState.countUnits(player) < GameState.countUnits(
-                opponentPlayer
-            ),
-            logorare: wearPenalty,
-            ferocityBonus: getFerocityBonus(player, front.line, frontName, 'line',
-                GameState.countUnits(player) < GameState.countUnits(opponentPlayer))
+            fewerUnits,
+            logorare: 0,
+            ferocityBonus: getFerocityBonus(player, front.line, frontName, 'line', fewerUnits)
         });
+        const packInstinct = player.commanderId === 'cmd-1-01' && fewerUnits ? 1 : 0;
+        return base + packInstinct;
     },
 
     commanderDamage(winner, loser, frontName, margin) {
@@ -144,6 +142,11 @@ const CombatResolver = {
             Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea, nessuno scontro.`);
             return;
         }
+        if (this.collectOpeningWear(frontName).length) await this.applyOpeningWear(frontName);
+        if (!attackFront.line && !defendFront.line) {
+            Logger.log(`${FRONT_LABELS[frontName]}: le Linee cadono prima dello scontro.`);
+            return;
+        }
         if (!attackFront.line && defendFront.line) {
             defender.frontWinsThisTurn = (defender.frontWinsThisTurn || 0) + 1;
             Logger.log(`${FRONT_LABELS[frontName]}: fronte scoperto.`);
@@ -155,6 +158,7 @@ const CombatResolver = {
             const damage = this.commanderDamage(
                 defender, attacker, frontName, this.strength(defender, frontName, null)
             );
+            this.noteAscension(defendFront.line);
             await this.dealCommanderDamage(attacker, frontName, damage);
             GameState.checkVictory();
             return;
@@ -169,6 +173,7 @@ const CombatResolver = {
                 attackFront.line
             );
             const damage = this.commanderDamage(attacker, defender, frontName, attackStrength);
+            this.noteAscension(attackFront.line);
             Logger.log(`${FRONT_LABELS[frontName]} scoperto: ${damage} danni al Comandante.`);
             await this.dealCommanderDamage(defender, frontName, damage);
             GameState.checkVictory();
@@ -191,19 +196,9 @@ const CombatResolver = {
         const commanderDamage = this.commanderDamage(winner, loser, frontName, difference);
         const winningLine = winner.fronts[frontName].line;
         this.resolveUnitLineWinEffects(loser, frontName, winningLine);
+        this.noteAscension(winningLine);
         Logger.log(`${winner.name} vince il Fronte di ${difference}.`);
-        if (winningLine.keywords.some(keyword => keyword.startsWith('Tormento'))) {
-            const value = Number(winningLine.keywords.find(keyword => keyword.startsWith('Tormento')).match(/\((\d+)\)/)?.[1] || 1);
-            const useTorment = await this.chooseTorment(winner, loser, frontName, commanderDamage, value);
-            if (useTorment) {
-                loser.follia = Math.min(10, loser.follia + value);
-                Logger.log(`Tormento: ${loser.name} riceve ${value} Follia invece dei danni al Comandante.`);
-            } else {
-                await this.dealCommanderDamage(loser, frontName, commanderDamage);
-            }
-        } else {
-            await this.dealCommanderDamage(loser, frontName, commanderDamage);
-        }
+        await this.dealCommanderDamage(loser, frontName, commanderDamage);
         if (!GameState.gameOver) await this.damageLine(loser, frontName, difference, winner);
         GameState.checkVictory();
         UIRenderer.refresh();
@@ -306,22 +301,25 @@ const CombatResolver = {
             control.unitId === unit.id
         ) ?? -1;
         const control = controlIndex >= 0 ? controller.controlledUnits[controlIndex] : null;
-        const owner = control
+        let owner = control
             ? GameState.players.find(candidate => candidate.id === control.ownerId) || player
             : player;
+        if (unit.infiltrated) {
+            owner = GameState.players.find(candidate => candidate.id === unit.owner) || owner;
+        }
         if (control) controller.controlledUnits.splice(controlIndex, 1);
-        if (unit.keywords.includes('Divinità')) {
-            owner.discard.push(unit);
+        const destroyed = reason === 'combat-destroy' || reason === 'effect-destroy';
+        owner.discard.push(unit);
+        if (unit.keywords?.includes('Divinità') && reason === 'combat-destroy') {
             Logger.log(`${unit.name} viene Sigillata e va negli scarti.`);
-        } else if (unit.keywords.includes('Eco Spettrale')) {
-            owner.exile.push(unit);
-            Logger.log(`${unit.name} viene esiliata (Eco Spettrale).`);
         } else {
-            owner.discard.push(unit);
             Logger.log(`${unit.name} va negli scarti.`);
         }
         this.onUnitRemoved(player, unit, frontName, reason, sourcePlayer);
         if (slotName === 'line') this.promoteSupport(front, player, frontName, promotionSlot);
+        if (destroyed && unit.keywords?.includes('Eco Spettrale')) {
+            this.trySpectralReturn(owner, unit, frontName);
+        }
         const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
         if (slotName === 'line' && !front.line && enemy.field?.catalogId === 'set-1-117') {
             player.pc = Math.max(0, player.pc - 1);
@@ -579,7 +577,10 @@ const CombatResolver = {
     },
 
     promoteSupport(front, player, frontName, slot = null) {
-        const next = slot || (front.supA ? 'supA' : front.supB ? 'supB' : null);
+        const eligible = name => front[name] && !front[name].infiltrated;
+        const next = slot && eligible(slot)
+            ? slot
+            : eligible('supA') ? 'supA' : eligible('supB') ? 'supB' : null;
         if (!next || !front[next]) return;
         front.line = front[next];
         front.line.position = 'line';
@@ -675,6 +676,105 @@ const CombatResolver = {
     finishSacrifice() {
         const resolve = GameState.sacrifice?.resolve;
         if (resolve) resolve();
+    },
+
+    noteAscension(unit) {
+        if (!applyStandardAscension(unit)) return;
+        Logger.log(`${unit.name} subisce Ascensione: +1 Forza permanente e il tipo Divinità.`);
+    },
+
+    collectOpeningWear(frontName) {
+        const pairs = [
+            [GameState.current, GameState.opponent],
+            [GameState.opponent, GameState.current]
+        ];
+        const pending = [];
+        for (const [owner, enemy] of pairs) {
+            const line = owner.fronts[frontName].line;
+            if (!line || !enemy.fronts[frontName].line) continue;
+            const keywords = getUnitKeywords(owner, line, frontName, 'line');
+            const amount = keywordValue(keywords, 'Logorare', 1);
+            if (!amount) continue;
+            pending.push({ enemy, amount, owner });
+        }
+        return pending;
+    },
+
+    async applyOpeningWear(frontName) {
+        const pending = this.collectOpeningWear(frontName);
+        for (const hit of pending) {
+            if (!hit.enemy.fronts[frontName].line) continue;
+            Logger.log(`Logorare: la Linea di ${FRONT_LABELS[frontName]} subisce ${hit.amount} danni.`);
+            await this.damageLine(hit.enemy, frontName, hit.amount, hit.owner);
+        }
+    },
+
+    trySpectralReturn(owner, unit, frontName) {
+        const cost = unit.cost ?? 0;
+        const available = (owner.domains || []).filter(domain => !domain.tapped);
+        if (available.length < cost) return false;
+        const fronts = [frontName, ...FRONT_NAMES.filter(name => name !== frontName)];
+        const spot = fronts.flatMap(name =>
+            ['supA', 'supB']
+                .filter(slot => owner.fronts[name] && !owner.fronts[name][slot])
+                .map(slot => ({ name, slot }))
+        )[0];
+        if (!spot) return false;
+        available.slice(0, cost).forEach(domain => { domain.tapped = true; });
+        const index = owner.discard.findIndex(card => card.id === unit.id);
+        if (index >= 0) owner.discard.splice(index, 1);
+        unit.currentForce = 1;
+        unit.damage = Math.max(0, (unit.force || 1) - 1);
+        unit.front = spot.name;
+        unit.position = spot.slot;
+        owner.fronts[spot.name][spot.slot] = unit;
+        Logger.log(`${unit.name} torna in Supporto a Forza 1 (Eco Spettrale).`);
+        return true;
+    },
+
+    applyTormentAtTurnStart(player) {
+        const entries = [];
+        for (const board of GameState.players) {
+            for (const frontName of FRONT_NAMES) {
+                for (const slotName of SLOT_NAMES) {
+                    const unit = board.fronts[frontName][slotName];
+                    if (unit?.tormentTurns > 0) entries.push({ board, frontName, slotName, unit });
+                }
+            }
+        }
+        for (const entry of entries) {
+            const { board, frontName, slotName, unit } = entry;
+            if (board.fronts[frontName][slotName] === unit) {
+                if (slotName === 'line') {
+                    this.damageLine(board, frontName, 1);
+                } else {
+                    unit.currentForce = Math.max(0, (unit.currentForce || 0) - 1);
+                    Logger.log(`Tormento: ${unit.name} subisce 1 danno.`);
+                    if (unit.currentForce <= 0) {
+                        this.removeUnit(board, frontName, slotName, 'effect-destroy');
+                    }
+                }
+            }
+            unit.tormentTurns = Math.max(0, (unit.tormentTurns || 0) - 1);
+        }
+        const opponent = GameState.players.find(candidate => candidate !== player);
+        if (!opponent) return;
+        for (const frontName of FRONT_NAMES) {
+            const line = player.fronts[frontName].line;
+            if (!line) continue;
+            const amount = keywordValue(
+                getUnitKeywords(player, line, frontName, 'line'),
+                'Tormento',
+                1
+            );
+            if (!amount) continue;
+            opponent.pc = Math.max(0, opponent.pc - amount);
+            Logger.log(`Tormento: ${line.name} infligge ${amount} danni a ${opponent.name}.`);
+            if (player.commanderId === 'cmd-2-01' &&
+                FRONT_NAMES.some(name => player.fronts[name].line)) {
+                GameController.drawCards(player, 1, 'Malakor');
+            }
+        }
     }
 };
 

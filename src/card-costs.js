@@ -21,11 +21,11 @@ export function calculateCardCost(player, card, {
     turnNumber = 0,
     players = [player]
 } = {}) {
+    void fromDiscard;
     let cost = card.cost ?? 0;
     if (card.category === 'equipment') cost += card.equipCost ?? 0;
 
     const spectral = card.keywords?.includes('Eco Spettrale');
-    if (card.category === 'unit' && spectral && fromDiscard) cost++;
     if (card.category === 'unit' && spectral) {
         if (player.sites?.some(site => catalogId(site) === 'set-2-081')) cost--;
         if (player.field && catalogId(player.field) === 'set-2-114') cost--;
@@ -48,13 +48,13 @@ export function calculateCardCost(player, card, {
 }
 
 export function markCardCostDiscountUsed(player, card, turnNumber, fromDiscard = false) {
+    void fromDiscard;
     if (card.category !== 'unit' || !card.keywords?.includes('Eco Spettrale')) return;
     const site = player.sites?.find(candidate =>
         catalogId(candidate) === 'set-2-096' && candidate.discountTurn !== turnNumber
     );
     if (!site) return;
     let costWithoutSite = card.cost ?? 0;
-    if (fromDiscard) costWithoutSite++;
     if (player.sites?.some(candidate => catalogId(candidate) === 'set-2-081')) {
         costWithoutSite--;
     }

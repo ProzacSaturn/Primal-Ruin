@@ -150,6 +150,7 @@ const matchMethods = {
             player.pc = Math.max(0, player.pc - 1);
             Logger.log(`Parassita: ${player.name} perde 1 PC.`);
         }
+        CombatResolver.applyTormentAtTurnStart(player);
         if (GameState.checkVictory()) return;
         if (playerIndex === 1 && player.follia > 0) {
             player.echo += player.follia;
@@ -219,6 +220,10 @@ const matchMethods = {
         } else {
             this.deploy(frontName, slotName);
         }
+    },
+
+    deployInfiltration(frontName, slotName) {
+        this.playInfiltratedUnit(frontName, slotName);
     },
 
     finishSacrifice() {

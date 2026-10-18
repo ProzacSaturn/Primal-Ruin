@@ -3,6 +3,7 @@ import {
     isRegisteredTactic,
     resolveRegisteredTactic
 } from './tactics.js';
+import { applyStandardAscension } from './keywords.js';
 import { isProtectedFromEnemyTactic } from './unit-triggers.js';
 
 const IMMEDIATE_TACTICS = new Set([
@@ -160,6 +161,7 @@ export function applyTemporaryForce(unit, modifier) {
     if (appliedModifier < 0) {
         unit.forceLostThisTurn = (unit.forceLostThisTurn || 0) - appliedModifier;
     }
+    if (appliedModifier > 0) applyStandardAscension(unit);
     return appliedModifier;
 }
 
@@ -288,12 +290,12 @@ export function getCardExecutionStatus(card) {
         /\bSorvolo\b/giu,
         /\bMente Collettiva\b/giu,
         /\bPosizione Difensiva\b/giu,
-        /\bLogorare\s*\(\d+\)/giu,
-        /\bEco Spettrale\b/giu,
-        /\bTormento\s*\(\d+\)/giu,
-        /\bAscensione\s*\(\d+\)/giu,
-        /\bDivinità\b/giu,
-        /\bInfiltrazione\s*\(\d+\)/giu
+        /\bLogorare(?:\s*\(\d+\))?(?:\s*\([^)]*\))?/giu,
+        /\bEco Spettrale(?:\s*\([^)]*\))?/giu,
+        /\bTormento(?:\s*\(\d+\))?(?:\s*\([^)]*\))?/giu,
+        /\bAscensione(?:\s*\(\d+\)|\s+\d+)?(?:\s*\(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente \+1 Forza e il tipo Divinità\.?\))?/giu,
+        /\bInfiltrazione(?:\s*\(\d+\))?(?:\s*\([^)]*\))?/giu,
+        /Divinità:\s*Immune a Tattiche avversarie e distruzione da effetti\.\s*Se ridotta a 0 Forza in Scontro, viene Sigillata \(scartata\)\.?/giu
     ];
     const keywordReminders = [
         /\bFerocia\s*\(Durante lo Scontro, questa Unità ottiene \+1 Forza se controlli meno Unità(?: complessive)? dell’avversario\)/giu,

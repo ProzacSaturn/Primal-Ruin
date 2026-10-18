@@ -40,7 +40,7 @@
     * *Testo:* Posizione Difensiva. **Logorare**.
 
 12. **Mietitore di Anime** | Costo: 3 | Forza: 3 | Tipo: Spirito
-    * *Testo:* **Ascensione 1** *(Se 3 o più Unità sono nel tuo cimitero, ottiene +1 Forza e Tormento).*
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 ### COSTO 4
 
@@ -60,7 +60,7 @@
     * *Testo:* **Logorare**.
 
 18. **Sacerdote del Tormento** | Costo: 4 | Forza: 3 | Tipo: Cultista
-    * *Testo:* **Ascensione 1** *(Se nel tuo cimitero ci sono almeno 3 carte, i tuoi effetti Tormento infliggono +1 danno).*
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 19. **Signore delle Catene** | Costo: 4 | Forza: 4 | Tipo: Demone
     * *Testo:* Quando questa Unità entra in gioco, blocca il movimento dell'Unità in Linea avversaria nello stesso Fronte fino al prossimo turno.
@@ -89,7 +89,7 @@
     * *Testo:* Posizione Difensiva. **Tormento**.
 
 27. **Tessitore di Pile** | Costo: 5 | Forza: 4 | Tipo: Cultista
-    * *Testo:* **Ascensione 2** *(Se hai 5 o più carte nel cimitero, ottiene +2 Forza e Sorvolo).*
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 28. **Signore del Tormento** | Costo: 5 | Forza: 5 | Tipo: Demone
     * *Testo:* **Tormento**. All'inizio del tuo turno, sceglie una Linea avversaria e le riduce la Forza di 1 fino alla fine del turno.
@@ -107,7 +107,7 @@
     * *Testo:* Le Unità avversarie nello stesso Fronte perdono 1 Forza.
 
 33. **Colosso Necrotico** | Costo: 5 | Forza: 5 | Tipo: Spirito
-    * *Testo:* **Ascensione 1**.
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 34. **Inquisitore dell'Abisso** | Costo: 5 | Forza: 4 | Tipo: Demone
     * *Testo:* Se questa Unità vince il suo Fronte, distruggi un Supporto avversario.
@@ -124,7 +124,7 @@
     * *Testo:* **Eco Spettrale**. Assalto.
 
 38. **Demone Giudice** | Costo: 6 | Forza: 5 | Tipo: Demone
-    * *Testo:* **Ascensione 2** *(Con 5+ carte nel cimitero, infligge 2 danni al Comandante nemico ogni volta che distrugge un'Unità).*
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 39. **Guardiano delle Anime Dannate** | Costo: 6 | Forza: 6 | Tipo: Spirito
     * *Testo:* Posizione Difensiva. Riduce di 1 tutti i danni subiti.
@@ -148,7 +148,7 @@
     * *Testo:* **Logorare**.
 
 46. **Cultista dell'Ascensione** | Costo: 6 | Forza: 5 | Tipo: Cultista
-    * *Testo:* **Ascensione 2**.
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 ### COSTO 7+
 
@@ -159,7 +159,7 @@
     * *Testo:* **Eco Spettrale**. **Logorare**.
 
 49. **Demone della Desolazione** | Costo: 7 | Forza: 7 | Tipo: Demone
-    * *Testo:* **Ascensione 2** *(Con 5+ carte nel cimitero, non può essere bersaglio di Tattiche).*
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 50. **Signore delle Tenebre Eterne** | Costo: 7 | Forza: 6 | Tipo: Demone
     * *Testo:* **Tormento**. Infliggi 2 danni al Comandante avversario all'inizio della tua Fase di Scontro.
@@ -171,7 +171,7 @@
     * *Testo:* **Eco Spettrale**. Quando rientra in gioco, distruggi un Supporto avversario.
 
 53. **Avatar del Tormento** | Costo: 8 | Forza: 7 | Tipo: Demone
-    * *Testo:* **Tormento**. **Ascensione 3** *(Con 7+ carte nel cimitero, raddoppia i danni da Tormento).*
+    * *Testo:* **Tormento**. **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 54. **Gorgone Primordiale dell'Abisso** | Costo: 8 | Forza: 8 | Tipo: Demone
     * *Testo:* Quando questa Unità entra in gioco, un'Unità in Linea avversaria perde 3 Forza fino alla fine del turno.
@@ -180,7 +180,7 @@
     * *Testo:* **Logorare**. Quando distrugge una Linea avversaria, infliggi 2 danni al Comandante nemico.
 
 56. **SoVRANO DELL'EREBO** | Costo: 9 | Forza: 8 | Tipo: Demone
-    * *Testo:* **Ascensione 3**. Tutte le Unità avversarie perdono 1 Forza e le tue ottengono +1 Forza.
+    * *Testo:* **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Tutte le Unità avversarie perdono 1 Forza e le tue ottengono +1 Forza. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 57. **Abisso Incarnato** | Costo: 9 | Forza: 9 | Tipo: Demone
     * *Testo:* Non può essere distrutto da Tattiche o effetti di carte.
@@ -189,7 +189,7 @@
     * *Testo:* **Eco Spettrale**. Assalto. Quando entra in gioco, distruggi tutte le Unità in Supporto avversarie.
 
 59. **Demone Primo Supremo** | Costo: 10 | Forza: 10 | Tipo: Demone
-    * *Testo:* **Tormento**. **Logorare**. **Ascensione 3**.
+    * *Testo:* **Tormento**. **Logorare**. **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 60. **Monarca del Risveglio Infernale** | Costo: 10 | Forza: 9 | Tipo: Demone
     * *Testo:* Se vinci almeno due Fronti nello stesso turno, infliggi 4 danni al Comandante avversario.
@@ -221,7 +221,7 @@
     * *Testo:* Subisci 2 danni al Comandante. Pesca 3 carte.
 
 69. **Tenebre Soffocanti** | Costo: 3
-    * *Testo:* Distruggi un Supporto avversario. Se hai **Ascensione**, infliggi anche 1 danno al Comandante avversario.
+    * *Testo:* Distruggi un Supporto avversario. Se controlli un'Unità che ha subito Ascensione, infliggi anche 1 danno al Comandante avversario.
 
 70. **Mietitura delle Anime** | Costo: 3
     * *Testo:* Distruggi un'Unità danneggiata.
@@ -248,7 +248,7 @@
     * *Testo:* Sacrifica la tua Linea. Distruggi l'intero Fronte avversario corrispondente.
 
 78. **Rito dell'Ascensione Suprema** | Costo: 7
-    * *Testo:* Attiva immediatamente tutti i requisiti di **Ascensione** per le tue Unità in gioco fino alla fine della partita.
+    * *Testo:* Le tue Unità in gioco subiscono Ascensione: ottengono permanentemente +1 Forza e il tipo Divinità. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 ## 🏹 EQUIPAGGIAMENTI (79 - 90)
 
@@ -268,7 +268,7 @@
     * *Testo:* L'Unità equipaggiata ottiene +2 Forza e **Logorare**.
 
 84. **Amuleto dell'Ascensione** | Costo: 3 | Equip: 1
-    * *Testo:* Riduce di 1 il requisito di carte nel cimitero per attivare **Ascensione** dell'Unità equipaggiata.
+    * *Testo:* L'Unità equipaggiata ottiene **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 85. **Elmo Infernale** | Costo: 3 | Equip: 1
     * *Testo:* L'Unità equipaggiata ottiene +1 Forza e Posizione Difensiva.
@@ -286,7 +286,7 @@
     * *Testo:* L'Unità equipaggiata ottiene +2 Forza, **Tormento** ed **Eco Spettrale**.
 
 90. **Sigillo del Risveglio Infernale** | Costo: 6 | Equip: 3
-    * *Testo:* L'Unità equipaggiata ottiene +3 Forza, **Logorare** e **Ascensione 2**.
+    * *Testo:* L'Unità equipaggiata ottiene +3 Forza, **Logorare** e **Ascensione** *(Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità).* Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 
 ## 🏛 SITI (91 - 110)
 
@@ -315,7 +315,7 @@
     * *Testo:* Quando una tua Unità muore, infliggi 1 danno al Comandante avversario.
 
 99. **Santuario dell'Erebo** | Costo: 3
-    * *Testo:* Le carte nel tuo cimitero contano +1 ai fini di **Ascensione**.
+    * *Testo:* Quando una tua Unità vince un Fronte, subisce Ascensione.
 
 100. **Ncrospira Oscura** | Costo: 3
      * *Testo:* Sacrifica un Supporto: la tua Linea ottiene +2 Forza in questo turno.
@@ -336,7 +336,7 @@
      * *Testo:* Le Unità avversarie non possono recuperare Forza o essere curate.
 
 106. **Guglia dell'Ascensione** | Costo: 5
-     * *Testo:* Le Unità con **Ascensione** attiva ottengono +1 Forza extra.
+     * *Testo:* Le Unità che hanno subito Ascensione ottengono +1 Forza.
 
 107. **Santuario del Demone Primo** | Costo: 5
      * *Testo:* I Demoni che controlli in Linea ottengono **Logorare**.

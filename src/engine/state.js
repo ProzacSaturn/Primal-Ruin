@@ -153,14 +153,10 @@ const GameState = {
                 );
             }
         }
-        const infiltrationCount = Number(
-            unit.keywords.find(keyword => keyword.startsWith('Infiltrazione'))
-                ?.match(/\((\d+)\)/)?.[1] || 0
-        );
         const siteParasites = (player.sites || []).filter(site =>
             ['set-3-083', 'set-3-098'].includes(site.catalogId)
         ).length;
-        const parasites = infiltrationCount + siteParasites;
+        const parasites = siteParasites;
         if (parasites > 0) {
             this.addParasites(player, opponent, parasites);
         }
@@ -365,8 +361,13 @@ const GameState = {
     },
 
     countUnits(player) {
-        return FRONT_NAMES.reduce((count, name) =>
-            count + SLOT_NAMES.filter(slot => player.fronts[name][slot]).length, 0);
+        return this.players.reduce((total, boardOwner) => total + FRONT_NAMES.reduce((count, name) =>
+            count + SLOT_NAMES.filter(slot => {
+                const unit = boardOwner.fronts[name][slot];
+                if (!unit) return false;
+                if (unit.infiltrated) return unit.owner === player.id;
+                return boardOwner === player;
+            }).length, 0), 0);
     },
 
     unitsInFront(player, frontName) {

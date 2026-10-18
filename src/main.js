@@ -48,6 +48,13 @@ initDeckBuilder(cardIds => GameController.resetWithDeck(cardIds));
 const fronts = ['left', 'center', 'right'];
 const slots = ['line', 'supA', 'supB'];
 fronts.forEach(front => {
+    ['supA', 'supB'].forEach(slot => {
+        const element = document.getElementById(`opp-${front}-${slot}`);
+        element.addEventListener('click', event => {
+            event.stopPropagation();
+            GameController.deployInfiltration(front, slot);
+        });
+    });
     slots.forEach(slot => {
         document.getElementById(`p-${front}-${slot}`).addEventListener('click', event => {
             event.stopPropagation();

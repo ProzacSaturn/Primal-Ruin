@@ -4,7 +4,6 @@ import {
     restoreTemporaryForce
 } from '../card-effects.js';
 import { markCardCostDiscountUsed } from '../card-costs.js';
-import { evaluateCommanderAbility, getCommander } from '../commanders.js';
 import { checkDeployment } from '../game-rules.js';
 import { tacticRequiresChoice } from '../tactics.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
@@ -73,15 +72,7 @@ const combatMethods = {
         if (GameState.gameOver) return;
         const enemy = GameState.players[1];
         Logger.log('L’avversario pianifica le mosse.');
-        const enemyCommander = getCommander(enemy.commanderId);
-        if (enemyCommander?.activation && !enemy.commanderAbilityUsed) {
-            const result = evaluateCommanderAbility(enemyCommander.activation, { self: enemy });
-            if (result.ok) {
-                enemy.commanderAbilityUsed = true;
-                const summary = this.applyCommanderEffects(enemy, result.effects);
-                Logger.log(`${enemyCommander.name} — ${enemyCommander.activation.name}: ${summary || 'nessun effetto'}.`);
-            }
-        }
+        this.activateAutomaticCommander(enemy);
         while (!GameState.gameOver) {
             const domains = enemy.domains.filter(domain => !domain.tapped);
             const candidates = enemy.hand
@@ -99,9 +90,7 @@ const combatMethods = {
                             return false;
                         }
                     }
-                    const ascension = card.keywords.find(keyword => keyword.startsWith('Ascensione'));
-                    const echoCost = ascension ? Number(ascension.match(/\((\d+)\)/)?.[1] || 0) : 0;
-                    return this.getCardCost(enemy, card) <= domains.length && echoCost <= enemy.echo;
+                    return this.getCardCost(enemy, card) <= domains.length;
                 })
                 .map(candidate => {
                     if (candidate.card.category !== 'unit') {
@@ -162,8 +151,6 @@ const combatMethods = {
             const deployment = candidate.deployment;
             const unit = candidate.card;
             markCardCostDiscountUsed(enemy, unit, GameState.turnNumber);
-            const ascension = unit.keywords.find(keyword => keyword.startsWith('Ascensione'));
-            if (ascension) enemy.echo -= Number(ascension.match(/\((\d+)\)/)?.[1] || 0);
             unit.currentForce = unit.force;
             if (deployment.assaultSwap) {
                 const front = enemy.fronts[deployment.frontName];

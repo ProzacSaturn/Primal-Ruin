@@ -9,12 +9,11 @@ const KEYWORD_PATTERNS = [
     /Sorvolo/i,
     /Mente Collettiva/i,
     /Posizione Difensiva/i,
-    /Logorare\s*\(\d+\)/ig,
+    /Logorare(?:\s*\(\d+\))?/ig,
     /Eco Spettrale/i,
-    /Tormento\s*\(\d+\)/ig,
-    /Ascensione\s*\(\d+\)/ig,
-    /Divinità/i,
-    /Infiltrazione\s*\(\d+\)/ig
+    /Tormento(?:\s*\(\d+\))?/ig,
+    /Ascensione(?:\s*\(\d+\)|\s+\d+)?/ig,
+    /Infiltrazione(?:\s*\(\d+\))?/ig
 ];
 
 function shuffled(items) {
@@ -26,8 +25,13 @@ function shuffled(items) {
     return result;
 }
 
-function extractKeywords(rulesText) {
-    return KEYWORD_PATTERNS.flatMap(pattern => rulesText.match(pattern) || []);
+function extractKeywords(rulesText = '', typeText = '') {
+    const keywords = KEYWORD_PATTERNS.flatMap(pattern => (rulesText || '').match(pattern) || []);
+    // Il tipo Divinità è la condizione. La frase di promemoria sulle carte non la attiva da sola.
+    if (/Divinità/iu.test(typeText || '') && !keywords.includes('Divinità')) {
+        keywords.push('Divinità');
+    }
+    return keywords;
 }
 
 function cardIcon(card) {
@@ -46,7 +50,7 @@ function makeUnit(card, id, owner) {
         catalogId: card.id,
         owner,
         icon: cardIcon(card),
-        keywords: extractKeywords(card.rulesText),
+        keywords: extractKeywords(card.rulesText, card.type),
         temporaryKeywords: [],
         currentForce: card.force,
         damage: 0,
@@ -67,7 +71,7 @@ function makeCardInstance(card, id, owner) {
             id,
             catalogId: card.id,
             owner,
-            keywords: extractKeywords(card.rulesText)
+            keywords: extractKeywords(card.rulesText, card.type)
         };
 }
 

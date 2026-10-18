@@ -1,4 +1,4 @@
-🟣 `SET 4 – ASCESA DIVINA 👑 COMANDANTE Aurelius, l'Imperatore Celeste Abilità: Rifornimento (All'inizio del tuo turno, pesca 1 carta). Abilità attiva (Una volta per turno, costo 2 PC): Scegli un'Unità bersaglio. Se soddisfa i requisiti, subisce Ascensione; in alternativa, infliggi 1 segnalino Tormento a un Comandante avversario.` 🟩 `UNITÀ (1 - 56) 1. Novizio dell'Ascesa Costo: 2 Forza: 2 Tipo: Umano – Asceta Testo: Ascensione (Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità). 2. Spirito del Tormento Costo: 2 Forza: 1 Tipo: Spirito Testo: Tormento (1) Quando entra in gioco, applica 1 segnalino Tormento al Comandante avversario. 3. Sacerdotessa del Tempio Celeste Costo: 2 Forza: 2 Tipo: Divinità – Chierico Testo: Se si trova in Supporto, la tua Linea nel suo Fronte ottiene +1 Forza. 4. Esploratore Infiltrato Costo: 2 Forza: 2 Tipo: Umano – Spia Testo: Infiltrazione (1) (Può essere giocato direttamente in un Fronte avversario scoperto come Supporto, ignorando le restrizioni standard). 5. Celestiale Minore Costo: 3 Forza: 3 Tipo: Divinità – Angelo Testo: Sorvolo. 6. Custode dei Giuramenti Costo: 3 Forza: 2 Tipo: Costrutto Testo: Posizione Difensiva. Se questa Unità è in Linea, riduce di 1 il danno subito. 7. Adepto del Tormento Costo: 3 Forza: 3 Tipo: Cultista Testo: Tormento (1) Quando questa Unità attacca una Linea avversaria affetta da Tormento, ottiene +1 Forza fino alla fine dello Scontro.` 
+🟣 `SET 4 – ASCESA DIVINA 👑 COMANDANTE Aurelius, l'Imperatore Celeste Abilità: Rifornimento (All'inizio del tuo turno, pesca 1 carta). Abilità attiva (Una volta per turno, costo 2 PC): Scegli un'Unità bersaglio. Se soddisfa i requisiti, subisce Ascensione; in alternativa, infliggi 1 segnalino Tormento a un Comandante avversario.` 🟩 `UNITÀ (1 - 56) 1. Novizio dell'Ascesa Costo: 2 Forza: 2 Tipo: Umano – Asceta Testo: Ascensione (Quando questa Unità vince un Fronte o riceve un potenziamento, ottiene permanentemente +1 Forza e il tipo Divinità). Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata). 2. Spirito del Tormento Costo: 2 Forza: 1 Tipo: Spirito Testo: Tormento (1) Quando entra in gioco, applica 1 segnalino Tormento al Comandante avversario. 3. Sacerdotessa del Tempio Celeste Costo: 2 Forza: 2 Tipo: Divinità – Chierico Testo: Se si trova in Supporto, la tua Linea nel suo Fronte ottiene +1 Forza. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata). 4. Esploratore Infiltrato Costo: 2 Forza: 2 Tipo: Umano – Spia Testo: Infiltrazione (1) (Può essere giocato direttamente in un Fronte avversario scoperto come Supporto, ignorando le restrizioni standard). 5. Celestiale Minore Costo: 3 Forza: 3 Tipo: Divinità – Angelo Testo: Sorvolo. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata). 6. Custode dei Giuramenti Costo: 3 Forza: 2 Tipo: Costrutto Testo: Posizione Difensiva. Se questa Unità è in Linea, riduce di 1 il danno subito. 7. Adepto del Tormento Costo: 3 Forza: 3 Tipo: Cultista Testo: Tormento (1) Quando questa Unità attacca una Linea avversaria affetta da Tormento, ottiene +1 Forza fino alla fine dello Scontro.` 
 
 ```
 8. Infiltratore dell'Eclissi
@@ -15,7 +15,7 @@ Forza: 2
 Tipo: Divinità
 Testo:
 Quando entra in gioco, se controlli almeno un'altra Unità con il tipo Divinità,
-pesca 1 carta.
+pesca 1 carta. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 10. Asceta della Vetta
 Costo: 3
 Forza: 3
@@ -34,7 +34,7 @@ Costo: 4
 Forza: 4
 Tipo: Divinità – Guardiano
 Testo:
-Posizione Difensiva.
+Posizione Difensiva. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 13. Infiltratore Ombroso
 Costo: 4
 Forza: 3
@@ -48,13 +48,13 @@ Forza: 3
 Tipo: Divinità – Mago
 Testo:
 All'inizio del tuo turno, se una tua Unità ha completato un'Ascensione, pesca 1
-carta.
+carta. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 15. Falange Celeste
 Costo: 4
 Forza: 4
 Tipo: Divinità – Soldato
 Testo:
-Nessuna abilità.
+Nessuna abilità. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 16. Demone del Tormento Eterno
 ```
 
@@ -73,7 +73,7 @@ Tipo: Divinità – Angelo
 Testo:
 Sorvolo.
 Quando entra in Linea, una Linea avversaria nello stesso Fronte perde 1 Forza
-fino alla fine dello Scontro.
+fino alla fine dello Scontro. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 18. Spia Infiltrata Suprema
 Costo: 4
 Forza: 3
@@ -93,7 +93,7 @@ Costo: 5
 Forza: 5
 Tipo: Divinità – Avatar
 Testo:
-Se controlli almeno due Unità Divinità, questa Unità ottiene +1 Forza.
+Se controlli almeno due Unità Divinità, questa Unità ottiene +1 Forza. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 20. Eremita della Folgore
 Costo: 5
 Forza: 4
@@ -131,14 +131,14 @@ I tuoi Supporti nel suo Fronte forniscono +2 Forza alla Linea invece di +1
 ```
 
 ```
-(massimo +3 totale).
+(massimo +3 totale). Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 24. Campione dell'Ascensione
 Costo: 6
 Forza: 5
 Tipo: Umano – Guerriero
 Testo:
 Ascensione (Se distrugge una Linea avversaria, diventa una Divinità e ottiene
-permanentemente +2 Forza).
+permanentemente +2 Forza). Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 25. Tormentatore d'Anime
 Costo: 6
 Forza: 5
@@ -161,13 +161,13 @@ Forza: 6
 Tipo: Divinità – Angelo
 Testo:
 Sorvolo.
-Quando entra in Linea, distruggi un Supporto avversario nello stesso Fronte.
+Quando entra in Linea, distruggi un Supporto avversario nello stesso Fronte. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 28. Divinità dei Sette Venti
 Costo: 7
 Forza: 6
 Tipo: Divinità
 Testo:
-Le tue Unità con Sorvolo ottengono +1 Forza.
+Le tue Unità con Sorvolo ottengono +1 Forza. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 29. Signore del Tormento
 Costo: 7
 Forza: 6
@@ -193,14 +193,14 @@ Forza: 5
 Tipo: Divinità – Guerriero
 Testo:
 Ascensione (Se supportato da due Unità, subisce Ascensione, ottenendo +2 Forza e
-immunità alle Tattiche avversarie).
+immunità alle Tattiche avversarie). Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 32. Colosso del Tempio Fluttuante
 Costo: 7
 Forza: 7
 Tipo: Costrutto – Divinità
 Testo:
 Posizione Difensiva.
-Questa Unità non può essere mossa da effetti avversari.
+Questa Unità non può essere mossa da effetti avversari. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 33. Ombra del Tormento Silente
 Costo: 6
 Forza: 5
@@ -214,7 +214,7 @@ Forza: 7
 Tipo: Divinità – Avatar
 Testo:
 Ascensione (Se questa Unità si trova in Linea all'inizio del turno e ha già
-subito Ascensione, raddoppia la sua Forza fino alla fine del turno).
+subito Ascensione, raddoppia la sua Forza fino alla fine del turno). Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 35. Bestia del Tormento Cosmico
 Costo: 8
 Forza: 7
@@ -235,7 +235,7 @@ Forza: 4
 Tipo: Divinità – Angelo
 Testo:
 Sorvolo.
-Posizione Difensiva.
+Posizione Difensiva. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 38. Sacerdote del Tormento Abissale
 Costo: 5
 Forza: 4
@@ -259,7 +259,7 @@ Costo: 8
 Forza: 8
 Tipo: Divinità
 Testo:
-Le tue Linee con il tipo Divinità ottengono +1 Forza.
+Le tue Linee con il tipo Divinità ottengono +1 Forza. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 41. Eroe dell'Ascensione Beata
 Costo: 7
 Forza: 6
@@ -289,7 +289,7 @@ Forza: 7
 Tipo: Divinità – Angelo
 Testo:
 Sorvolo.
-Quando entra in Linea, puoi riprendere in mano una Tattica dal tuo scarto.
+Quando entra in Linea, puoi riprendere in mano una Tattica dal tuo scarto. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 45. Signore delle Ceneri Tormentate
 Costo: 8
 Forza: 8
@@ -321,7 +321,7 @@ Forza: 7
 Tipo: Divinità – Avatar
 Testo:
 Quando entra in gioco, puoi distruggere un Sito bersaglio con Decadenza pari o
-inferiore a 3.
+inferiore a 3. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 49. Colosso del Tormento Divino
 Costo: 9
 Forza: 8
@@ -344,7 +344,7 @@ Forza: 9
 Tipo: Divinità
 Testo:
 Quando questa Unità distrugge una Linea avversaria, infliggi 2 danni aggiuntivi
-al Comandante avversario.
+al Comandante avversario. Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 52. Campione dell'Ascensione Eterna
 Costo: 9
 Forza: 8
@@ -387,7 +387,7 @@ Questa Unità non può essere messa in Supporto. All'inizio dello Scontro, le
 Linee avversarie perdono 2 Forza.
 ```
 
-```
+``` Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 56. Il Creatore dei Mondi
 Costo: 10
 Forza: 10
@@ -397,7 +397,7 @@ Tutte le tue Unità con il tipo Divinità ottengono +2 Forza e immunità agli
 effetti di distruzione avversari.
 ```
 
-```
+``` Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).
 👑 TATTICHE (57 - 82)
 ```
 
@@ -518,7 +518,7 @@ Tutte le tue Unità ottengono il tipo Divinità e +2 Forza fino alla fine del
 turno.
 ```
 
-`82. Sigillo della Fine dei Tempi Costo: 7 Distruggi tutte le Linee in un Fronte bersaglio.` 🏛 `SITI (83 - 106) Massimo 3 Siti per giocatore.` 
+` Divinità: Immune a Tattiche avversarie e distruzione da effetti. Se ridotta a 0 Forza in Scontro, viene Sigillata (scartata).82. Sigillo della Fine dei Tempi Costo: 7 Distruggi tutte le Linee in un Fronte bersaglio.` 🏛 `SITI (83 - 106) Massimo 3 Siti per giocatore.` 
 
 ```
 83. Tempio dell'Alba

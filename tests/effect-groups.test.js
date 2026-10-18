@@ -65,18 +65,33 @@ test('keyword Ferocia: +1 in Scontro solo con meno Unità', () => {
     GameState.players[0].fronts.left.line = ferocious;
     GameState.players[1].fronts.left.line = piece('set-1-007', { keywords: [], currentForce: 2, force: 2 });
     GameState.players[1].fronts.center.line = piece('set-1-007', { id: 'extra', keywords: [], currentForce: 1, force: 1 });
-    assert.equal(CombatResolver.strength(GameState.players[0], 'left', null), 3);
+    // Ferocia +1 e Istinto del Branco di Kragor +1, perché ci sono meno Unità.
+    assert.equal(CombatResolver.strength(GameState.players[0], 'left', null), 4);
     GameState.players[1].fronts.center.line = null;
     assert.equal(CombatResolver.strength(GameState.players[0], 'left', null), 2);
 });
 
-test('keyword Logorare: la Linea avversaria perde X Forza, mai sotto 0', () => {
+test('keyword Logorare: all\'inizio dello Scontro la Linea avversaria subisce danni, mai sotto 0', async () => {
     fresh();
-    const wearer = piece('set-2-025', { keywords: ['Logorare (2)'], currentForce: 1, force: 1 });
-    const victim = piece('set-1-007', { keywords: [], currentForce: 1, force: 1 });
+    for (const player of GameState.players) {
+        for (const frontName of ['left', 'center', 'right']) {
+            player.fronts[frontName] = { line: null, supA: null, supB: null };
+        }
+    }
+    GameState.phase = 'scontro';
+    GameState.currentIndex = 0;
+    const wearer = piece('set-2-025', { keywords: ['Logorare (2)'], currentForce: 3, force: 3 });
+    const sturdy = piece('set-1-007', { id: 'sturdy', keywords: [], currentForce: 3, force: 3 });
     GameState.players[0].fronts.left.line = wearer;
-    GameState.players[1].fronts.left.line = victim;
-    assert.equal(CombatResolver.strength(GameState.players[1], 'left', wearer), 0);
+    GameState.players[1].fronts.left.line = sturdy;
+    await CombatResolver.applyOpeningWear('left');
+    assert.equal(sturdy.currentForce, 1);
+    const fragile = piece('set-1-007', { id: 'fragile', keywords: [], currentForce: 1, force: 1 });
+    GameState.players[1].fronts.left.line = fragile;
+    await CombatResolver.applyOpeningWear('left');
+    assert.equal(GameState.players[1].fronts.left.line, null);
+    assert.equal(fragile.currentForce, 0);
+    assert.ok(GameState.players[1].discard.some(card => card.id === 'fragile'));
 });
 
 test('keyword Mente Collettiva: +1 per altra copia nel Fronte, massimo +3', () => {

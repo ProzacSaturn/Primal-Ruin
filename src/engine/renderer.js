@@ -153,8 +153,7 @@ const UIRenderer = {
         }
         const player = GameState.players[0];
         const mulliganSetup = GameState.phase === 'setup';
-        if (!mulliganSetup && player.hand.length === 0 &&
-            !player.discard.some(card => card.keywords.includes('Eco Spettrale'))) {
+        if (!mulliganSetup && player.hand.length === 0) {
             area.textContent = 'Mano vuota.';
             return;
         }
@@ -164,14 +163,11 @@ const UIRenderer = {
             hint.textContent = 'Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.';
             area.appendChild(hint);
         }
-        const spectralDiscard = mulliganSetup
-            ? []
-            : player.discard.filter(card => card.keywords.includes('Eco Spettrale'));
-        const renderCard = (card, fromDiscard = false) => {
+        const renderCard = card => {
             const marked = mulliganSetup && GameState.mulliganMarks.has(card.id);
             const element = document.createElement('button');
             element.type = 'button';
-            element.className = `card${fromDiscard ? ' spectral-card' : ''}` +
+            element.className = 'card' +
                 `${marked ? ' mulligan-marked' : ''}` +
                 `${GameState.selectedCard?.id === card.id ? ' selected' : ''}`;
             element.disabled = mulliganSetup ? false : GameState.currentIndex !== 0 ||
@@ -204,7 +200,7 @@ const UIRenderer = {
             const rules = document.createElement('span');
             rules.className = 'card-rules';
             rules.textContent = card.category === 'unit'
-                ? `${executionStatus.label}: ${card.rulesText}${fromDiscard ? ' · +1 Dominio' : ''}`
+                ? `${executionStatus.label}: ${card.rulesText}`
                 : card.category === 'site'
                     ? `${executionStatus.label}: ${card.rulesText}`
                     : `${executionStatus.label}: ${executionStatus.detail}`;
@@ -215,13 +211,11 @@ const UIRenderer = {
                     GameController.toggleMulliganMark(card);
                     return;
                 }
-                if (fromDiscard) GameController.selectDiscardCard(card);
-                else GameController.selectCard(card);
+                GameController.selectCard(card);
             });
             area.appendChild(element);
         };
         player.hand.forEach(card => renderCard(card));
-        spectralDiscard.forEach(card => renderCard(card, true));
     },
 
     updateBoardInteractivity() {
@@ -253,6 +247,19 @@ const UIRenderer = {
                 element.classList.toggle('sacrifice-target',
                     Boolean(GameState.sacrifice?.frontName === frontName &&
                         GameState.players[0].fronts[frontName][slotName]));
+            }
+            const opponent = GameState.players[1];
+            for (const slotName of ['supA', 'supB']) {
+                const element = document.getElementById(`opp-${frontName}-${slotName}`);
+                if (!element || !opponent) continue;
+                const card = GameState.selectedCard;
+                const canInfiltrate = GameState.phase === 'principale' &&
+                    GameState.currentIndex === 0 && card &&
+                    !GameState.sacrifice && !GameState.pendingTorment &&
+                    card.keywords?.some(keyword => keyword.startsWith('Infiltrazione')) &&
+                    !opponent.fronts[frontName].line &&
+                    !opponent.fronts[frontName][slotName];
+                element.classList.toggle('selectable', Boolean(canInfiltrate));
             }
         }
     },

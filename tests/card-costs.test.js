@@ -11,7 +11,7 @@ test('equipment cost includes its printed Equip cost', () => {
     }), 5);
 });
 
-test('Spectral Echo discounts apply, respect minimum cost, and add discard surcharge', () => {
+test('Spectral Echo discounts apply and respect the minimum cost', () => {
     const player = {
         sites: [
             { id: 'set-2-081' },
@@ -22,7 +22,7 @@ test('Spectral Echo discounts apply, respect minimum cost, and add discard surch
     const unit = { category: 'unit', cost: 5, keywords: ['Eco Spettrale'] };
 
     assert.equal(calculateCardCost(player, unit, { turnNumber: 3 }), 2);
-    assert.equal(calculateCardCost(player, unit, { fromDiscard: true, turnNumber: 3 }), 3);
+    assert.equal(calculateCardCost(player, unit, { fromDiscard: true, turnNumber: 3 }), 2);
     assert.equal(calculateCardCost(player, unit, { turnNumber: 2 }), 3);
 
     markCardCostDiscountUsed(player, unit, 3);
