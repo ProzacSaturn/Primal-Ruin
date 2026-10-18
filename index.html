@@ -9,6 +9,76 @@
 <body>
     <a class="skip-link" href="#tavolo">Vai al tavolo di gioco</a>
     <main class="game-container" id="tavolo" tabindex="-1">
+        <section class="play-strip" aria-label="Comandi della partita">
+            <div class="turn-status">
+                <strong id="phase-label">PREPARAZIONE</strong>
+                <span id="turn-label"></span>
+            </div>
+            <div class="hand-area" id="hand-area" role="region" aria-label="La tua mano">Mano vuota</div>
+            <div class="controls-area">
+                <button class="btn" id="btn-mulligan" type="button">🔁 MULLIGAN</button>
+                <button class="btn btn-draw" id="btn-start" type="button">▶ INIZIA PARTITA</button>
+                <button class="btn btn-principale" id="btn-principale" type="button">⚔️ FASE PRINCIPALE</button>
+                <button class="btn btn-scontro" id="btn-attack" type="button">🆚 SCONTRO</button>
+                <button class="btn btn-canala" id="btn-canala" type="button">🌀 CANALIZZA</button>
+                <button class="btn" id="btn-commander" type="button" hidden>👤 ATTIVA COMANDANTE</button>
+                <button class="btn" id="btn-retreat" type="button" hidden>↩ RITIRATA</button>
+                <button class="btn" id="btn-purge" type="button" hidden>🦠 PURGA</button>
+                <button class="btn btn-finale" id="btn-finale" type="button">✅ FINE TURNO</button>
+                <button class="btn btn-end-turn" id="btn-sacrifice-end" hidden>✅ CONFERMA SACRIFICI</button>
+                <button class="btn" id="btn-new-game" type="button">↻ NUOVA PARTITA</button>
+                <button class="btn" id="btn-demo-decks" type="button">MAZZI DEMO</button>
+                <button class="btn" id="btn-updated-deck" type="button">GIOCA PARTE AGGIORNATA</button>
+                <button class="btn" id="btn-open-archive" type="button">APRI ARCHIVIO</button>
+                <div class="sorvolo-panel" id="sorvolo-panel" hidden>
+                    <label for="sorvolo-choice">Scegli lo spostamento Sorvolo:</label>
+                    <select id="sorvolo-choice"></select>
+                    <button class="btn" id="btn-sorvolo" type="button">🪽 SPOSTA</button>
+                    <button class="btn" id="btn-sorvolo-skip" type="button">CONTINUA SENZA SPOSTARE</button>
+                </div>
+                <div class="torment-panel" id="torment-panel" role="group" aria-labelledby="torment-choice" hidden>
+                    <p id="torment-choice" aria-live="polite"></p>
+                    <button class="btn" id="btn-torment-madness" type="button">😈 SCEGLI FOLLIA</button>
+                    <button class="btn" id="btn-torment-damage" type="button">⚔️ SCEGLI DANNI PC</button>
+                </div>
+                <div class="tactic-panel" id="reaction-panel" role="group" aria-labelledby="reaction-label" hidden>
+                    <p id="reaction-label">Finestra di reazione.</p>
+                    <button class="btn" id="btn-reaction-pass" type="button">PASSA</button>
+                </div>
+                <div class="tactic-panel" id="tactic-panel" role="group" aria-labelledby="tactic-choice-label" hidden>
+                    <label id="tactic-choice-label" for="tactic-choice"></label>
+                    <select id="tactic-choice"></select>
+                    <button class="btn" id="btn-tactic-confirm" type="button">RISOLVI TATTICA</button>
+                    <button class="btn" id="btn-tactic-cancel" type="button">ANNULLA</button>
+                </div>
+                <div class="promotion-panel" id="promotion-panel" role="group" aria-labelledby="promotion-choice-label" hidden>
+                    <label id="promotion-choice-label" for="promotion-choice">Scegli il Supporto che diventa la nuova Linea:</label>
+                    <select id="promotion-choice"></select>
+                    <button class="btn" id="btn-promotion-confirm" type="button">⬆ PROMUOVI A LINEA</button>
+                </div>
+                <p class="keyboard-help">Scorciatoie: Invio avvia · Spazio avanza la fase · Esc deseleziona</p>
+            </div>
+            <div class="fronti-area" id="player-fronti-area">
+                <div class="fronte" id="player-front-left">
+                    <div class="fronte-title">SINISTRA</div>
+                    <div class="position line" id="p-left-line">Vuoto</div>
+                    <div class="position support" id="p-left-supA">Vuoto</div>
+                    <div class="position support" id="p-left-supB">Vuoto</div>
+                </div>
+                <div class="fronte" id="player-front-center">
+                    <div class="fronte-title">CENTRO</div>
+                    <div class="position line" id="p-center-line">Vuoto</div>
+                    <div class="position support" id="p-center-supA">Vuoto</div>
+                    <div class="position support" id="p-center-supB">Vuoto</div>
+                </div>
+                <div class="fronte" id="player-front-right">
+                    <div class="fronte-title">DESTRA</div>
+                    <div class="position line" id="p-right-line">Vuoto</div>
+                    <div class="position support" id="p-right-supA">Vuoto</div>
+                    <div class="position support" id="p-right-supB">Vuoto</div>
+                </div>
+            </div>
+        </section>
         <!-- AVVERSARIO (ALTO) -->
         <div class="opponent-area" id="enemy-area" role="region" aria-label="Tavolo avversario">
             <div class="commander" id="opp-commander">
@@ -51,10 +121,6 @@
 
         <!-- GIOCATORE (BASSO) -->
         <div class="player-area" id="player-area" role="region" aria-label="Il tuo tavolo">
-            <div class="turn-status">
-                <strong id="phase-label">PREPARAZIONE</strong>
-                <span id="turn-label"></span>
-            </div>
             <p class="save-status" id="save-status" role="status" aria-live="polite">Partita salvata automaticamente in questo browser.</p>
             <details class="deck-builder" id="deck-builder">
                 <summary>Costruisci il tuo mazzo Esercito</summary>
@@ -99,8 +165,8 @@
                 <p>Questa è la fetta già giocabile da questo tavolo. Il registro completo sta in <code>ROADMAP.md</code>.</p>
                 <ol>
                     <li>Regole di nucleo, Ritirata, Purga e finestra di reazione: già in partita.</li>
-                    <li>Equipaggiamenti del Risveglio Infernale (79-90) e dell’Invasione Silente (81-88), Mausoleo, Ncrospira, Città, Spira, Abisso, Velo, Era e i Campi 112-116: sul testo stampato.</li>
-                    <li>Poi: Siti e Campi ancora parziali, Unità il cui testo è una keyword già nota, le 26 Tattiche del set 4. Il 2 contro 2 resta fuori.</li>
+                    <li>Equipaggiamenti del Risveglio Infernale (79-90) e dell’Invasione Silente (81-88), Mausoleo, Ncrospira, Fenditura, Città, Spira, Abisso, Velo, Era e i Campi 112-117: sul testo stampato.</li>
+                    <li>Poi: gli altri Siti e Campi parziali, le Unità, le 26 Tattiche del set 4. Il 2 contro 2 resta fuori.</li>
                 </ol>
                 <p>Apri l’archivio per leggere la carta. «Gioca la parte aggiornata» prepara un mazzo con queste carte e resta in preparazione.</p>
             </details>
@@ -152,74 +218,8 @@
                 <strong class="zone-title">DOMINI</strong>
             </div>
 
-            <div class="fronti-area" id="player-fronti-area">
-                <div class="fronte" id="player-front-left">
-                    <div class="fronte-title">SINISTRA</div>
-                    <div class="position line" id="p-left-line">Vuoto</div>
-                    <div class="position support" id="p-left-supA">Vuoto</div>
-                    <div class="position support" id="p-left-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="player-front-center">
-                    <div class="fronte-title">CENTRO</div>
-                    <div class="position line" id="p-center-line">Vuoto</div>
-                    <div class="position support" id="p-center-supA">Vuoto</div>
-                    <div class="position support" id="p-center-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="player-front-right">
-                    <div class="fronte-title">DESTRA</div>
-                    <div class="position line" id="p-right-line">Vuoto</div>
-                    <div class="position support" id="p-right-supA">Vuoto</div>
-                    <div class="position support" id="p-right-supB">Vuoto</div>
-                </div>
-            </div>
-
-            <!-- MANO E CONTROLLI -->
-            <div class="hand-area" id="hand-area" role="region" aria-label="La tua mano">Mano vuota</div>
             <div class="log-area" id="log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Registro della partita"><div>> Motore Primal Ruin Core 1.0 inizializzato.</div></div>
             <div id="game-result" class="game-result" hidden></div>
-            <div class="controls-area">
-                <button class="btn" id="btn-mulligan" type="button">🔁 MULLIGAN</button>
-                <button class="btn btn-draw" id="btn-start" type="button">▶ INIZIA PARTITA</button>
-                <button class="btn btn-principale" id="btn-principale" type="button">⚔️ FASE PRINCIPALE</button>
-                <button class="btn btn-scontro" id="btn-attack" type="button">🆚 SCONTRO</button>
-                <button class="btn btn-canala" id="btn-canala" type="button">🌀 CANALIZZA</button>
-                <button class="btn" id="btn-commander" type="button" hidden>👤 ATTIVA COMANDANTE</button>
-                <button class="btn" id="btn-retreat" type="button" hidden>↩ RITIRATA</button>
-                <button class="btn" id="btn-purge" type="button" hidden>🦠 PURGA</button>
-                <button class="btn btn-finale" id="btn-finale" type="button">✅ FINE TURNO</button>
-                <button class="btn btn-end-turn" id="btn-sacrifice-end" hidden>✅ CONFERMA SACRIFICI</button>
-                <button class="btn" id="btn-new-game" type="button">↻ NUOVA PARTITA</button>
-                <button class="btn" id="btn-demo-decks" type="button">MAZZI DEMO</button>
-                <button class="btn" id="btn-updated-deck" type="button">GIOCA PARTE AGGIORNATA</button>
-                <button class="btn" id="btn-open-archive" type="button">APRI ARCHIVIO</button>
-                <div class="sorvolo-panel" id="sorvolo-panel" hidden>
-                    <label for="sorvolo-choice">Scegli lo spostamento Sorvolo:</label>
-                    <select id="sorvolo-choice"></select>
-                    <button class="btn" id="btn-sorvolo" type="button">🪽 SPOSTA</button>
-                    <button class="btn" id="btn-sorvolo-skip" type="button">CONTINUA SENZA SPOSTARE</button>
-                </div>
-                <div class="torment-panel" id="torment-panel" role="group" aria-labelledby="torment-choice" hidden>
-                    <p id="torment-choice" aria-live="polite"></p>
-                    <button class="btn" id="btn-torment-madness" type="button">😈 SCEGLI FOLLIA</button>
-                    <button class="btn" id="btn-torment-damage" type="button">⚔️ SCEGLI DANNI PC</button>
-                </div>
-                <div class="tactic-panel" id="reaction-panel" role="group" aria-labelledby="reaction-label" hidden>
-                    <p id="reaction-label">Finestra di reazione.</p>
-                    <button class="btn" id="btn-reaction-pass" type="button">PASSA</button>
-                </div>
-                <div class="tactic-panel" id="tactic-panel" role="group" aria-labelledby="tactic-choice-label" hidden>
-                    <label id="tactic-choice-label" for="tactic-choice"></label>
-                    <select id="tactic-choice"></select>
-                    <button class="btn" id="btn-tactic-confirm" type="button">RISOLVI TATTICA</button>
-                    <button class="btn" id="btn-tactic-cancel" type="button">ANNULLA</button>
-                </div>
-                <div class="promotion-panel" id="promotion-panel" role="group" aria-labelledby="promotion-choice-label" hidden>
-                    <label id="promotion-choice-label" for="promotion-choice">Scegli il Supporto che diventa la nuova Linea:</label>
-                    <select id="promotion-choice"></select>
-                    <button class="btn" id="btn-promotion-confirm" type="button">⬆ PROMUOVI A LINEA</button>
-                </div>
-                <p class="keyboard-help">Scorciatoie: Invio avvia · Spazio avanza la fase · Esc deseleziona</p>
-            </div>
         </div>
     </main>
 

@@ -68,7 +68,7 @@ Sono i `todo` di `tests/effect-families.test.js` e `tests/effect-groups.test.js`
 
 Dopo A e B. Stesso metodo: testo della carta, effetto esplicito, test. Niente traduzione automatica del testo libero.
 
-1. Equipaggiamenti dell’Invasione Silente e Campi 112-116 sull’id stampato. Fatto: Artigli, Carapace, Occhio, Lama, Amplificatore, Ali, Catene e Corona sono `set-3-081`–`set-3-088`. Dominio della Collettività, Cielo dell’Invasione, Regno delle Spore, Tempesta Psionica e Campo di Distorsione sono `set-3-112`–`set-3-116`. Dal tavolo, «Gioca la parte aggiornata» prepara quel mazzo e «Apri archivio» apre il catalogo. Il mazzo demo resta 22/12/4/1/1.
+1. Equipaggiamenti dell’Invasione Silente e Campi 112-117 sull’id stampato. Fatto: Artigli, Carapace, Occhio, Lama, Amplificatore, Ali, Catene e Corona sono `set-3-081`–`set-3-088`. Dominio della Collettività, Cielo dell’Invasione, Regno delle Spore, Tempesta Psionica, Campo di Distorsione e Sovraccarico Sinaptico sono `set-3-112`–`set-3-117`. La Fenditura Dimensionale è `set-3-093`. L’Era resta `set-3-119`: `set-3-120` è il Comandante e non fa quel danno. Aprendo `index`, mano e comandi sono in alto e il mazzo iniziale è questa parte. Il mazzo demo resta 22/12/4/1/1.
 2. Siti ancora parziali, a cominciare da quelli il cui effetto è già nel motore su un id diverso dal testo. Non si sposta un effetto se il testo non coincide.
 3. Campi rimasti, poi il set 4 (equipaggiamenti, siti, campi).
 4. Unità parziali, prima quelle il cui testo è una keyword che il motore conosce già.

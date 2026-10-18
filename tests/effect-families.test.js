@@ -391,7 +391,7 @@ test('famiglia inizio turno: Decadenza, ricerca, scarti, pedine e spostamento', 
         GameState.players[0].fronts[frontName].supA = card('set-1-007', { id: frontName });
     }
     GameState.resolvePermanentTurnStart(0);
-    assert.equal(GameState.players[1].pc, 19);
+    assert.equal(GameState.players[1].pc, 20);
 });
 
 test('famiglia attivazione Siti e abilità di Scontro', () => {
@@ -518,7 +518,7 @@ test('famiglia distruzione e perdita di Forza: Siti, Campi, Unità', () => {
     );
     assert.equal(player.fronts.center.supA?.name, 'Pedina Sciame');
 
-    for (const [id, keyword] of [['set-1-114', null], ['set-2-116', 'Logorare (1)'], ['set-3-118', 'Mente Collettiva']]) {
+    for (const [id, keyword] of [['set-1-114', null], ['set-2-116', 'Logorare (1)'], ['set-3-117', 'Mente Collettiva']]) {
         prepare();
         const killer = GameState.players[0];
         killer.field = permanent(id);
@@ -584,7 +584,7 @@ test('famiglia movimento, schieramento e limite tattiche', async () => {
     assert.ok(UIRenderer.getSorvoloOptions().some(option => option.targetFront === 'right'), 'set-2-086');
 
     prepare();
-    player.sites = [permanent('set-3-085')];
+    player.sites = [permanent('set-3-093')];
     const flyer = card('set-1-007', { keywords: ['Sorvolo'], position: 'line', currentForce: 2, force: 2 });
     player.fronts.center.line = flyer;
     opponent.fronts.left.line = card('set-1-007', { id: 'bersaglio', currentForce: 3, force: 3 });
@@ -652,7 +652,8 @@ test('famiglia Parassiti da Sito e Campo', () => {
     prepare();
     GameState.players[0].sites = [permanent('set-3-093')];
     GameState.addParasites(GameState.players[1], GameState.players[0], 2);
-    assert.equal(GameState.players[0].pc, 18);
+    assert.equal(GameState.players[0].parasites, 2);
+    assert.equal(GameState.players[0].pc, 20);
 
     prepare();
     GameState.players[0].field = permanent('set-3-114');

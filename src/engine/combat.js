@@ -528,7 +528,7 @@ const CombatResolver = {
             (sourcePlayer.field?.catalogId === 'set-2-116' &&
                 getUnitKeywords(sourcePlayer, activeLine, frontName, 'line')
                     .some(keyword => keyword.startsWith('Logorare')) ) ||
-            (sourcePlayer.field?.catalogId === 'set-3-118' &&
+            (sourcePlayer.field?.catalogId === 'set-3-117' &&
                 getUnitKeywords(sourcePlayer, activeLine, frontName, 'line')
                     .some(keyword => keyword.startsWith('Mente Collettiva')))) {
             GameController.drawCards(sourcePlayer, 1, sourcePlayer.field.name);

@@ -262,7 +262,7 @@ const GameState = {
             for (const site of sporeWells) GameController.drawCards(owner, count, site.name);
             const parasiteSanctuaries =
                 owner.sites?.filter(site =>
-                    site.catalogId === 'set-3-093' || site.catalogId === 'set-3-101'
+                    site.catalogId === 'set-3-101'
                 ) || [];
             targetPlayer.pc = Math.max(
                 0,
@@ -583,7 +583,7 @@ const GameState = {
                 createToken(player, frontName, front.supA ? 'supB' : 'supA', 'Pedina Raptor', 3);
             }
         }
-        if (['set-3-119', 'set-3-120'].includes(player.field?.catalogId) &&
+        if (player.field?.catalogId === 'set-3-119' &&
             FRONT_NAMES.every(frontName => SLOT_NAMES.some(slot => player.fronts[frontName][slot]))) {
             opponent.pc = Math.max(0, opponent.pc - 1);
             Logger.log(`${player.field.name}: il Comandante avversario perde 1 PC.`);
@@ -674,7 +674,8 @@ const GameState = {
                 }
             }
         }
-        if (player.sites?.some(site => site.catalogId === 'set-3-085') &&
+        if (sourceFront !== targetFront &&
+            player.sites?.some(site => site.catalogId === 'set-3-093') &&
             getUnitKeywords(player, unit, targetFront, unit.position).includes('Sorvolo')) {
             const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
             const frontName = FRONT_NAMES.find(name => enemy.fronts[name].line);
