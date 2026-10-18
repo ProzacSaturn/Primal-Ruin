@@ -16,7 +16,7 @@ Lavora sul prototipo esistente. Non ricostruire il gioco, non riscrivere l'archi
 ## Architettura da rispettare
 
 - UI: `index.html`, `styles.css`, `src/card-library.js`, `src/deck-builder.js`, `src/settings.js`, `src/pixel-art.js`.
-- Dati carte: `src/data/cards.json`, generato da `Set.txt` con `scripts/import-cards.mjs`. Non modificare lo schema né rigenerare il catalogo se il compito non lo richiede.
+- Dati carte: `src/data/cards.json`, generato dai file in `sets/` con `scripts/import-cards.mjs`. Non modificare lo schema né rigenerare il catalogo se il compito non lo richiede.
 - Logica: `game.js` è solo la facciata che riesporta `GameController` e `GameState`. L'engine è in `src/engine/`. Le regole pure restano `src/game-rules.js`, `src/tactics.js`, `src/card-effects.js`, `src/permanent-effects.js`, `src/unit-triggers.js`, `src/commanders.js`, `src/deck-validation.js`, `src/deck-composition.js`, `src/random.js`.
 - Apri un solo modulo dell'engine, quello della responsabilità che cambi. Non aprire `game.js` per leggere la logica e non aprire gli altri file di `src/engine/` se non servono.
 
@@ -51,8 +51,8 @@ Non inventare e non cambiare le regole ufficiali, le meccaniche o i dati delle c
 Se una meccanica è ambigua, consulta nell'ordine:
 
 1. `Regolamento Ufficiale Avanzato Primal Ruin.txt` — regolamento ufficiale.
-2. `Set.txt` — testo originale della carta.
-3. `src/data/cards.json` — solo la carta interessata; modifica solo quelle carte se il compito lo chiede.
+2. `sets/` — testo originale della carta, un file per set.
+3. `src/data/cards.json` — solo la carta interessata; modifica solo quelle carte se il compito lo chiede. Rigeneralo dai file in `sets/`, non a mano.
 4. `DialogoAi.md` — come il prototipo deve trattare il Core 1.0. Il codice e i dati restano la fonte di verità dell'implementazione.
 5. Il modulo che già implementa quella meccanica.
 

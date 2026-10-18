@@ -1,16 +1,11 @@
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import catalog from '../src/data/cards.json' with { type: 'json' };
 import { getCardExecutionStatus } from '../src/card-effects.js';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const sourcePath = resolve(root, 'Set.txt');
-if (!readFileSync(sourcePath, 'utf8').trim()) {
-    throw new Error('Set.txt è vuoto: impossibile verificare la copertura del catalogo.');
+if (!catalog.cards.length) {
+    throw new Error('Il catalogo è vuoto: impossibile verificare la copertura degli effetti.');
 }
 
-const categories = ['unit', 'tactic', 'equipment', 'site', 'field'];
+const categories = ['unit', 'tactic', 'equipment', 'site', 'field', 'commander'];
 const labels = ['Unità base', 'Keyword implementata', 'Implementata', 'Parziale', 'Non eseguibile'];
 const summary = Object.fromEntries(categories.map(category => [
     category,

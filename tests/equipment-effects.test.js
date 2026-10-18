@@ -1,16 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import catalog from '../src/data/cards.json' with { type: 'json' };
 import {
     getDamageReduction,
     getSupportBonus,
     getUnitForceBonus,
     getUnitKeywords
 } from '../src/permanent-effects.js';
-
-const equipment = new Map(catalog.cards
-    .filter(card => card.category === 'equipment')
-    .map(card => [card.id, card]));
 
 function playerWithUnit(cardId, slotName = 'line') {
     const player = {
@@ -28,7 +23,7 @@ function playerWithUnit(cardId, slotName = 'line') {
         currentForce: 3,
         type: 'Creature',
         keywords: [],
-        equipment: equipment.get(cardId)
+        equipment: { id: cardId, catalogId: cardId, category: 'equipment', name: cardId }
     };
     player.fronts.left[slotName] = unit;
     return { player, unit };

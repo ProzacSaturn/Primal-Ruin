@@ -6,7 +6,8 @@ const CATEGORY_LABELS = {
     tactic: 'Tattica',
     equipment: 'Equipaggiamento',
     site: 'Sito',
-    field: 'Campo'
+    field: 'Campo',
+    commander: 'Comandante'
 };
 
 export function initCardLibrary() {
@@ -52,7 +53,9 @@ export function initCardLibrary() {
             metadata.textContent = `${card.setName} · ${CATEGORY_LABELS[card.category]} · ${card.rarity || 'Rarità non indicata'}`;
             const stats = document.createElement('p');
             stats.className = 'library-stats';
-            const cardStats = [`Costo ${card.cost}`];
+            const cardStats = [];
+            if (card.cost !== null && card.cost !== undefined) cardStats.push(`Costo ${card.cost}`);
+            if (card.health) cardStats.push(`Salute ${card.health}`);
             if (card.force !== null) cardStats.push(`Forza ${card.force}`);
             if (card.type) cardStats.push(card.type);
             if (card.equipCost !== null) cardStats.push(`Equip ${card.equipCost}`);

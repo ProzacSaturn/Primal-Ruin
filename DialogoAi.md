@@ -9,7 +9,7 @@ Primal Ruin è un gioco di carte strategico per due giocatori, con ambientazione
 Obiettivi di sviluppo:
 
 - trasformare il prototipo in una versione fedele e coerente con il regolamento Core 1.0;
-- usare i tre set esistenti come fonte del catalogo e delle future carte giocabili;
+- usare i quattro set in `sets/` come fonte del catalogo e delle future carte giocabili;
 - mantenere i dati delle carte separati dalla logica di gioco;
 - implementare le funzionalità in modo incrementale e verificabile;
 - non dichiarare completa una regola finché non è implementata e testata.
@@ -87,17 +87,18 @@ La schermata comprende l'archivio consultabile, un deck builder da 40 carte senz
 - l'avversario automatico resta basilare e le regole di combattimento non hanno ancora copertura completa di test;
 - interazioni e regole non verificate devono essere presentate come incomplete, non come già funzionanti.
 
-## Dati dei tre set
+## Dati dei quattro set
 
-La fonte originale dei set è `Set.txt`. Il catalogo normalizzato è `src/data/cards.json`; contiene 360 carte, con ID univoci nel formato `set-NNN` (ad esempio `set-1-001`). I tre set sono:
+La fonte originale dei set è la cartella `sets/`. Il catalogo normalizzato è `src/data/cards.json`; contiene 480 carte, con ID univoci nel formato `set-N-NNN` (ad esempio `set-1-001`). I quattro set sono:
 
 1. **Furia Giurassica**
 2. **Risveglio Infernale**
 3. **Invasione Silente**
+4. **Ascesa Divina**
 
-Ogni record del catalogo contiene, ove disponibile, set, numero, nome, categoria, rarità, costo, Forza, tipo, costo Equipaggiamento, Decadenza, testo originale delle regole e riga sorgente. `null` indica un dato non presente o non deducibile dalla fonte; non inventare valori mancanti. Alcune carte non hanno una rarità indicata: non assegnarne una per supposizione.
+Ogni record del catalogo contiene, ove disponibile, set, numero, nome, categoria, rarità, costo, Forza, tipo, costo Equipaggiamento, Decadenza, salute del Comandante, testo originale delle regole e file sorgente. `null` indica un dato non presente o non deducibile dalla fonte; non inventare valori mancanti. Alcune carte non hanno una rarità indicata: non assegnarne una per supposizione. Il Comandante di Ascesa Divina è descritto nell'intestazione del file e non ha un numero tra le 120 carte.
 
-`src/data/cards.json` è generato e non dovrebbe essere modificato manualmente. Dopo aver modificato `Set.txt`, rigeneralo e convalidalo con:
+`src/data/cards.json` è generato e non dovrebbe essere modificato manualmente. Dopo aver modificato un file in `sets/`, rigeneralo e convalidalo con:
 
 ```powershell
 npm run cards:import
@@ -121,10 +122,10 @@ Non convertire automaticamente il testo delle abilità in effetti del motore con
 - `src/settings.js` — impostazioni locali di audio e animazioni.
 - `src/save-store.js` — lettura, scrittura e validazione dei salvataggi.
 - `src/data/cards.json` — catalogo generato delle carte.
-- `scripts/import-cards.mjs` — importazione e validazione di `Set.txt`.
+- `scripts/import-cards.mjs` — importazione e validazione dei file in `sets/`.
 - `scripts/card-effect-coverage.mjs` — riepilogo quantitativo dello stato degli effetti carta.
 - `tests/` — test automatici dei dati, dei mazzi e dei salvataggi.
-- `Set.txt` — fonte testuale originale dei tre set.
+- `sets/` — fonte testuale originale dei quattro set.
 - `package.json` — script e dipendenze del progetto.
 
 ## Avvio e verifica

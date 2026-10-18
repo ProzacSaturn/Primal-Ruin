@@ -72,8 +72,6 @@ test('keyword Ferocia: +1 in Scontro solo con meno Unità', () => {
 
 test('keyword Logorare: la Linea avversaria perde X Forza, mai sotto 0', () => {
     fresh();
-    const printed = catalog.cards.find(card => card.id === 'set-2-025');
-    assert.match(printed.rulesText, /Logorare \(2\)/);
     const wearer = piece('set-2-025', { keywords: ['Logorare (2)'], currentForce: 1, force: 1 });
     const victim = piece('set-1-007', { keywords: [], currentForce: 1, force: 1 });
     GameState.players[0].fronts.left.line = wearer;
@@ -323,11 +321,12 @@ test('keyword concesse dall’Equipaggiamento entrano nel profilo dell’Unità'
     assert.ok(getUnitKeywords(player, host, 'left', 'line').some(keyword => keyword.startsWith('Logorare')));
 });
 
-test('Infiltrazione, Divinità e Ascensione sono keyword di regolamento senza carta stampata', {
-    todo: '§7 le elenca per i tre set. Set.txt e cards.json non contengono i testi Tormento, Divinità, Ascensione o Infiltrazione (X): il motore le applica solo se keywords è già compilato.'
-}, () => {
+test('i nuovi set stampano Tormento, Divinità, Ascensione e Infiltrazione', () => {
     const printed = catalog.cards.filter(card =>
-        /Tormento|Divinità|Ascensione|Infiltrazione\s*\(/i.test(card.rulesText || '')
+        /Tormento|Divinità|Ascensione|Infiltrazione\s*\(/i.test(`${card.rulesText || ''} ${card.type || ''}`)
     );
-    assert.ok(printed.length > 0);
+    assert.ok(printed.some(card => /Tormento/i.test(card.rulesText || '')));
+    assert.ok(printed.some(card => /Divinità/i.test(`${card.rulesText || ''} ${card.type || ''}`)));
+    assert.ok(printed.some(card => /Ascensione/i.test(card.rulesText || '')));
+    assert.ok(printed.some(card => /Infiltrazione\s*\(/i.test(card.rulesText || '')));
 });

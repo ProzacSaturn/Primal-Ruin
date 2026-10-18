@@ -5,7 +5,7 @@ coverage
 .cache
 package-lock.json
 src/data/cards.json
-Set.txt
+sets/
 playwright-report
 test-results
 blob-report

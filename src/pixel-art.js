@@ -1,7 +1,8 @@
 const PALETTES = {
     'set-1': { sky: '#301a3c', light: '#f5d300', ground: '#8b3f34', shadow: '#180f27', creature: '#ee7652' },
     'set-2': { sky: '#171d3d', light: '#05d9e8', ground: '#464b70', shadow: '#0c1228', creature: '#9da9d6' },
-    'set-3': { sky: '#103339', light: '#75f2bd', ground: '#345e46', shadow: '#0a1d25', creature: '#b9eb91' }
+    'set-3': { sky: '#103339', light: '#75f2bd', ground: '#345e46', shadow: '#0a1d25', creature: '#b9eb91' },
+    'set-4': { sky: '#1b2448', light: '#f3e6b3', ground: '#6d5a32', shadow: '#10162e', creature: '#f7f1dc' }
 };
 
 function hashText(text) {

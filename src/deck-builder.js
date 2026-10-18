@@ -71,6 +71,7 @@ export function initDeckBuilder(onUseDeck) {
     function render() {
         const search = searchInput.value.trim().toLocaleLowerCase('it');
         const visibleCards = catalog.cards.filter(card => {
+            if (card.category === 'commander') return false;
             if (setFilter.value !== 'all' && card.setId !== setFilter.value) return false;
             if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value) return false;
             return !search || `${card.name} ${card.type || ''} ${card.rulesText}`

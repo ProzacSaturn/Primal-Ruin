@@ -32,7 +32,7 @@ test('defaultCommanderId indica il primo Comandante del roster', () => {
 });
 
 test('commanderForSet restituisce un Comandante del set richiesto', () => {
-    for (const setId of ['set-1', 'set-2', 'set-3']) {
+    for (const setId of ['set-1', 'set-2', 'set-3', 'set-4']) {
         const id = commanderForSet(setId);
         assert.equal(getCommander(id).setId, setId);
     }

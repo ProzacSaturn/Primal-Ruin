@@ -24,6 +24,8 @@ const commanderMethods = {
             } else if (effect.kind === 'drawArmy') {
                 this.drawCards(target, effect.amount, 'Comandante');
                 descriptions.push(`${target.name} pesca ${effect.amount} carta`);
+            } else if (effect.kind === 'announce') {
+                descriptions.push('effetto stampato, il tavolo non cambia');
             }
         }
         return descriptions.join('; ');

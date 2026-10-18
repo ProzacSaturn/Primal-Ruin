@@ -296,7 +296,7 @@ export function getCardExecutionStatus(card) {
         /\bInfiltrazione\s*\(\d+\)/giu
     ];
     const keywordReminders = [
-        /\bFerocia\s*\(Durante lo Scontro, questa Unità ottiene \+1 Forza se controlli meno Unità dell’avversario\)/giu,
+        /\bFerocia\s*\(Durante lo Scontro, questa Unità ottiene \+1 Forza se controlli meno Unità(?: complessive)? dell’avversario\)/giu,
         /\bAssalto\s*\(Può essere messo in posizione Linea nel turno in cui entra in gioco\)/giu,
         /\bPosizione Difensiva\s*\(Se possibile, deve essere messo in posizione Linea quando entra in gioco\)/giu,
         /\bSorvolo\s*\(Quando questa Unità viene assegnata allo Scontro, puoi spostarla in un Fronte adiacente\. Se lo fai, entra in Supporto nel nuovo Fronte\)/giu,

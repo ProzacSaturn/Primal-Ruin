@@ -342,12 +342,19 @@ test('l’abilità del Comandante si attiva una sola volta per turno', () => {
     fresh();
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
-    const before = GameState.players[1].follia;
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    const follia = opponent.follia;
+    const echo = player.echo;
+    const pc = player.pc;
     GameController.activateCommanderAbility();
-    assert.equal(GameState.players[0].commanderAbilityUsed, true);
-    assert.equal(GameState.players[1].follia, before + 1);
+    assert.equal(player.commanderAbilityUsed, true);
+    assert.equal(opponent.follia, follia);
+    assert.equal(player.echo, echo);
+    assert.equal(player.pc, pc);
     GameController.activateCommanderAbility();
-    assert.equal(GameState.players[1].follia, before + 1);
+    assert.equal(player.commanderAbilityUsed, true);
+    assert.equal(opponent.follia, follia);
 });
 
 test('Sorvolo sposta in un Fronte adiacente ed entra in Supporto', () => {

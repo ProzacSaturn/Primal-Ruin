@@ -10,63 +10,79 @@
 //   addMadness { target, amount }               -> il bersaglio guadagna Follia
 //   addParasite { target, amount }              -> il bersaglio guadagna Parassiti
 //   drawArmy { amount }                         -> l'attore pesca carte Esercito
+//   announce { amount }                         -> il testo viene annunciato, il tavolo non cambia
 // Un'abilità può avere una `condition` valutata sull'attore.
 
 export const COMMANDERS = [
     {
         id: 'cmd-1-01',
-        name: 'Arconte delle Ossa',
+        name: 'Kragor, Signore della Furia Vulcanica',
         setId: 'set-1',
         pc: 20,
         provisional: true,
         rifornimento: {
-            text: 'Guadagni 1 Echo.',
-            ops: [{ type: 'gainEcho', amount: 1 }]
+            text: 'Istinto del Branco: se controlli meno Unità dell\'avversario, le tue Unità in Linea ottengono +1 Forza durante la Fase di Scontro.',
+            ops: [{ type: 'announce', amount: 1 }]
         },
         activation: {
-            name: 'Ossa Risorgenti',
-            text: 'Una volta per turno: infliggi 1 Follia all\u2019avversario.',
-            ops: [{ type: 'addMadness', target: 'opponent', amount: 1 }]
+            name: 'Abilità attiva',
+            text: 'Una volta per turno, costo 2: scegli un tuo Fronte. Fino alla fine del turno, l\'Unità in Linea ottiene Ferocia (se l\'ha già, ottiene +1 Forza).',
+            ops: [{ type: 'announce', amount: 1 }]
         }
     },
     {
         id: 'cmd-2-01',
-        name: 'Signore delle Fiamme',
+        name: 'Malakor, Arconte del Tormento',
         setId: 'set-2',
-        pc: 18,
+        pc: 20,
         provisional: true,
         rifornimento: {
-            text: 'Guadagni 1 Echo.',
-            ops: [{ type: 'gainEcho', amount: 1 }]
+            text: 'Maledizione dell\'Erebo: quando un effetto Tormento danneggia il Comandante avversario, pesca 1 carta se controlli una Linea.',
+            ops: [{ type: 'announce', amount: 1 }]
         },
         activation: {
-            name: 'Uovo Parassita',
-            text: 'Una volta per turno: assegni 1 Parassita all\u2019avversario.',
-            ops: [{ type: 'addParasite', target: 'opponent', amount: 1 }]
+            name: 'Abilità attiva',
+            text: 'Una volta per turno, costo 2: una tua Unità in Linea ottiene Logorare (se ce l\'ha già, la Linea avversaria perde 1 Forza).',
+            ops: [{ type: 'announce', amount: 1 }]
         }
     },
     {
         id: 'cmd-3-01',
-        name: 'Veggente Silente',
+        name: 'Xylar, Mente Suprema dello Sciame',
         setId: 'set-3',
         pc: 20,
         provisional: true,
         rifornimento: {
-            text: 'Se hai 0 segnalini Follia, guadagni 1 Echo.',
-            condition: { type: 'madnessAtMost', value: 0 },
-            ops: [{ type: 'gainEcho', amount: 1 }]
+            text: 'Crea una pedina Sciame con Forza 1 in Supporto oppure metti 1 segnalino Parassita sul Comandante avversario.',
+            ops: [{ type: 'announce', amount: 1 }]
         },
         activation: {
-            name: 'Visione',
-            text: 'Una volta per turno: peschi 1 carta Esercito.',
+            name: 'Abilità attiva',
+            text: 'Una volta per turno, paga 2 Domini attivi: un\'Unità con Mente Collettiva ottiene +2 Forza fino alla fine dello Scontro e applica 1 Parassita.',
+            ops: [{ type: 'announce', amount: 1 }]
+        }
+    },
+    {
+        id: 'cmd-4-01',
+        name: 'Aurelius, l\'Imperatore Celeste',
+        setId: 'set-4',
+        pc: 20,
+        provisional: true,
+        rifornimento: {
+            text: 'All\'inizio del tuo turno, pesca 1 carta.',
             ops: [{ type: 'drawArmy', amount: 1 }]
+        },
+        activation: {
+            name: 'Abilità attiva',
+            text: 'Una volta per turno, costo 2 PC: un\'Unità idonea subisce Ascensione; altrimenti infliggi 1 segnalino Tormento a un Comandante avversario.',
+            ops: [{ type: 'announce', amount: 1 }]
         }
     }
 ];
 
-const KNOWN_OPS = new Set(['gainEcho', 'addMadness', 'addParasite', 'drawArmy']);
+const KNOWN_OPS = new Set(['gainEcho', 'addMadness', 'addParasite', 'drawArmy', 'announce']);
 const KNOWN_CONDITIONS = new Set(['madnessAtMost']);
-const SELF_OPS = new Set(['gainEcho', 'drawArmy']);
+const SELF_OPS = new Set(['gainEcho', 'drawArmy', 'announce']);
 
 export function listCommanders() {
     return COMMANDERS.map(commander => ({

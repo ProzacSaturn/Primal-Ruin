@@ -29,9 +29,9 @@ npm audit --audit-level=moderate
 
 ## Catalogo e mazzi demo
 
-`src/data/cards.json` è il catalogo strutturato delle 360 carte contenute in `Set.txt`. Conserva costo, forza, tipo, categoria, rarità quando indicata, testo originale, decadimento ed eventuale costo di equipaggiamento. Gli ID sono univoci per set, ad esempio `set-1-001`; i valori non specificati nella fonte restano `null`.
+`src/data/cards.json` è il catalogo strutturato delle 480 carte contenute nei quattro file di `sets/`. Conserva costo, forza, tipo, categoria, rarità quando indicata, testo originale, decadimento, salute del Comandante ed eventuale costo di equipaggiamento. Gli ID sono univoci per set, ad esempio `set-1-001`; i valori non specificati nella fonte restano `null`.
 
-Per rigenerare il catalogo dopo aver modificato `Set.txt`:
+Per rigenerare il catalogo dopo aver modificato un file in `sets/`:
 
 ```powershell
 npm run cards:import
@@ -39,7 +39,7 @@ npm run cards:import
 
 L’importazione verifica i 120 numeri e i conteggi di categoria previsti per ogni set e segnala metadati obbligatori mancanti. L’archivio carte nella pagina permette di filtrare per set e categoria e cercare nel nome, nel tipo e nel testo delle regole.
 
-È disponibile un deck builder che salva mazzi da 40 carte nel browser; non viene imposto un limite copie perché il regolamento non ne specifica uno. In assenza di un mazzo personalizzato, la partita demo usa 40 Unità casuali e non bilanciate. Tutte le 68 Tattiche del catalogo sono giocabili: 62 hanno risolutori registrati e 6 effetti immediati. Gli effetti a bersaglio verificano le scelte legali prima di pagare. Tutti i 28 Equipaggiamenti, 70 Siti e 26 Campi dei tre set sono registrati come implementati e hanno copertura di catalogo verificata dai test; le abilità statiche e i trigger sono gestiti. Per gli effetti facoltativi non ancora presentati come scelta interattiva, il motore applica una scelta automatica deterministica e la segnala nell’archivio. Sono implementati 88 effetti di Unità; 44 Unità con abilità aggiuntive restano parziali nell’audit. Le restrizioni di ingresso in Linea della Vallata del Terrore Primordiale e della Sala dei Lamenti si applicano alle Unità avversarie, senza bloccare l’ingresso legale in Supporto. La perdita di Forza che porta una Linea a zero la rimuove e promuove un Supporto. Il costo dell’Equipaggiamento include il costo della carta e il costo Equip indicato; gli sconti Eco Spettrale sono applicati rispettando il minimo di 1 e non consumano lo sconto per-turno se non riducono il pagamento. L’aumento di costo del Velo del Silenzio e la protezione delle Linee da alcune Tattiche sono applicati dal motore. I bonus da Siti indipendenti alla Forza dei Supporti e alla riduzione dei danni si sommano, rispettando i limiti scritti sulle carte. Il Portale Silente sposta il Supporto avversario verso uno slot Supporto libero adiacente; questa destinazione è un’interpretazione operativa, poiché la carta non indica una destinazione. La casualità di setup è basata su un PRNG con stato incluso nel salvataggio, così una partita salvata riprende la stessa sequenza casuale.
+È disponibile un deck builder che salva mazzi da 40 carte nel browser; non viene imposto un limite copie perché il regolamento non ne specifica uno. In assenza di un mazzo personalizzato, la partita demo pesca 40 carte del set scelto secondo la composizione del prototipo. Le carte dei quattro set sono nel catalogo. Il motore esegue ancora gli effetti registrati sui vecchi numeri di carta: se una carta nuova occupa quel numero, l’archivio la segna come parziale o non eseguibile. I Comandanti stampati sono nel catalogo, ma le loro abilità nuove vengono solo annunciate, salvo la pesca di Aurelius. La casualità di setup è basata su un PRNG con stato incluso nel salvataggio, così una partita salvata riprende la stessa sequenza casuale.
 
 Impostazioni audio/velocità animazioni, scorciatoie da tastiera e salvataggio automatico locale della partita sono disponibili. Il salvataggio è specifico del browser/dispositivo e non è un backup esportabile.
 
@@ -76,7 +76,8 @@ Impostazioni audio/velocità animazioni, scorciatoie da tastiera e salvataggio a
 - `src/save-store.js` - serializzazione e controllo di validità dei salvataggi locali.
 - `src/card-effects.js` - classificazione esplicita del supporto effetti corrente.
 - `src/tactics.js` - bersagli ed effetti risolti per le Tattiche implementate.
-- `src/data/cards.json` - catalogo generato dai tre set.
-- `scripts/import-cards.mjs` - importazione e validazione della fonte `Set.txt`.
+- `sets/` - fonte testuale dei quattro set.
+- `src/data/cards.json` - catalogo generato dai quattro set.
+- `scripts/import-cards.mjs` - importazione e validazione dei file in `sets/`.
 - `scripts/card-effect-coverage.mjs` - riepilogo degli effetti supportati e non supportati.
 - `tests/` - test Node per deck building, catalogo e salvataggi.
