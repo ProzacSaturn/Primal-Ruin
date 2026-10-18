@@ -3,7 +3,9 @@ import { getCardExecutionStatus } from './card-effects.js';
 import { validateDeckIds } from './deck-validation.js';
 
 const STORAGE_KEY = 'primal-ruin.custom-deck.v1';
-const cardsById = new Map(catalog.cards.map(card => [card.id, card]));
+const QUARANTINE_KEY = 'primal-ruin.custom-deck.quarantine';
+const DECK_VERSION = 1;
+const cardsById = new Map(catalog.cards.map((card) => [card.id, card]));
 const CATEGORY_LABELS = {
     unit: 'Unità',
     tactic: 'Tattica',
@@ -16,6 +18,22 @@ export function validateDeck(cardIds) {
     return validateDeckIds(cardIds, cardsById);
 }
 
+function quarantineDeck(serialized, reason) {
+    if (!serialized) return;
+    try {
+        localStorage.setItem(
+            QUARANTINE_KEY,
+            JSON.stringify({
+                quarantinedAt: new Date().toISOString(),
+                reason,
+                payload: serialized
+            })
+        );
+    } catch (error) {
+        console.error('Impossibile mettere da parte il mazzo illeggibile.', error);
+    }
+}
+
 export function loadCustomDeck() {
     let serialized;
     try {
@@ -25,15 +43,25 @@ export function loadCustomDeck() {
         return null;
     }
     if (!serialized) return null;
-    let cardIds;
+    let stored;
     try {
-        cardIds = JSON.parse(serialized);
+        stored = JSON.parse(serialized);
     } catch (error) {
+        quarantineDeck(serialized, 'json');
         console.error('Il mazzo salvato non è JSON valido.', error);
+        return null;
+    }
+    const legacyList = Array.isArray(stored);
+    const cardIds = legacyList ? stored : stored?.cardIds;
+    const version = legacyList ? DECK_VERSION : stored?.version;
+    if (!Number.isInteger(version) || version < 1) {
+        quarantineDeck(serialized, 'version');
+        console.error('Il mazzo salvato ha una versione non riconosciuta.');
         return null;
     }
     const validation = validateDeck(cardIds);
     if (!validation.valid) {
+        quarantineDeck(serialized, 'invalid');
         console.error(`Il mazzo salvato non è valido: ${validation.message}`);
         return null;
     }
@@ -43,7 +71,30 @@ export function loadCustomDeck() {
 export function saveCustomDeck(cardIds) {
     const validation = validateDeck(cardIds);
     if (!validation.valid) throw new Error(validation.message);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cardIds));
+    let previous = null;
+    try {
+        const serialized = localStorage.getItem(STORAGE_KEY);
+        if (serialized) {
+            try {
+                previous = JSON.parse(serialized);
+            } catch {
+                quarantineDeck(serialized, 'json');
+            }
+        }
+    } catch {
+        previous = null;
+    }
+    const extras =
+        previous && typeof previous === 'object' && !Array.isArray(previous)
+            ? Object.fromEntries(
+                  Object.entries(previous).filter(([key]) => key !== 'version' && key !== 'cardIds')
+              )
+            : {};
+    const version =
+        Number.isInteger(previous?.version) && previous.version >= DECK_VERSION
+            ? previous.version
+            : DECK_VERSION;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version, ...extras, cardIds }));
 }
 
 export function clearCustomDeck() {
@@ -70,12 +121,17 @@ export function initDeckBuilder(onUseDeck) {
 
     function render() {
         const search = searchInput.value.trim().toLocaleLowerCase('it');
-        const visibleCards = catalog.cards.filter(card => {
+        const visibleCards = catalog.cards.filter((card) => {
             if (card.category === 'commander') return false;
             if (setFilter.value !== 'all' && card.setId !== setFilter.value) return false;
-            if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value) return false;
-            return !search || `${card.name} ${card.type || ''} ${card.rulesText}`
-                .toLocaleLowerCase('it').includes(search);
+            if (categoryFilter.value !== 'all' && card.category !== categoryFilter.value)
+                return false;
+            return (
+                !search ||
+                `${card.name} ${card.type || ''} ${card.rulesText}`
+                    .toLocaleLowerCase('it')
+                    .includes(search)
+            );
         });
         catalogList.replaceChildren();
         for (const card of visibleCards) {
@@ -100,7 +156,7 @@ export function initDeckBuilder(onUseDeck) {
         }
 
         const counts = new Map();
-        cardIds.forEach(id => counts.set(id, (counts.get(id) || 0) + 1));
+        cardIds.forEach((id) => counts.set(id, (counts.get(id) || 0) + 1));
         deckList.replaceChildren();
         for (const [id, quantity] of counts) {
             const card = cardsById.get(id);
@@ -123,12 +179,17 @@ export function initDeckBuilder(onUseDeck) {
         }
 
         const validation = validateDeck(cardIds);
-        const unsupportedCount = cardIds.reduce((count, id) =>
-            count + Number(getCardExecutionStatus(cardsById.get(id)).label === 'Non eseguibile'), 0);
+        const unsupportedCount = cardIds.reduce(
+            (count, id) =>
+                count +
+                Number(getCardExecutionStatus(cardsById.get(id)).label === 'Non eseguibile'),
+            0
+        );
         count.textContent = `${cardIds.length}/40 carte`;
-        status.textContent = validation.valid && unsupportedCount > 0
-            ? `${validation.message} Avviso: ${unsupportedCount} carte hanno effetti non giocabili in questa build.`
-            : validation.message;
+        status.textContent =
+            validation.valid && unsupportedCount > 0
+                ? `${validation.message} Avviso: ${unsupportedCount} carte hanno effetti non giocabili in questa build.`
+                : validation.message;
         status.classList.toggle('valid', validation.valid);
         status.classList.toggle('warning', validation.valid && unsupportedCount > 0);
         saveButton.disabled = !validation.valid;
