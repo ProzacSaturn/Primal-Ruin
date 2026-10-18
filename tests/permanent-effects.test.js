@@ -30,7 +30,7 @@ test('Corona della Mente Suprema grants force without granting Mente Collettiva'
     const player = playerWithEmptyFronts();
     const unit = {
         keywords: [],
-        equipment: { catalogId: 'set-3-112' }
+        equipment: { catalogId: 'set-3-088' }
     };
     player.fronts.left.line = unit;
     player.fronts.left.supA = { keywords: ['Mente Collettiva'], equipment: null };

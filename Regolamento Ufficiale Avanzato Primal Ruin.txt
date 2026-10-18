@@ -23,7 +23,10 @@ Ogni giocatore utilizza due mazzi distinti ed una riserva di segnalini:
 
 
 * 1 Carta Comandante: Rappresenta il leader dell'armata, determina i PC iniziali e fornisce abilità uniche.
-* Mazzo Esercito (Esattamente 40 carte): Composto da Unità, Tattiche (Standard e Istantanee/Reazioni), Equipaggiamenti, SITI e CAMPI.
+* Mazzo Esercito (Esattamente 40 carte): Composto da Unità, Tattiche, Equipaggiamenti, SITI e CAMPI.
+   * Tattiche. Ogni Tattica è Standard oppure Istantanea. «Reazione» non è un tipo di carta: è solo il nome della finestra durante lo Scontro.
+     * Standard: si gioca solo nella tua Fase Principale. Sono le Tattiche che pescano, evocano, spostano, mettono segnalini o preparano il turno.
+     * Istantanea: si gioca nella tua Fase Principale, e anche nella finestra di reazione. È Istantanea se cambia il Fronte che sta per risolversi: la Forza, i danni, la prevenzione dei danni, il controllo temporaneo di un’Unità, oppure la distruzione o il sacrificio di Unità su quel Fronte.
    * Nota di congruenza sui Siti e Campi: Non esiste un mazzo separato per Siti e Campi. Queste carte fanno parte a tutti gli effetti del Mazzo Esercito da 40 carte, vengono pescate normalmente durante la Fase di Rifornimento (o tramite effetti) e vengono giocate dalla mano pagandone il costo in Domini.
 * Mazzo Domini (Esattamente 20 carte, separato): Contiene unicamente le carte risorsa. Non contiene mai Unità, Tattiche, Equipaggiamenti, Siti o Campi.
 * Riserva Segnalini: Danno, Follia, Echo, Rovina (per Siti), Decadenza e Parassita.
@@ -60,7 +63,7 @@ Zona
 	[ Supp. B ] (1)
 	Regole di Posizionamento e Limiti
 * Capacità Fronte: Massimo 3 Unità per Fronte (1 in Linea, massimo 2 in Supporto).
-* Assegnazione Standard: Salvo diversa indicazione (es. Assalto o Posizione Difensiva), le Unità entrano in gioco nella posizione di Supporto.
+* Assegnazione Standard: Su ogni Fronte, la prima Unità entra in Linea. I Supporti si riempiono solo se la Linea di quel Fronte è già occupata. Assalto può sostituire una Linea esistente spostandola in un Supporto libero (con gli effetti che lo permettono). Posizione Difensiva deve entrare in Linea se lo slot è libero.
 * Cap Universale dei Supporti (Regola Aurea): Ogni Unità in Supporto fornisce +1 Forza base alla propria Linea. Nessun effetto combinato di carte, Siti o Campi può mai far superare alla Linea un bonus totale dai Supporti superiore a +3 Forza (Cap Assoluto di Fronte).
 * Limiti Siti e Campi: Un giocatore può controllare al massimo 3 Siti totali. Il Campo conta come Sito e ne occupa uno slot (max 1 Campo attivo per giocatore). Se entra in gioco un 4° Sito dalla mano, il giocatore sceglie uno dei precedenti da distruggere. Se entra un nuovo Campo, il precedente viene distrutto.
 
@@ -108,7 +111,7 @@ Ogni turno si articola in 4 fasi sequenziali:
 In qualsiasi ordine, pagando i relativi costi in Domini/Echo, puoi:
 
 
-* Giocare carte Unità, Tattiche Standard, Siti o Campi (dalla mano).
+* Giocare carte Unità, Tattiche Standard, Tattiche Istantanee, Siti o Campi (dalla mano).
 * Assegnare Equipaggiamenti alle Unità (max 1 per Unità; se se ne assegna uno nuovo, il precedente viene scartato).
 * Ritirata e Rimpiazzo: Paga 1 Dominio attivo per scartare un'Unità in Supporto, liberando immediatamente lo slot.
 * Purga dei Parassiti: Paga 2 Domini attivi per rimuovere 1 segnalino Parassita dal tuo Comandante.
@@ -117,7 +120,7 @@ In qualsiasi ordine, pagando i relativi costi in Domini/Echo, puoi:
 La fase si risolve Fronte per Fronte, strettamente da SINISTRA a DESTRA.
 Risoluzione del Fronte ed Uso di Tattiche Istantanee
 1. Dichiarazione dello Scontro nel Fronte.
-2. Finestra di Reazione (Tattiche Istantanee): Entrambi i giocatori, a partire da quello di turno, possono giocare carte "Tattica Istantanea / Reazione" pagandone il costo per modificare il corso del combattimento.
+2. Finestra di reazione: prima di calcolare la Forza, entrambi i giocatori, a partire da quello di turno, possono giocare Tattiche Istantanee pagandone il costo. Le Tattiche Standard non si giocano qui. Chi non ne gioca altre passa. Quando entrambi hanno passato, si calcola la Forza.
 3. Calcolo della Forza Effettiva:
 $$\text{Forza Totale Linea} = \text{Forza Base} + \text{Modificatori} + \text{Bonus Supporti (Max +3)}$$
 4. Esito:

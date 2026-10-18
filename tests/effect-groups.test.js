@@ -206,7 +206,7 @@ test('famiglia distruzione in Linea: danno al Comandante o pesca', () => {
     }
 });
 
-test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', async () => {
+test('famiglia Equipaggiamento innescato: pesca, Parassita', async () => {
     fresh();
     const player = GameState.players[0];
     const opponent = GameState.players[1];
@@ -221,25 +221,26 @@ test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', 
         position: 'line',
         currentForce: 3,
         force: 3,
-        equipment: { catalogId: 'set-2-107', name: 'Tomo' }
+        equipment: { catalogId: 'set-2-087', name: 'Sintesi Abissale' }
     });
     player.fronts.left.line = host;
     const hand = player.hand.length;
-    GameState.onEquipmentPositionEntry(player, host, 'line');
+    CombatResolver.onUnitRemoved(
+        opponent,
+        piece('set-1-007', { id: 'preda', position: 'line', keywords: [] }),
+        'left',
+        'combat-destroy',
+        player
+    );
     assert.equal(player.hand.length, hand + 1);
 
-    opponent.fronts.left.line = piece('set-1-007', { id: 'vittima', currentForce: 3, force: 3 });
-    host.equipment = { catalogId: 'set-2-110', name: 'Sigillo' };
-    CombatResolver.onForceLoss(player, host, 1, opponent, true);
-    assert.equal(opponent.fronts.left.line.currentForce, 2);
-
-    host.equipment = { catalogId: 'set-3-108', name: 'Lama' };
+    host.equipment = { catalogId: 'set-3-084', name: 'Lama Infiltratrice' };
     const destroyed = piece('set-1-007', { id: 'morta', position: 'line' });
     CombatResolver.onUnitRemoved(opponent, destroyed, 'left', 'combat-destroy', player);
     assert.equal(opponent.parasites, 1);
 
     player.armyDeck = [{ id: 'supporto-pesca', name: 'Pescata supporto', keywords: [] }];
-    host.equipment = { catalogId: 'set-3-107', name: 'Velo' };
+    host.equipment = { catalogId: 'set-3-083', name: 'Occhio della Collettività' };
     const beforeSupport = player.hand.length;
     GameState.onEquipmentPositionEntry(player, host, 'supA');
     assert.equal(player.hand.length, beforeSupport + 1);
@@ -250,7 +251,7 @@ test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', 
     opponent.fronts.center.line = piece('set-1-007', {
         id: 'artiglio', currentForce: 4, force: 4, keywords: []
     });
-    host.equipment = { catalogId: 'set-3-111', name: 'Artiglio' };
+    host.equipment = { catalogId: 'set-3-087', name: 'Catene Parassitarie' };
     GameState.onEquipmentPositionEntry(player, host, 'line');
     assert.equal(opponent.fronts.center.line.currentForce, 3);
 
@@ -267,9 +268,7 @@ test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', 
 
 });
 
-test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipaggiata distrugge', {
-    todo: 'set-2-108: il testo sposta un Supporto avversario. onUnitRemoved cerca il Supporto sul giocatore opposto al proprietario della Linea distrutta, cioè su chi ha equipaggiato.'
-}, () => {
+test('Cacciatore Yautja sposta un Supporto avversario in un Fronte adiacente', () => {
     fresh();
     const player = GameState.players[0];
     const opponent = GameState.players[1];
@@ -277,21 +276,52 @@ test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipag
         player.fronts[frontName] = { line: null, supA: null, supB: null };
         opponent.fronts[frontName] = { line: null, supA: null, supB: null };
     }
-    player.fronts.left.line = piece('set-1-007', {
-        id: 'host',
-        equipment: { catalogId: 'set-2-108', name: 'Catene' },
+    player.fronts.left.line = piece('set-3-004', {
+        id: 'cacciatore',
+        position: 'line',
         keywords: []
     });
+    const ownSupport = piece('set-1-007', { id: 'proprio', position: 'supA', keywords: [] });
+    player.fronts.left.supA = ownSupport;
     const dragged = piece('set-1-007', { id: 'trascinato', position: 'supA', keywords: [] });
     opponent.fronts.left.supA = dragged;
     CombatResolver.onUnitRemoved(
         opponent,
-        piece('set-1-007', { id: 'linea-catena', position: 'line', keywords: [] }),
+        piece('set-1-007', { id: 'linea-distrutta', position: 'line', keywords: [] }),
         'left',
         'combat-destroy',
         player
     );
+    assert.equal(opponent.fronts.left.supA, null);
+    assert.equal(opponent.fronts.center.supA, dragged);
+    assert.equal(opponent.fronts.right.supA, null);
     assert.equal(dragged.front, 'center');
+    assert.equal(dragged.position, 'supA');
+    assert.equal(player.fronts.left.supA, ownSupport);
+
+    const blocked = piece('set-1-007', {
+        id: 'bloccato',
+        position: 'supA',
+        front: 'right',
+        keywords: []
+    });
+    opponent.fronts.center.supA = piece('set-1-007', { id: 'pieno-a', keywords: [] });
+    opponent.fronts.center.supB = piece('set-1-007', { id: 'pieno-b', keywords: [] });
+    opponent.fronts.right.supA = blocked;
+    player.fronts.right.line = piece('set-3-004', {
+        id: 'cacciatore-destro',
+        position: 'line',
+        keywords: []
+    });
+    CombatResolver.onUnitRemoved(
+        opponent,
+        piece('set-1-007', { id: 'linea-destra', position: 'line', keywords: [] }),
+        'right',
+        'combat-destroy',
+        player
+    );
+    assert.equal(opponent.fronts.right.supA, blocked);
+    assert.equal(blocked.front, 'right');
 });
 
 test('keyword Decadenza: a 0 segnalini il Sito è distrutto', () => {
@@ -332,7 +362,7 @@ test('keyword concesse dall’Equipaggiamento entrano nel profilo dell’Unità'
     });
     player.fronts.left.line = host;
     assert.ok(getUnitKeywords(player, host, 'left', 'line').includes('Ferocia'));
-    host.equipment = { catalogId: 'set-2-105', id: 'set-2-105' };
+    host.equipment = { catalogId: 'set-2-080', id: 'set-2-080' };
     assert.ok(getUnitKeywords(player, host, 'left', 'line').some(keyword => keyword.startsWith('Logorare')));
 });
 

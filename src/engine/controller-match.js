@@ -1,4 +1,5 @@
-import { clearCustomDeck } from '../deck-builder.js';
+import { UPDATED_MATCH_DECK } from '../deck-composition.js';
+import { clearCustomDeck, loadCustomDeck } from '../deck-builder.js';
 import { playerUnits } from '../permanent-effects.js';
 import { clearGameSave, loadGameSave, persistGame } from '../save-store.js';
 import { hasSeminatoreSilente } from '../unit-triggers.js';
@@ -15,7 +16,11 @@ const matchMethods = {
             GameState.restore(saved);
             Logger.log('Partita ripresa dal salvataggio locale.');
         } else {
-            GameState.reset();
+            const customDeck = loadCustomDeck();
+            GameState.reset(customDeck || UPDATED_MATCH_DECK);
+            if (!customDeck) {
+                Logger.log('Apertura sulla parte aggiornata: mano e comandi sono in alto.');
+            }
         }
         UIRenderer.refresh();
         if (saved && GameState.currentIndex === 1 && !GameState.gameOver) {
@@ -44,10 +49,13 @@ const matchMethods = {
 
     newGame() {
         clearGameSave();
-        GameState.reset();
+        const customDeck = loadCustomDeck();
+        GameState.reset(customDeck || UPDATED_MATCH_DECK);
         document.getElementById('game-result').hidden = true;
         UIRenderer.refresh();
-        Logger.log('Nuova partita preparata.');
+        Logger.log(customDeck
+            ? 'Nuova partita preparata con il mazzo salvato.'
+            : 'Nuova partita preparata con la parte aggiornata.');
     },
 
     useDemoDecks() {
@@ -64,6 +72,25 @@ const matchMethods = {
         } catch (error) {
             Logger.log(`Impossibile passare ai mazzi demo: ${error.message}`);
             console.error('Impossibile passare ai mazzi demo.', error);
+            return false;
+        }
+    },
+
+    useUpdatedDeck() {
+        if (GameState.phase !== 'setup' &&
+            !window.confirm('Passare al mazzo della parte aggiornata e preparare una nuova partita?')) {
+            return false;
+        }
+        try {
+            clearGameSave();
+            GameState.reset(UPDATED_MATCH_DECK);
+            document.getElementById('game-result').hidden = true;
+            UIRenderer.refresh();
+            Logger.log('Mazzo della parte aggiornata pronto. Puoi fare Mulligan e iniziare.');
+            return true;
+        } catch (error) {
+            Logger.log(`Impossibile preparare il mazzo aggiornato: ${error.message}`);
+            console.error('Impossibile preparare il mazzo aggiornato.', error);
             return false;
         }
     },

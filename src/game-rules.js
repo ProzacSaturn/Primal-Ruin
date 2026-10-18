@@ -54,7 +54,8 @@ export function defaultPromotionSlot(front) {
 
 export function checkDeployment(unit, front, slotName, {
     ownSites = [],
-    opposingSites = []
+    opposingSites = [],
+    ownField = null
 } = {}) {
     if (!front || !['line', 'supA', 'supB'].includes(slotName)) {
         return { legal: false, assaultSwap: false };
@@ -63,20 +64,27 @@ export function checkDeployment(unit, front, slotName, {
     const defensive = unit.keywords.includes('Posizione Difensiva');
     const assaultSwap = slotName === 'line' && assault && Boolean(front.line) &&
         (!front.supA || !front.supB);
-    const lineRestricted = slotName === 'line' && (
+    const lineBlockedByBoard =
         opposingSites.some(site => site.catalogId === 'set-1-105') ||
         (Number(unit.force) <= 3 &&
-            opposingSites.some(site => site.catalogId === 'set-2-094')) ||
+            opposingSites.some(site => site.catalogId === 'set-2-094'));
+    const lineRestricted = slotName === 'line' && (
+        lineBlockedByBoard ||
         (assaultSwap && !ownSites.some(site => site.catalogId === 'set-1-098')) ||
         (assaultSwap && opposingSites.some(site => site.catalogId === 'set-3-094'))
     );
     if (lineRestricted) return { legal: false, assaultSwap: false };
     if (front[slotName] && !assaultSwap) return { legal: false, assaultSwap: false };
-    if (defensive && slotName !== 'line' && !front.line) {
+    const supportWithoutLine = ownField?.catalogId === 'set-3-118';
+    // Su ogni Fronte si parte dalla Linea. Il Supporto si usa solo se la Linea c’è già,
+    // oppure se un effetto (Velo) o un blocco di Linea permette l’eccezione.
+    if (slotName !== 'line' && !front.line && !supportWithoutLine && !lineBlockedByBoard) {
         return { legal: false, assaultSwap: false };
     }
-    if (slotName === 'line' && !assault &&
-        !(defensive && !front.line)) {
+    if (defensive && slotName !== 'line' && !front.line && !supportWithoutLine) {
+        return { legal: false, assaultSwap: false };
+    }
+    if (slotName === 'line' && front.line && !assaultSwap) {
         return { legal: false, assaultSwap: false };
     }
     return { legal: true, assaultSwap };

@@ -21,9 +21,15 @@ export function hasKeyword(keywords, name) {
     return (keywords || []).some((keyword) => keywordPattern(name).test(keyword));
 }
 
+function equipmentGrantsAscension(unit) {
+    const id = unit?.equipment?.catalogId || unit?.equipment?.id;
+    return id === 'set-2-084' || id === 'set-2-090';
+}
+
 export function hasAscension(unit) {
     if (!unit) return false;
-    return hasKeyword(unit.keywords, 'Ascensione') ||
+    return equipmentGrantsAscension(unit) ||
+        hasKeyword(unit.keywords, 'Ascensione') ||
         /\bAscensione\b/i.test(unit.rulesText || '');
 }
 
@@ -55,6 +61,7 @@ export function grantDivinityAscension(unit) {
 }
 
 export function applyStandardAscension(unit) {
-    if (!usesStandardAscension(unit?.rulesText, unit?.keywords)) return false;
+    if (!equipmentGrantsAscension(unit) &&
+        !usesStandardAscension(unit?.rulesText, unit?.keywords)) return false;
     return grantDivinityAscension(unit);
 }

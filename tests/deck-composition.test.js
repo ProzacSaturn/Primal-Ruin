@@ -6,6 +6,7 @@ import catalog from '../src/data/cards.json' with { type: 'json' };
 import {
     ARMY_COST_QUOTAS,
     ARMY_DECK_COMPOSITION,
+    UPDATED_MATCH_DECK,
     composeArmyDeck,
     costBand
 } from '../src/deck-composition.js';
@@ -112,4 +113,13 @@ test('rifiuta un set senza carte sufficienti per una categoria', () => {
         }),
         /Il set set-x ha solo 1 carte "unit": ne servono 2\./
     );
+});
+
+test('il mazzo della parte aggiornata ha 40 carte del catalogo', () => {
+    const known = new Set(catalog.cards.map(card => card.id));
+    assert.equal(UPDATED_MATCH_DECK.length, 40);
+    for (const id of UPDATED_MATCH_DECK) assert.equal(known.has(id), true, id);
+    for (const id of ['set-2-108', 'set-3-081', 'set-3-088', 'set-3-112', 'set-3-118']) {
+        assert.equal(UPDATED_MATCH_DECK.includes(id), true, id);
+    }
 });

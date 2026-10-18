@@ -28,33 +28,42 @@ export const registeredEquipmentIds = new Set([
     'set-1-088',
     'set-1-089',
     'set-1-090',
-    'set-2-105',
-    'set-2-106',
-    'set-2-107',
-    'set-2-108',
-    'set-2-109',
-    'set-2-110',
-    'set-2-111',
-    'set-2-112',
-    'set-3-105',
-    'set-3-106',
-    'set-3-107',
-    'set-3-108',
-    'set-3-109',
-    'set-3-110',
-    'set-3-111',
-    'set-3-112'
+    'set-2-079',
+    'set-2-080',
+    'set-2-081',
+    'set-2-082',
+    'set-2-083',
+    'set-2-084',
+    'set-2-085',
+    'set-2-086',
+    'set-2-087',
+    'set-2-088',
+    'set-2-089',
+    'set-2-090',
+    'set-3-081',
+    'set-3-082',
+    'set-3-083',
+    'set-3-084',
+    'set-3-085',
+    'set-3-086',
+    'set-3-087',
+    'set-3-088'
 ]);
 
 export const registeredSiteIds = new Set([
     ...Array.from({ length: 20 }, (_, index) => `set-1-${String(index + 91).padStart(3, '0')}`),
     ...Array.from({ length: 26 }, (_, index) => `set-2-${String(index + 79).padStart(3, '0')}`),
-    ...Array.from({ length: 24 }, (_, index) => `set-3-${String(index + 81).padStart(3, '0')}`)
+    'set-2-108',
+    ...Array.from({ length: 24 }, (_, index) => `set-3-${String(index + 81).padStart(3, '0')}`),
+    'set-3-107',
+    'set-3-108',
+    'set-3-109'
 ]);
 
 export const registeredFieldIds = new Set([
     ...Array.from({ length: 10 }, (_, index) => `set-1-${String(index + 111).padStart(3, '0')}`),
     ...Array.from({ length: 8 }, (_, index) => `set-2-${String(index + 113).padStart(3, '0')}`),
+    'set-3-112',
     ...Array.from({ length: 8 }, (_, index) => `set-3-${String(index + 113).padStart(3, '0')}`)
 ]);
 
@@ -114,6 +123,7 @@ export const registeredUnitEffectIds = new Set([
     'set-2-034',
     'set-2-042',
     'set-3-001',
+    'set-3-004',
     'set-3-007',
     'set-3-009',
     'set-3-012',

@@ -33,11 +33,16 @@ export function getUnitKeywords(player, unit, frontName, slotName) {
     if (equipment) {
         const id = cardId(equipment);
         if (['set-1-083', 'set-1-090'].includes(id)) keywords.push('Ferocia');
-        if (['set-1-086', 'set-2-111', 'set-3-110'].includes(id)) keywords.push('Sorvolo');
-        if (['set-2-105', 'set-3-105'].includes(id)) {
+        if (['set-1-086', 'set-3-086'].includes(id)) keywords.push('Sorvolo');
+        if (['set-2-080', 'set-2-083', 'set-2-090', 'set-3-081'].includes(id)) {
             keywords.push('Logorare (1)');
         }
-        if (id === 'set-2-112') keywords.push('Logorare (1)');
+        if (['set-2-079', 'set-2-089'].includes(id)) keywords.push('Tormento');
+        if (id === 'set-2-089' || (id === 'set-2-081' && slotName !== 'line')) {
+            keywords.push('Eco Spettrale');
+        }
+        if (id === 'set-2-085') keywords.push('Posizione Difensiva');
+        if (['set-2-084', 'set-2-090'].includes(id)) keywords.push('Ascensione');
     }
     if (slotName === 'line' && unit.force >= 5 &&
         player.sites?.some(site => cardId(site) === 'set-1-100')) {
@@ -65,10 +70,15 @@ export function getUnitForceBonus(player, unit, frontName, slotName, opponent) {
     const id = cardId(unit.equipment);
     const unitId = cardId(unit);
     const front = player.fronts[frontName];
-    if (['set-1-079', 'set-1-084', 'set-1-090', 'set-2-109', 'set-2-112'].includes(id)) {
-        bonus += id === 'set-1-079' ? 1 : id === 'set-1-084' || id === 'set-1-090' ||
-            id === 'set-2-109' || id === 'set-2-112' ? 2 : 0;
+    if (['set-1-079', 'set-1-084', 'set-1-090'].includes(id)) {
+        bonus += id === 'set-1-079' ? 1 : 2;
     }
+    if (['set-2-079', 'set-2-082', 'set-2-085'].includes(id)) bonus += 1;
+    if (['set-2-083', 'set-2-086', 'set-2-087', 'set-2-089'].includes(id)) bonus += 2;
+    if (['set-2-088', 'set-2-090'].includes(id)) bonus += 3;
+    if (opponent && SLOTS.some(slot =>
+        cardId(opponent.fronts?.[frontName]?.[slot]?.equipment) === 'set-2-082'
+    )) bonus -= 1;
     if (id === 'set-1-081' && slotName === 'line') bonus += 1;
     if (id === 'set-1-087') {
         bonus += FRONT_NAMES.filter(name => name !== frontName && player.fronts[name].line).length;
@@ -76,11 +86,11 @@ export function getUnitForceBonus(player, unit, frontName, slotName, opponent) {
     if (id === 'set-1-088') {
         bonus += Math.min(2, Number(Boolean(front.supA)) + Number(Boolean(front.supB)));
     }
-    if (id === 'set-3-109' && SLOTS.some(slot =>
+    if (id === 'set-3-085' && SLOTS.some(slot =>
         front[slot] && front[slot] !== unit &&
         getUnitKeywords(player, front[slot], frontName, slot).includes('Mente Collettiva')
     )) bonus += 2;
-    if (id === 'set-3-112') {
+    if (id === 'set-3-088') {
         bonus += Math.min(3, SLOTS.filter(slot =>
             front[slot] && front[slot] !== unit &&
             getUnitKeywords(player, front[slot], frontName, slot)
@@ -147,11 +157,14 @@ export function getUnitForceBonus(player, unit, frontName, slotName, opponent) {
     }
     if (player.field?.catalogId === 'set-2-113' &&
         getUnitKeywords(player, unit, frontName, slotName).some(keyword => keyword.startsWith('Logorare'))) bonus += 1;
-    if (player.field?.catalogId === 'set-3-113' &&
+    if (player.field?.catalogId === 'set-3-112' &&
         getUnitKeywords(player, unit, frontName, slotName).some(keyword => keyword.startsWith('Mente Collettiva'))) bonus += 1;
-    if (player.field?.catalogId === 'set-3-114' &&
+    if (player.field?.catalogId === 'set-3-113' &&
         getUnitKeywords(player, unit, frontName, slotName).includes('Sorvolo')) bonus += 1;
-    if (player.field?.catalogId === 'set-3-101' &&
+    if (player.sites?.some(site => cardId(site) === 'set-3-099') &&
+        getUnitKeywords(player, unit, frontName, slotName)
+            .some(keyword => keyword.startsWith('Mente Collettiva'))) bonus += 1;
+    if (player.sites?.some(site => cardId(site) === 'set-3-109') &&
         getUnitKeywords(player, unit, frontName, slotName).some(keyword => keyword.startsWith('Mente Collettiva'))) {
         bonus += Number(Boolean(front.supA)) + Number(Boolean(front.supB));
     }
@@ -174,8 +187,8 @@ export function getFerocityBonus(player, unit, frontName, slotName, fewerUnits) 
 
 export function getDamageReduction(player, unit, frontName, slotName) {
     const equipmentId = cardId(unit.equipment);
-    let reduction = equipmentId === 'set-1-085' ? 2 :
-        ['set-1-080', 'set-2-106', 'set-3-106'].includes(equipmentId) ? 1 : 0;
+    let reduction = ['set-1-085', 'set-2-086'].includes(equipmentId) ? 2 :
+        ['set-1-080', 'set-2-080', 'set-3-082'].includes(equipmentId) ? 1 : 0;
     if (slotName === 'line') {
         if (hasUnitCard(unit, ['set-2-026', 'set-3-032'])) reduction++;
         if (player.fronts[frontName].supA || player.fronts[frontName].supB) {
@@ -209,7 +222,7 @@ export function getSupportBonus(player, frontName) {
         const unit = front[slot];
         if (!ownSupport(unit)) continue;
         if (hasUnitCard(unit, ['set-1-009', 'set-1-043', 'set-3-009']) ||
-            cardId(unit.equipment) === 'set-1-082' ||
+            ['set-1-082', 'set-2-081'].includes(cardId(unit.equipment)) ||
             frontHasEnhancer ||
             (hasUnitCard(unit, ['set-1-022']) &&
                 !front[slot === 'supA' ? 'supB' : 'supA'])) {

@@ -110,6 +110,7 @@ const tacticMethods = {
         Logger.log(message);
         GameState.checkVictory();
         UIRenderer.refresh();
+        if (GameState.gameOver) this.closeReactionWindow();
     },
 
     confirmTactic() {

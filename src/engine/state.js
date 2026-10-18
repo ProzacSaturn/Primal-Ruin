@@ -32,6 +32,8 @@ const GameState = {
     pendingTorment: null,
     pendingPromotion: null,
     pendingSorvolo: false,
+    reactionWindow: null,
+    resolveReactions: false,
     sorvoloUsed: new Set(),
     log: [],
 
@@ -73,6 +75,8 @@ const GameState = {
         this.pendingTorment = null;
         this.pendingPromotion = null;
         this.pendingSorvolo = false;
+        this.reactionWindow = null;
+        this.resolveReactions = false;
         this.retreatMode = false;
         this.sorvoloUsed = new Set();
         this.log = [];
@@ -84,9 +88,8 @@ const GameState = {
 
     onEquipmentPositionEntry(player, unit, slotName) {
         const id = unit.equipment?.catalogId || unit.equipment?.id;
-        if (id === 'set-2-107' && slotName === 'line') GameController.drawCards(player, 1, unit.equipment.name);
-        if (id === 'set-3-107' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
-        if (id === 'set-3-111' && slotName === 'line') {
+        if (id === 'set-3-083' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
+        if (id === 'set-3-087' && slotName === 'line') {
             const opponent = GameState.players[1 - GameState.players.indexOf(player)];
             const target = FRONT_NAMES.find(name => opponent.fronts[name].line);
             if (target) this.applyForceLoss(opponent, target, 1, unit.equipment.name, player);
@@ -258,12 +261,14 @@ const GameState = {
             const sporeWells = owner.sites?.filter(site => site.catalogId === 'set-3-088') || [];
             for (const site of sporeWells) GameController.drawCards(owner, count, site.name);
             const parasiteSanctuaries =
-                owner.sites?.filter(site => site.catalogId === 'set-3-093') || [];
+                owner.sites?.filter(site =>
+                    site.catalogId === 'set-3-101'
+                ) || [];
             targetPlayer.pc = Math.max(
                 0,
                 targetPlayer.pc - count * parasiteSanctuaries.length
             );
-            if (owner.field?.catalogId === 'set-3-115') {
+            if (owner.field?.catalogId === 'set-3-114') {
                 targetPlayer.pc = Math.max(0, targetPlayer.pc - count);
             }
         }
@@ -280,6 +285,16 @@ const GameState = {
             if (!sacrificed || !line) throw new Error('Non è più possibile sacrificare l’Unità scelta.');
             line.currentForce += 2;
             line.temporaryForce = (line.temporaryForce || 0) + 2;
+        } else if (id === 'set-2-100') {
+            if (!['supA', 'supB'].includes(choice.slotName)) {
+                throw new Error('Ncrospira Oscura sacrifica solo un Supporto.');
+            }
+            const sacrificed = CombatResolver.removeUnit(player, choice.frontName, choice.slotName, 'sacrifice');
+            const line = player.fronts[choice.frontName].line;
+            if (!sacrificed || !line) throw new Error('Non è più possibile sacrificare il Supporto scelto.');
+            line.currentForce += 2;
+            line.temporaryForce = (line.temporaryForce || 0) + 2;
+            Logger.log(`${site.name}: ${line.name} ottiene +2 Forza fino alla fine del turno.`);
         } else if (id === 'set-2-088') {
             const owner = choice.ownerKey === 'player' ? player : opponent;
             const target = choice.zone === 'field'
@@ -356,6 +371,8 @@ const GameState = {
         this.pendingTorment = null;
         this.pendingPromotion = null;
         this.pendingSorvolo = false;
+        this.reactionWindow = null;
+        this.resolveReactions = false;
         this.retreatMode = false;
         this.sorvoloUsed = new Set(snapshot.sorvoloUsed || []);
         restoreRandomState(snapshot.randomState);
@@ -470,11 +487,39 @@ const GameState = {
                     }
                 });
             }
-            if (id === 'set-2-100') {
+            if (id === 'set-3-100') {
+                const sourceName = FRONT_NAMES.find((name, index) => {
+                    const unit = opponent.fronts[name].line;
+                    return unit &&
+                        !isProtectedFromEnemyMovement(opponent, unit, name) &&
+                        [index - 1, index + 1].some(targetIndex =>
+                            FRONT_NAMES[targetIndex] && !opponent.fronts[FRONT_NAMES[targetIndex]].line
+                        );
+                });
+                if (sourceName) {
+                    const sourceIndex = FRONT_NAMES.indexOf(sourceName);
+                    const destinationIndex = [sourceIndex - 1, sourceIndex + 1].find(index =>
+                        FRONT_NAMES[index] && !opponent.fronts[FRONT_NAMES[index]].line
+                    );
+                    const unit = opponent.fronts[sourceName].line;
+                    opponent.fronts[sourceName].line = null;
+                    opponent.fronts[FRONT_NAMES[destinationIndex]].line = unit;
+                    unit.front = FRONT_NAMES[destinationIndex];
+                    unit.position = 'line';
+                    this.onUnitMoved(opponent, unit, sourceName, FRONT_NAMES[destinationIndex], true);
+                    Logger.log(`${site.name}: ${unit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[destinationIndex]]}.`);
+                }
+            }
+            if (id === 'set-2-108') {
                 const index = player.discard.findIndex(card =>
-                    card.keywords?.includes('Eco Spettrale')
+                    card.category === 'unit' &&
+                    card.keywords?.some(keyword => keyword.startsWith('Eco Spettrale'))
                 );
-                if (index >= 0) player.hand.push(...player.discard.splice(index, 1));
+                if (index >= 0) {
+                    const [recovered] = player.discard.splice(index, 1);
+                    player.hand.push(recovered);
+                    Logger.log(`${site.name}: ${recovered.name} torna in mano.`);
+                }
             }
             if (id === 'set-3-081') {
                 const frontName = FRONT_NAMES.find(name =>
@@ -538,7 +583,7 @@ const GameState = {
                 createToken(player, frontName, front.supA ? 'supB' : 'supA', 'Pedina Raptor', 3);
             }
         }
-        if (player.field?.catalogId === 'set-3-120' &&
+        if (player.field?.catalogId === 'set-3-119' &&
             FRONT_NAMES.every(frontName => SLOT_NAMES.some(slot => player.fronts[frontName][slot]))) {
             opponent.pc = Math.max(0, opponent.pc - 1);
             Logger.log(`${player.field.name}: il Comandante avversario perde 1 PC.`);
@@ -567,7 +612,7 @@ const GameState = {
                     if (frontName) this.applyForceLoss(opponent, frontName, 1, site.name, player);
                 }
             }
-            if (player.field?.catalogId === 'set-3-116') {
+            if (player.field?.catalogId === 'set-3-115') {
                 for (const frontName of FRONT_NAMES) {
                     const count = SLOT_NAMES.filter(slot =>
                         player.fronts[frontName][slot] &&
@@ -614,7 +659,7 @@ const GameState = {
         }
         if (wasLine) {
             for (const fieldOwner of GameState.players) {
-                if (fieldOwner.field?.catalogId !== 'set-3-117') continue;
+                if (fieldOwner.field?.catalogId !== 'set-3-116') continue;
                 if (unit.currentForce <= 0 ||
                     player.fronts[targetFront][unit.position] !== unit) break;
                 const applied = Math.min(1, Math.max(0, unit.currentForce));
@@ -629,7 +674,8 @@ const GameState = {
                 }
             }
         }
-        if (player.sites?.some(site => site.catalogId === 'set-3-085') &&
+        if (sourceFront !== targetFront &&
+            player.sites?.some(site => site.catalogId === 'set-3-093') &&
             getUnitKeywords(player, unit, targetFront, unit.position).includes('Sorvolo')) {
             const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
             const frontName = FRONT_NAMES.find(name => enemy.fronts[name].line);

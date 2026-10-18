@@ -1,6 +1,7 @@
 import { calculateCardCost, markCardCostDiscountUsed } from '../card-costs.js';
 import { isImmediateTacticSupported } from '../card-effects.js';
 import { checkDeployment } from '../game-rules.js';
+import { tacticTiming } from '../tactics.js';
 import { createToken, getUnitKeywords } from '../permanent-effects.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
 import { FX } from './fx.js';
@@ -10,6 +11,16 @@ import { GameState } from './state.js';
 
 const playMethods = {
     selectCard(card) {
+        if (GameState.reactionWindow?.playerIndex === 0) {
+            if (GameState.pendingTactic || GameState.sacrifice || GameState.pendingTorment ||
+                GameState.pendingPromotion) return;
+            if (!isImmediateTacticSupported(card) || tacticTiming(card) === 'standard') {
+                Logger.log(`${card.name}: in questa finestra puoi giocare solo una Tattica Istantanea.`);
+                return;
+            }
+            this.playImmediateTactic(card);
+            return;
+        }
         if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 ||
             GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment) return;
         if (card.category !== 'unit') {
@@ -174,7 +185,7 @@ const playMethods = {
 
     canActivateSite(site) {
         const id = site.catalogId || site.id;
-        return ['set-1-102', 'set-2-088', 'set-3-082', 'set-3-089'].includes(id) &&
+        return ['set-1-102', 'set-2-088', 'set-2-100', 'set-3-082', 'set-3-089'].includes(id) &&
             site.lastActivatedTurn !== GameState.turnNumber;
     },
 
@@ -191,6 +202,18 @@ const playMethods = {
                     if (unit) choices.push({
                         label: `Sacrifica ${unit.name} · +2 Forza a ${FRONT_LABELS[frontName]}`,
                         value: { mode: 'sacrifice', frontName, slotName }
+                    });
+                }
+            }
+        } else if (id === 'set-2-100') {
+            for (const frontName of FRONT_NAMES) {
+                if (!player.fronts[frontName].line) continue;
+                for (const slotName of ['supA', 'supB']) {
+                    const unit = player.fronts[frontName][slotName];
+                    if (!unit) continue;
+                    choices.push({
+                        label: `Sacrifica ${unit.name} · +2 Forza a ${FRONT_LABELS[frontName]}`,
+                        value: { mode: 'sacrifice-support', frontName, slotName }
                     });
                 }
             }
@@ -283,18 +306,24 @@ const playMethods = {
         }
         const deployment = checkDeployment(unitForDeployment, front, slotName, {
             ownSites: player.sites,
-            opposingSites: opponent.sites
+            opposingSites: opponent.sites,
+            ownField: player.field
         });
         if (front[slotName] && !deployment.assaultSwap) {
             Logger.log('Questa posizione è occupata.');
             return;
         }
-        if (card.keywords.includes('Posizione Difensiva') && slotName !== 'line' && !front.line) {
+        if (keywords.includes('Posizione Difensiva') && slotName !== 'line' && !front.line &&
+            player.field?.catalogId !== 'set-3-118') {
             Logger.log('Posizione Difensiva: devi assegnare questa Unità alla Linea se possibile.');
             return;
         }
-        if (!deployment.legal && slotName === 'line') {
-            Logger.log('Solo Assalto può entrare in Linea nel turno in cui viene giocata. Scegli un Supporto.');
+        if (!deployment.legal && slotName !== 'line' && !front.line) {
+            Logger.log('Su questo Fronte la Linea è libera: la prima Unità deve entrare in Linea.');
+            return;
+        }
+        if (!deployment.legal && slotName === 'line' && front.line) {
+            Logger.log('La Linea è occupata. Scegli un Supporto, oppure un’Unità con Assalto se può sostituirla.');
             return;
         }
         if (!deployment.legal) return;

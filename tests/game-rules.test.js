@@ -108,15 +108,22 @@ test('AI prefers the Torment outcome that makes more relative victory progress',
     }), false);
 });
 
-test('deployment only permits assault or defensive units to enter line on arrival', () => {
+test('su un Fronte libero la prima Unità entra in Linea, non in Supporto', () => {
     const emptyFront = { line: null, supA: null, supB: null };
     assert.deepEqual(
         checkDeployment({ keywords: [] }, emptyFront, 'line'),
-        { legal: false, assaultSwap: false }
+        { legal: true, assaultSwap: false }
     );
+    assert.equal(checkDeployment({ keywords: [] }, emptyFront, 'supA').legal, false);
     assert.equal(checkDeployment({ keywords: ['Assalto'] }, emptyFront, 'line').legal, true);
     assert.equal(checkDeployment({ keywords: ['Posizione Difensiva'] }, emptyFront, 'line').legal, true);
     assert.equal(checkDeployment({ keywords: ['Posizione Difensiva'] }, emptyFront, 'supA').legal, false);
+});
+
+test('con la Linea occupata l’Unità può entrare in Supporto', () => {
+    const occupied = { line: {}, supA: null, supB: null };
+    assert.equal(checkDeployment({ keywords: [] }, occupied, 'supA').legal, true);
+    assert.equal(checkDeployment({ keywords: [] }, occupied, 'line').legal, false);
 });
 
 test('Assalto can replace the line only when a support slot can receive it', () => {
@@ -182,28 +189,16 @@ test('Sala dei Lamenti restricts only opposing Units with Force three or less', 
     ).legal, true);
 });
 
-test('catalog Site and Field Support permissions allow support with or without a Line', () => {
+test('il Velo della Conquista permette il Supporto anche senza Linea', () => {
     const unit = { force: 2, keywords: [] };
     const frontWithLine = { line: {}, supA: null, supB: null };
     const frontWithoutLine = { line: null, supA: null, supB: null };
 
-    for (const ownSites of [
-        [{ catalogId: 'set-3-087' }],
-        [{ catalogId: 'set-3-119' }]
-    ]) {
-        assert.equal(checkDeployment(
-            unit,
-            frontWithLine,
-            'supA',
-            { ownSites }
-        ).legal, true);
-        assert.equal(checkDeployment(
-            unit,
-            frontWithoutLine,
-            'supA',
-            { ownSites }
-        ).legal, true);
-    }
+    assert.equal(checkDeployment(unit, frontWithLine, 'supA').legal, true);
+    assert.equal(checkDeployment(unit, frontWithoutLine, 'supA').legal, false);
+    assert.equal(checkDeployment(unit, frontWithoutLine, 'supA', {
+        ownField: { catalogId: 'set-3-118' }
+    }).legal, true);
 });
 
 test('default promotion picks the strongest support and favours supA on ties', () => {

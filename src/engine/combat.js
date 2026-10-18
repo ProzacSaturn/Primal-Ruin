@@ -35,9 +35,15 @@ const CombatResolver = {
     async resolveAll() {
         Logger.log('=== FASE DI SCONTRO: SINISTRA → CENTRO → DESTRA ===');
         FX.play('attack');
-        for (const frontName of FRONT_NAMES) {
-            if (GameState.gameOver) break;
-            await this.resolveFront(frontName);
+        GameState.resolveReactions = true;
+        try {
+            for (const frontName of FRONT_NAMES) {
+                if (GameState.gameOver) break;
+                await this.resolveFront(frontName);
+            }
+        } finally {
+            GameState.resolveReactions = false;
+            GameState.reactionWindow = null;
         }
         GameState.checkVictory();
         UIRenderer.refresh();
@@ -150,6 +156,14 @@ const CombatResolver = {
         if (!attackFront.line) {
             Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea attaccante.`);
             return;
+        }
+        if (GameState.resolveReactions) {
+            await GameController.offerReactionWindow(frontName);
+            if (GameState.gameOver) return;
+            if (!attackFront.line) {
+                Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea attaccante.`);
+                return;
+            }
         }
         const attackStrength = this.strength(attacker, frontName, defendFront.line);
         if (!defendFront.line) {
@@ -295,6 +309,8 @@ const CombatResolver = {
             owner = GameState.players.find(candidate => candidate.id === unit.owner) || owner;
         }
         if (control) controller.controlledUnits.splice(controlIndex, 1);
+        const hadSpectralEcho = getUnitKeywords(player, unit, frontName, slotName)
+            .some(keyword => keyword.startsWith('Eco Spettrale'));
         if (unit.equipment) {
             const equipment = unit.equipment;
             unit.equipment = null;
@@ -310,7 +326,7 @@ const CombatResolver = {
         }
         this.onUnitRemoved(player, unit, frontName, reason, sourcePlayer);
         if (slotName === 'line') this.promoteSupport(front, player, frontName, promotionSlot);
-        if (destroyed && unit.keywords?.includes('Eco Spettrale')) {
+        if (destroyed && hadSpectralEcho) {
             this.trySpectralReturn(owner, unit, frontName);
         }
         const enemy = player === GameState.players[0] ? GameState.players[1] : GameState.players[0];
@@ -393,6 +409,13 @@ const CombatResolver = {
         if (reason === 'combat-destroy' && enemy.sites?.some(site => site.catalogId === 'set-2-092')) {
             GameController.drawCards(enemy, 1, 'Santuario delle Ombre');
         }
+        if (reason === 'combat-destroy' && sourcePlayer) {
+            const killer = sourcePlayer.fronts[frontName]?.line;
+            const killerEquipment = killer?.equipment?.catalogId || killer?.equipment?.id;
+            if (killerEquipment === 'set-2-087') {
+                GameController.drawCards(sourcePlayer, 1, killer.equipment.name);
+            }
+        }
         if (reason !== 'combat-destroy' || !sourcePlayer || unit.position !== 'line') return;
         const activeLine = sourcePlayer.fronts[frontName].line;
         const equipmentId = activeLine?.equipment?.catalogId;
@@ -433,58 +456,67 @@ const CombatResolver = {
                 activeLine.currentForce += effect.amount;
                 activeLine.temporaryForce = (activeLine.temporaryForce || 0) + effect.amount;
                 Logger.log(`${activeLine.name}: ottiene +${effect.amount} Forza fino alla fine del turno.`);
+            } else if (effect.type === 'move-enemy-support-adjacent') {
+                const targetPlayer = sourcePlayer === GameState.players[0]
+                    ? GameState.players[1]
+                    : GameState.players[0];
+                const slot = ['supA', 'supB'].find(name => {
+                    const support = targetPlayer.fronts[frontName][name];
+                    return support && !isProtectedFromEnemyMovement(targetPlayer, support, frontName);
+                });
+                if (!slot) continue;
+                const moved = targetPlayer.fronts[frontName][slot];
+                const sourceIndex = FRONT_NAMES.indexOf(frontName);
+                const destination = [sourceIndex - 1, sourceIndex + 1]
+                    .filter(index => FRONT_NAMES[index])
+                    .flatMap(index => ['supA', 'supB']
+                        .filter(targetSlot => !targetPlayer.fronts[FRONT_NAMES[index]][targetSlot])
+                        .map(targetSlot => ({
+                            targetFront: FRONT_NAMES[index],
+                            targetSlot
+                        })))[0];
+                if (!destination) continue;
+                targetPlayer.fronts[frontName][slot] = null;
+                targetPlayer.fronts[destination.targetFront][destination.targetSlot] = moved;
+                moved.front = destination.targetFront;
+                moved.position = destination.targetSlot;
+                GameState.onUnitMoved(
+                    targetPlayer,
+                    moved,
+                    frontName,
+                    destination.targetFront
+                );
+                Logger.log(`${activeLine.name}: ${moved.name} si sposta in ${FRONT_LABELS[destination.targetFront]}.`);
             }
         }
-        if (sourcePlayer.sites?.some(site => site.catalogId === 'set-3-100')) {
+        if (sourcePlayer.sites?.some(site => site.catalogId === 'set-3-108')) {
+            const targetPlayer = sourcePlayer === GameState.players[0]
+                ? GameState.players[1]
+                : GameState.players[0];
             const movedFrom = FRONT_NAMES.find((name, index) => {
-                const unit = enemy.fronts[name].line;
-                if (name === frontName || !unit ||
-                    isProtectedFromEnemyMovement(enemy, unit, name)) return false;
+                const line = targetPlayer.fronts[name].line;
+                if (name === frontName || !line ||
+                    isProtectedFromEnemyMovement(targetPlayer, line, name)) return false;
                 return [index - 1, index + 1].some(targetIndex =>
-                    FRONT_NAMES[targetIndex] && !enemy.fronts[FRONT_NAMES[targetIndex]].line
+                    FRONT_NAMES[targetIndex] && !targetPlayer.fronts[FRONT_NAMES[targetIndex]].line
                 );
             });
             if (movedFrom) {
                 const sourceIndex = FRONT_NAMES.indexOf(movedFrom);
                 const targetIndex = [sourceIndex - 1, sourceIndex + 1].find(index =>
-                    FRONT_NAMES[index] && !enemy.fronts[FRONT_NAMES[index]].line
+                    FRONT_NAMES[index] && !targetPlayer.fronts[FRONT_NAMES[index]].line
                 );
-                const movedUnit = enemy.fronts[movedFrom].line;
-                enemy.fronts[movedFrom].line = null;
-                this.promoteSupport(enemy.fronts[movedFrom], enemy, movedFrom);
-                enemy.fronts[FRONT_NAMES[targetIndex]].line = movedUnit;
+                const movedUnit = targetPlayer.fronts[movedFrom].line;
+                targetPlayer.fronts[movedFrom].line = null;
+                this.promoteSupport(targetPlayer.fronts[movedFrom], targetPlayer, movedFrom);
+                targetPlayer.fronts[FRONT_NAMES[targetIndex]].line = movedUnit;
                 movedUnit.front = FRONT_NAMES[targetIndex];
                 movedUnit.position = 'line';
-                GameState.onUnitMoved(enemy, movedUnit, movedFrom, FRONT_NAMES[targetIndex], true);
-                Logger.log(`${sourcePlayer.sites.find(site => site.catalogId === 'set-3-100').name}: ${movedUnit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[targetIndex]]}.`);
+                GameState.onUnitMoved(targetPlayer, movedUnit, movedFrom, FRONT_NAMES[targetIndex], true);
+                Logger.log(`${sourcePlayer.sites.find(site => site.catalogId === 'set-3-108').name}: ${movedUnit.name} si sposta in ${FRONT_LABELS[FRONT_NAMES[targetIndex]]}.`);
             }
         }
-        if (equipmentId === 'set-3-108') GameState.addParasites(sourcePlayer, owner, 1);
-        if (equipmentId === 'set-2-108') {
-            const slot = ['supA', 'supB'].find(name => {
-                const unit = enemy.fronts[frontName][name];
-                return unit && !isProtectedFromEnemyMovement(enemy, unit, frontName);
-            });
-            if (slot) {
-                const moved = enemy.fronts[frontName][slot];
-                const destination = FRONT_NAMES.flatMap(targetFront => ['supA', 'supB']
-                    .filter(targetSlot => !enemy.fronts[targetFront][targetSlot])
-                    .map(targetSlot => ({ targetFront, targetSlot })))
-                    .find(entry => entry.targetFront !== frontName);
-                if (destination) {
-                    enemy.fronts[frontName][slot] = null;
-                    enemy.fronts[destination.targetFront][destination.targetSlot] = moved;
-                    moved.front = destination.targetFront;
-                    moved.position = destination.targetSlot;
-                    GameState.onUnitMoved(
-                        enemy,
-                        moved,
-                        frontName,
-                        destination.targetFront
-                    );
-                }
-            }
-        }
+        if (equipmentId === 'set-3-084') GameState.addParasites(sourcePlayer, owner, 1);
         if (sourcePlayer.sites?.some(site => site.catalogId === 'set-2-102')) {
             const index = owner.discard.findIndex(card => card.id === unit.id);
             if (index >= 0) {
@@ -496,7 +528,7 @@ const CombatResolver = {
             (sourcePlayer.field?.catalogId === 'set-2-116' &&
                 getUnitKeywords(sourcePlayer, activeLine, frontName, 'line')
                     .some(keyword => keyword.startsWith('Logorare')) ) ||
-            (sourcePlayer.field?.catalogId === 'set-3-118' &&
+            (sourcePlayer.field?.catalogId === 'set-3-117' &&
                 getUnitKeywords(sourcePlayer, activeLine, frontName, 'line')
                     .some(keyword => keyword.startsWith('Mente Collettiva')))) {
             GameController.drawCards(sourcePlayer, 1, sourcePlayer.field.name);
@@ -532,19 +564,6 @@ const CombatResolver = {
                     site.lastDamageTriggerTurn = GameState.turnNumber;
                     owner.pc = Math.max(0, owner.pc - 1);
                 }
-            }
-            if (triggerEquipment && amount > 0 &&
-                unit.equipment?.catalogId === 'set-2-110') {
-                const targetPlayer = owner === GameState.players[0]
-                    ? GameState.players[1] : GameState.players[0];
-                GameState.applyForceLoss(
-                    targetPlayer,
-                    unit.front,
-                    1,
-                    unit.equipment.name,
-                    owner,
-                    false
-                );
             }
             const fieldOwner = GameState.players.find(player =>
                 player !== owner && player.field?.catalogId === 'set-2-118'

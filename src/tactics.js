@@ -122,6 +122,28 @@ export function tacticRequiresChoice(card) {
     return TACTICS_REQUIRING_CHOICE.has(idOf(card));
 }
 
+// Regolamento §2 e §6. «Reazione» è la finestra, non un tipo di carta.
+// Istantanea: cambia il Fronte che sta per risolversi. Si gioca in Fase
+// Principale e nella finestra. Standard: tutto il resto, solo in Fase Principale.
+const INSTANT_TACTICS = new Set([
+    'set-1-061', 'set-1-062', 'set-1-063', 'set-1-064', 'set-1-066', 'set-1-067',
+    'set-1-068', 'set-1-070', 'set-1-071', 'set-1-072', 'set-1-073', 'set-1-076',
+    'set-1-077', 'set-1-078',
+    'set-2-061', 'set-2-064', 'set-2-066', 'set-2-069', 'set-2-070', 'set-2-073',
+    'set-2-077',
+    'set-3-058', 'set-3-060', 'set-3-062', 'set-3-064', 'set-3-068', 'set-3-070',
+    'set-3-071', 'set-3-072', 'set-3-073', 'set-3-074', 'set-3-075', 'set-3-076',
+    'set-3-079', 'set-3-080',
+    'set-4-057', 'set-4-061', 'set-4-062', 'set-4-065', 'set-4-068', 'set-4-069',
+    'set-4-070', 'set-4-073', 'set-4-074', 'set-4-076', 'set-4-077', 'set-4-078',
+    'set-4-080', 'set-4-081', 'set-4-082'
+]);
+
+export function tacticTiming(card) {
+    if (card?.category !== 'tactic') return null;
+    return INSTANT_TACTICS.has(idOf(card)) ? 'instant' : 'standard';
+}
+
 function anyLineChoices(player, opponent) {
     return [
         ...lineChoices(player, 'Tua Linea', 'player'),

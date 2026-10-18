@@ -7,6 +7,7 @@ import { installHeadlessEnvironment } from './helpers/headless-env.js';
 import { validateDeckIds } from '../src/deck-validation.js';
 import { applyTemporaryForce } from '../src/card-effects.js';
 import { calculateUnitCombatStrength } from '../src/game-rules.js';
+import { tacticTiming } from '../src/tactics.js';
 import catalog from '../src/data/cards.json' with { type: 'json' };
 
 const env = installHeadlessEnvironment({ seed: 1 });
@@ -127,7 +128,7 @@ test('oltre 7 carte in Fase Principale non si scarta prima della Fase Finale', (
     assert.equal(player.discard.length, 0);
 });
 
-test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in Supporto', () => {
+test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in Linea', () => {
     fresh();
     const player = GameState.players[0];
     const card = unit(2, {
@@ -142,14 +143,14 @@ test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
     GameState.selectedCard = card;
-    GameController.deploy('left', 'supA');
-    assert.equal(player.fronts.left.supA?.id, 'ingresso');
-    assert.equal(player.fronts.left.line, null);
+    GameController.deploy('left', 'line');
+    assert.equal(player.fronts.left.line?.id, 'ingresso');
+    assert.equal(player.fronts.left.supA, null);
     assert.equal(player.domains.filter(domain => domain.tapped).length, 1);
     assert.equal(player.hand.length, 0);
 });
 
-test('senza Assalto un’Unità non entra in Linea nel turno in cui è giocata', () => {
+test('senza Linea un’Unità non può entrare in Supporto', () => {
     fresh();
     const player = GameState.players[0];
     const card = unit(2, { id: 'lenta', category: 'unit', cost: 1, keywords: [] });
@@ -157,7 +158,8 @@ test('senza Assalto un’Unità non entra in Linea nel turno in cui è giocata',
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
     GameState.selectedCard = card;
-    GameController.deploy('left', 'line');
+    GameController.deploy('left', 'supA');
+    assert.equal(player.fronts.left.supA, null);
     assert.equal(player.fronts.left.line, null);
     assert.equal(player.hand.length, 1);
 });
@@ -583,17 +585,80 @@ test('Purga: pagare 2 Domini per rimuovere 1 Parassita', () => {
     assert.equal(player.parasites, 1);
 });
 
-test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', {
-    todo: '§6.3: le tattiche si giocano solo in Fase Principale. Non c’è una finestra di reazione per Fronte.'
-}, () => {
+test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', async () => {
     fresh();
     GameState.phase = 'scontro';
     GameState.currentIndex = 0;
-    const card = { ...catalog.cards.find(item => item.id === 'set-1-067'), id: 'istantanea', keywords: [] };
+    const source = catalog.cards.find(item => item.id === 'set-1-067');
+    const card = { ...source, id: 'istantanea', catalogId: 'set-1-067', keywords: [] };
     GameState.players[0].hand = [card];
     GameState.selectedCard = card;
     GameController.playImmediateTactic(card);
     assert.equal(GameState.players[0].hand.some(item => item.id === 'istantanea'), false);
+
+    fresh();
+    clearFronts();
+    GameState.phase = 'scontro';
+    GameState.currentIndex = 0;
+    const instant = { ...source, id: 'istantanea', catalogId: 'set-1-067', keywords: [] };
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    player.hand = [instant];
+    opponent.hand = [];
+    player.fronts.left.line = unit(2, { id: 'att', name: 'Att' });
+    opponent.fronts.left.line = unit(2, { id: 'def', name: 'Def' });
+    GameController.selectCard(instant);
+    assert.equal(player.hand.some(item => item.id === 'istantanea'), true);
+
+    const pending = CombatResolver.resolveAll();
+    assert.equal(GameState.reactionWindow?.frontName, 'left');
+    assert.equal(GameState.reactionWindow?.playerIndex, 0);
+    assert.equal(player.fronts.left.line.currentForce, 2);
+    GameController.selectCard(instant);
+    assert.equal(player.hand.some(item => item.id === 'istantanea'), false);
+    assert.equal(player.tacticEffects.breakthrough, 1);
+    assert.equal(player.fronts.left.line.currentForce, 2);
+    assert.equal(GameState.reactionWindow?.frontName, 'left');
+    GameController.passReaction();
+    await pending;
+    assert.equal(GameState.reactionWindow, null);
+    assert.equal(player.fronts.left.line.currentForce, 1);
+    assert.equal(opponent.fronts.left.line.currentForce, 1);
+});
+
+test('l’Istantanea si gioca anche in Fase Principale, la Standard no nella finestra', async () => {
+    const tactics = catalog.cards.filter(card => card.category === 'tactic');
+    assert.equal(tactics.length, 86);
+    assert.equal(tactics.filter(card => tacticTiming(card) === 'instant').length, 50);
+    assert.equal(tactics.filter(card => tacticTiming(card) === 'standard').length, 36);
+    assert.equal(tacticTiming(catalog.cards.find(card => card.id === 'set-1-067')), 'instant');
+    assert.equal(tacticTiming(catalog.cards.find(card => card.id === 'set-1-069')), 'standard');
+    assert.equal(tacticTiming(catalog.cards.find(card => card.id === 'set-3-059')), 'standard');
+
+    fresh();
+    clearFronts();
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const source = catalog.cards.find(item => item.id === 'set-1-067');
+    const instant = { ...source, id: 'velo', catalogId: 'set-1-067', keywords: [] };
+    GameState.players[0].hand = [instant];
+    GameController.selectCard(instant);
+    assert.equal(GameState.players[0].hand.some(card => card.id === 'velo'), false);
+
+    fresh();
+    clearFronts();
+    GameState.phase = 'scontro';
+    GameState.currentIndex = 0;
+    const standardSource = catalog.cards.find(item => item.id === 'set-3-059');
+    const standard = { ...standardSource, id: 'piano', catalogId: 'set-3-059', keywords: [] };
+    GameState.players[0].hand = [standard];
+    GameState.players[1].hand = [];
+    GameState.players[0].fronts.left.line = unit(2, { id: 'att', name: 'Att' });
+    GameState.players[1].fronts.left.line = unit(2, { id: 'def', name: 'Def' });
+    const pending = CombatResolver.resolveAll();
+    assert.equal(GameState.reactionWindow, null);
+    assert.equal(GameState.players[0].hand.some(card => card.id === 'piano'), true);
+    await pending;
 });
 
 test('Guerra a Squadre 2v2', {

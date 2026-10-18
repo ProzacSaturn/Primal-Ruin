@@ -4,6 +4,7 @@ import { checkDeployment } from '../game-rules.js';
 import { getUnitKeywords } from '../permanent-effects.js';
 import { drawCardPixelArt } from '../pixel-art.js';
 import { persistGame } from '../save-store.js';
+import { tacticTiming } from '../tactics.js';
 import { FRONT_LABELS, FRONT_NAMES, SLOT_NAMES } from './board.js';
 import { GameController } from './controller.js';
 import { GameState } from './state.js';
@@ -91,7 +92,7 @@ const UIRenderer = {
         const label = FRONT_LABELS[frontName];
         const slotLabel = slotName === 'line' ? 'Linea' : `Supporto ${slotName === 'supA' ? 'A' : 'B'}`;
         if (!unit) {
-            element.textContent = 'Vuoto';
+            element.textContent = slotLabel;
             element.setAttribute('aria-label', `Fronte ${label}, ${slotLabel} ${side}: vuoto`);
             element.setAttribute('role', 'button');
             element.tabIndex = prefix === 'p' ? 0 : -1;
@@ -162,6 +163,12 @@ const UIRenderer = {
             hint.className = 'hand-hint';
             hint.textContent = 'Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.';
             area.appendChild(hint);
+        } else if (GameState.selectedCard?.category === 'unit') {
+            const hint = document.createElement('div');
+            hint.className = 'hand-hint';
+            hint.textContent =
+                'Su ogni Fronte la prima Unità entra in Linea. I Supporti si usano solo se la Linea è già occupata.';
+            area.appendChild(hint);
         }
         const renderCard = card => {
             const marked = mulliganSetup && GameState.mulliganMarks.has(card.id);
@@ -170,7 +177,12 @@ const UIRenderer = {
             element.className = 'card' +
                 `${marked ? ' mulligan-marked' : ''}` +
                 `${GameState.selectedCard?.id === card.id ? ' selected' : ''}`;
-            element.disabled = mulliganSetup ? false : GameState.currentIndex !== 0 ||
+            const reaction = GameState.reactionWindow?.playerIndex === 0;
+            element.disabled = mulliganSetup ? false : reaction
+                ? Boolean(GameState.pendingTactic || GameState.sacrifice ||
+                    GameState.pendingTorment || GameState.pendingPromotion) ||
+                    !isImmediateTacticSupported(card) || tacticTiming(card) === 'standard'
+                : GameState.currentIndex !== 0 ||
                 GameState.phase !== 'principale' ||
                 GameState.sacrifice !== null || GameState.pendingTorment !== null ||
                 GameState.pendingTactic !== null ||
@@ -192,11 +204,16 @@ const UIRenderer = {
             const stats = document.createElement('span');
             stats.className = 'card-stats';
             const executionStatus = getCardExecutionStatus(card);
+            const tacticSpeed = card.category === 'tactic'
+                ? (tacticTiming(card) === 'instant' ? 'Istantanea' : 'Standard')
+                : '';
             stats.textContent = card.category === 'unit'
                 ? `Forza ${card.force} · ${card.type}`
-                : ['site', 'field', 'equipment'].includes(card.category)
-                    ? `${card.category} · ${executionStatus.label}`
-                    : `${card.category} · ${executionStatus.label}`;
+                : card.category === 'tactic'
+                    ? `Tattica ${tacticSpeed} · ${executionStatus.label}`
+                    : ['site', 'field', 'equipment'].includes(card.category)
+                        ? `${card.category} · ${executionStatus.label}`
+                        : `${card.category} · ${executionStatus.label}`;
             const rules = document.createElement('span');
             rules.className = 'card-rules';
             rules.textContent = card.category === 'unit'
@@ -239,7 +256,11 @@ const UIRenderer = {
                         { ...GameState.selectedCard, keywords },
                         front,
                         slotName,
-                        { ownSites: player.sites, opposingSites: opponent.sites }
+                        {
+                            ownSites: player.sites,
+                            opposingSites: opponent.sites,
+                            ownField: player.field
+                        }
                     )
                     : { legal: false };
                 element.classList.toggle('selectable',
@@ -305,6 +326,14 @@ const UIRenderer = {
         document.getElementById('sorvolo-panel').hidden = !GameState.pendingSorvolo;
         document.getElementById('torment-panel').hidden = !GameState.pendingTorment;
         document.getElementById('tactic-panel').hidden = !GameState.pendingTactic;
+        const reaction = GameState.reactionWindow?.playerIndex === 0;
+        const reactionPanel = document.getElementById('reaction-panel');
+        reactionPanel.hidden = !reaction;
+        if (reaction) {
+            document.getElementById('reaction-label').textContent =
+                `Finestra di reazione · ${FRONT_LABELS[GameState.reactionWindow.frontName]}. Gioca una Tattica Istantanea o passa.`;
+            document.getElementById('btn-reaction-pass').disabled = Boolean(GameState.pendingTactic);
+        }
         document.getElementById('promotion-panel').hidden = !GameState.pendingPromotion;
         if (GameState.pendingPromotion) {
             const promotionChoice = document.getElementById('promotion-choice');
@@ -410,8 +439,9 @@ const UIRenderer = {
                     if (!adjacentFront) return;
                     const target = player.fronts[adjacentFront];
                     const canEnterLine = !target.line &&
-                        (player.sites?.some(site => site.catalogId === 'set-1-104') ||
-                            player.field?.catalogId === 'set-3-099');
+                        player.sites?.some(site =>
+                            site.catalogId === 'set-1-104' || site.catalogId === 'set-3-107'
+                        );
                     const targetSlots = canEnterLine
                         ? ['line', ...(target.supA === null ? ['supA'] : []),
                             ...(target.supB === null ? ['supB'] : [])]
