@@ -92,7 +92,7 @@ const UIRenderer = {
         const label = FRONT_LABELS[frontName];
         const slotLabel = slotName === 'line' ? 'Linea' : `Supporto ${slotName === 'supA' ? 'A' : 'B'}`;
         if (!unit) {
-            element.textContent = 'Vuoto';
+            element.textContent = slotLabel;
             element.setAttribute('aria-label', `Fronte ${label}, ${slotLabel} ${side}: vuoto`);
             element.setAttribute('role', 'button');
             element.tabIndex = prefix === 'p' ? 0 : -1;
@@ -162,6 +162,17 @@ const UIRenderer = {
             const hint = document.createElement('div');
             hint.className = 'hand-hint';
             hint.textContent = 'Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.';
+            area.appendChild(hint);
+        } else if (GameState.selectedCard?.category === 'unit') {
+            const keywords = GameState.selectedCard.keywords || [];
+            const hint = document.createElement('div');
+            hint.className = 'hand-hint';
+            if (keywords.includes('Assalto') || keywords.includes('Posizione Difensiva')) {
+                hint.textContent = 'Questa Unità può entrare in Linea. Gli slot evidenziati sono legali.';
+            } else {
+                hint.textContent =
+                    'Le Unità entrano in Supporto. Solo Assalto o Posizione Difensiva possono andare subito in Linea.';
+            }
             area.appendChild(hint);
         }
         const renderCard = card => {

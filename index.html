@@ -7,8 +7,225 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <a class="skip-link" href="#tavolo">Vai al tavolo di gioco</a>
-    <main class="game-container" id="tavolo" tabindex="-1">
+    <a class="skip-link" href="#match">Vai al tavolo di gioco</a>
+
+    <section class="app-screen screen-intro" id="screen-intro" data-screen="intro" aria-label="Introduzione">
+        <p class="intro-brand">PRIMAL RUIN</p>
+        <h1 class="intro-title">Core 1.0</h1>
+        <p class="intro-lead">Tre passi: intro, mazzi e archivio, poi il tavolo di scontro.</p>
+        <div class="intro-actions">
+            <button class="btn btn-draw" id="btn-intro-deck" type="button">Scegli o crea il mazzo</button>
+            <button class="btn" id="btn-intro-match" type="button">Vai al tavolo</button>
+        </div>
+        <p class="intro-note">Le Unità entrano in Supporto. Solo Assalto o Posizione Difensiva possono andare subito in Linea.</p>
+    </section>
+
+    <section class="app-screen screen-deck" id="screen-deck" data-screen="deck" hidden aria-label="Mazzi e archivio">
+        <header class="screen-bar">
+            <strong>Mazzi e archivio</strong>
+            <div class="screen-bar-actions">
+                <button class="btn" id="btn-deck-intro" type="button">Intro</button>
+                <button class="btn btn-draw" id="btn-deck-match" type="button">Apri il tavolo</button>
+            </div>
+        </header>
+        <p class="save-status" id="save-status" role="status" aria-live="polite">Partita salvata automaticamente in questo browser.</p>
+        <details class="deck-builder" id="deck-builder">
+            <summary>Costruisci il tuo mazzo Esercito</summary>
+            <p>Seleziona 40 carte dal catalogo. Le regole non definiscono un limite di copie: non ne viene applicato uno. Le carte con effetti non supportati restano non giocabili e sono segnalate durante la partita.</p>
+            <div class="builder-filters">
+                <label for="builder-set">Set</label>
+                <select id="builder-set">
+                    <option value="all">Tutti</option>
+                    <option value="set-1">Furia Giurassica</option>
+                    <option value="set-2">Risveglio Infernale</option>
+                    <option value="set-3">Invasione Silente</option>
+                    <option value="set-4">Ascesa Divina</option>
+                </select>
+                <label for="builder-category">Categoria</label>
+                <select id="builder-category">
+                    <option value="all">Tutte</option>
+                    <option value="unit">Unità</option>
+                    <option value="tactic">Tattiche</option>
+                    <option value="equipment">Equipaggiamenti</option>
+                    <option value="site">Siti</option>
+                    <option value="field">Campi</option>
+                </select>
+                <label for="builder-search">Cerca</label>
+                <input id="builder-search" type="search" maxlength="100" autocomplete="off">
+            </div>
+            <div class="builder-columns">
+                <section aria-labelledby="builder-catalog-title">
+                    <h2 id="builder-catalog-title">Catalogo</h2>
+                    <div class="builder-list" id="builder-catalog"></div>
+                </section>
+                <section aria-labelledby="builder-deck-title">
+                    <h2 id="builder-deck-title">Mazzo <span id="builder-count">0/40</span></h2>
+                    <div class="builder-list" id="builder-deck"></div>
+                </section>
+            </div>
+            <p id="builder-status" role="status" aria-live="polite"></p>
+            <button class="btn" id="builder-save" type="button" disabled>Salva mazzo</button>
+            <button class="btn btn-draw" id="builder-use" type="button" disabled>Avvia con questo mazzo</button>
+        </details>
+        <div class="deck-selection" id="deck-selection">
+            <label for="player-set-select">Il tuo mazzo demo</label>
+            <select id="player-set-select">
+                <option value="set-1">Furia Giurassica</option>
+                <option value="set-2">Risveglio Infernale</option>
+                <option value="set-3">Invasione Silente</option>
+                <option value="set-4">Ascesa Divina</option>
+            </select>
+            <label for="opponent-set-select">Mazzo avversario</label>
+            <select id="opponent-set-select">
+                <option value="set-1">Furia Giurassica</option>
+                <option value="set-2">Risveglio Infernale</option>
+                <option value="set-3">Invasione Silente</option>
+                <option value="set-4">Ascesa Divina</option>
+            </select>
+            <label for="player-commander-select">Il tuo Comandante</label>
+            <select id="player-commander-select"></select>
+            <p>Ogni mazzo demo ha 22 Unità, 12 Tattiche, 4 Equipaggiamenti, 1 Sito e 1 Campo del set selezionato. Usa il deck builder per una lista personalizzata, oppure gioca la parte aggiornata.</p>
+            <button class="btn" id="btn-deck-demo" type="button">MAZZI DEMO</button>
+            <button class="btn" id="btn-deck-updated" type="button">GIOCA PARTE AGGIORNATA</button>
+        </div>
+        <details class="roadmap-panel" id="roadmap-panel">
+            <summary>Percorso interno</summary>
+            <p>Questa è la fetta già giocabile da questo tavolo. Il registro completo sta in <code>ROADMAP.md</code>.</p>
+            <ol>
+                <li>Regole di nucleo, Ritirata, Purga e finestra di reazione: già in partita.</li>
+                <li>Equipaggiamenti del Risveglio Infernale (79-90) e dell’Invasione Silente (81-88), Mausoleo, Ncrospira, Fenditura, Città, Spira, Abisso, Velo, Era e i Campi 112-117: sul testo stampato.</li>
+                <li>Poi: gli altri Siti e Campi parziali, le Unità, le 26 Tattiche del set 4. Il 2 contro 2 resta fuori.</li>
+            </ol>
+            <p>Apri l’archivio per leggere la carta. «Gioca la parte aggiornata» prepara un mazzo con queste carte e resta in preparazione.</p>
+        </details>
+        <details class="settings-panel">
+            <summary>Impostazioni</summary>
+            <label><input id="settings-audio" type="checkbox"> Audio</label>
+            <label for="settings-animation-speed">Velocità animazioni</label>
+            <select id="settings-animation-speed">
+                <option value="0">Disattivate</option>
+                <option value="0.5">Lenta</option>
+                <option value="1">Normale</option>
+                <option value="2">Veloce</option>
+            </select>
+            <p id="settings-status" role="status" aria-live="polite"></p>
+        </details>
+        <section class="card-library" aria-labelledby="card-library-title">
+            <h2 id="card-library-title">Archivio carte · 4 set</h2>
+            <div class="library-filters">
+                <label for="library-set">Set</label>
+                <select id="library-set">
+                    <option value="all">Tutti i set</option>
+                    <option value="set-1">Furia Giurassica</option>
+                    <option value="set-2">Risveglio Infernale</option>
+                    <option value="set-3">Invasione Silente</option>
+                    <option value="set-4">Ascesa Divina</option>
+                </select>
+                <label for="library-category">Categoria</label>
+                <select id="library-category">
+                    <option value="all">Tutte</option>
+                    <option value="unit">Unità</option>
+                    <option value="tactic">Tattiche</option>
+                    <option value="equipment">Equipaggiamenti</option>
+                    <option value="site">Siti</option>
+                    <option value="field">Campi</option>
+                </select>
+                <label for="library-search">Cerca</label>
+                <input id="library-search" type="search" maxlength="100" autocomplete="off" placeholder="Nome, tipo o testo regole">
+            </div>
+            <p class="library-count" id="library-count" aria-live="polite"></p>
+            <div class="catalog-grid" id="catalog-grid"></div>
+        </section>
+    </section>
+
+    <main class="app-screen game-container screen-match" id="tavolo" data-screen="match" hidden tabindex="-1" aria-label="Tavolo di gioco">
+        <header class="screen-bar">
+            <strong>Tavolo</strong>
+            <div class="screen-bar-actions">
+                <button class="btn" id="btn-match-intro" type="button">Intro</button>
+                <button class="btn" id="btn-match-deck" type="button">Mazzi e archivio</button>
+            </div>
+        </header>
+
+        <section class="battlefield" aria-label="Campo di scontro">
+            <div class="opponent-area" id="enemy-area" role="region" aria-label="Tavolo avversario">
+                <div class="commander" id="opp-commander">
+                    <div class="commander-name" id="opp-commander-name">COMANDANTE NEMICO</div>
+                    <div class="commander-ability" id="opp-commander-ability"></div>
+                    <div class="commander-stats">
+                        PC: <span id="opp-pc">20</span>
+                        Follia: <span id="opp-follia">0</span>
+                        Echo: <span id="opp-echo">0</span>
+                        Parassiti: <span id="opp-parassiti">0</span>
+                        Mazzo: <span id="opp-deck">40</span>
+                    </div>
+                </div>
+                <div class="siti-area" id="opp-siti-area">
+                    <strong class="zone-title">DOMINI</strong>
+                </div>
+                <div class="fronti-area" id="opp-fronti-area">
+                    <div class="fronte" id="opp-front-left">
+                        <div class="fronte-title">SINISTRA</div>
+                        <div class="position line" id="opp-left-line">Linea</div>
+                        <div class="position support" id="opp-left-supA">Supporto A</div>
+                        <div class="position support" id="opp-left-supB">Supporto B</div>
+                    </div>
+                    <div class="fronte" id="opp-front-center">
+                        <div class="fronte-title">CENTRO</div>
+                        <div class="position line" id="opp-center-line">Linea</div>
+                        <div class="position support" id="opp-center-supA">Supporto A</div>
+                        <div class="position support" id="opp-center-supB">Supporto B</div>
+                    </div>
+                    <div class="fronte" id="opp-front-right">
+                        <div class="fronte-title">DESTRA</div>
+                        <div class="position line" id="opp-right-line">Linea</div>
+                        <div class="position support" id="opp-right-supA">Supporto A</div>
+                        <div class="position support" id="opp-right-supB">Supporto B</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="battlefield-divider" aria-hidden="true">Campo di scontro</p>
+
+            <div class="player-area" id="player-area" role="region" aria-label="Il tuo tavolo">
+                <div class="fronti-area" id="player-fronti-area">
+                    <div class="fronte" id="player-front-left">
+                        <div class="fronte-title">SINISTRA</div>
+                        <div class="position line" id="p-left-line">Linea</div>
+                        <div class="position support" id="p-left-supA">Supporto A</div>
+                        <div class="position support" id="p-left-supB">Supporto B</div>
+                    </div>
+                    <div class="fronte" id="player-front-center">
+                        <div class="fronte-title">CENTRO</div>
+                        <div class="position line" id="p-center-line">Linea</div>
+                        <div class="position support" id="p-center-supA">Supporto A</div>
+                        <div class="position support" id="p-center-supB">Supporto B</div>
+                    </div>
+                    <div class="fronte" id="player-front-right">
+                        <div class="fronte-title">DESTRA</div>
+                        <div class="position line" id="p-right-line">Linea</div>
+                        <div class="position support" id="p-right-supA">Supporto A</div>
+                        <div class="position support" id="p-right-supB">Supporto B</div>
+                    </div>
+                </div>
+                <div class="commander" id="player-commander">
+                    <div class="commander-name" id="player-commander-name">IL TUO COMANDANTE</div>
+                    <div class="commander-ability" id="player-commander-ability"></div>
+                    <div class="commander-stats">
+                        PC: <span id="player-pc">20</span>
+                        Follia: <span id="player-follia">0</span>
+                        Echo: <span id="player-echo">0</span>
+                        Parassiti: <span id="player-parassiti">0</span>
+                    </div>
+                    <div class="commander-deck">Mazzo Esercito: <span id="player-deck">40</span></div>
+                    <div class="commander-domini">Domini attivi / totali: <span id="player-domini-count">0/0</span></div>
+                </div>
+                <div class="siti-area" id="player-siti-area">
+                    <strong class="zone-title">DOMINI</strong>
+                </div>
+            </div>
+        </section>
+
         <section class="play-strip" aria-label="Comandi della partita">
             <div class="turn-status">
                 <strong id="phase-label">PREPARAZIONE</strong>
@@ -58,197 +275,11 @@
                 </div>
                 <p class="keyboard-help">Scorciatoie: Invio avvia · Spazio avanza la fase · Esc deseleziona. Partita di prova: npm run play</p>
             </div>
-            <div class="fronti-area" id="player-fronti-area">
-                <div class="fronte" id="player-front-left">
-                    <div class="fronte-title">SINISTRA</div>
-                    <div class="position line" id="p-left-line">Vuoto</div>
-                    <div class="position support" id="p-left-supA">Vuoto</div>
-                    <div class="position support" id="p-left-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="player-front-center">
-                    <div class="fronte-title">CENTRO</div>
-                    <div class="position line" id="p-center-line">Vuoto</div>
-                    <div class="position support" id="p-center-supA">Vuoto</div>
-                    <div class="position support" id="p-center-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="player-front-right">
-                    <div class="fronte-title">DESTRA</div>
-                    <div class="position line" id="p-right-line">Vuoto</div>
-                    <div class="position support" id="p-right-supA">Vuoto</div>
-                    <div class="position support" id="p-right-supB">Vuoto</div>
-                </div>
-            </div>
         </section>
-        <!-- AVVERSARIO (ALTO) -->
-        <div class="opponent-area" id="enemy-area" role="region" aria-label="Tavolo avversario">
-            <div class="commander" id="opp-commander">
-                <div class="commander-name" id="opp-commander-name">COMANDANTE NEMICO</div>
-                <div class="commander-ability" id="opp-commander-ability"></div>
-                <div class="commander-stats">
-                    PC: <span id="opp-pc">20</span>
-                    Follia: <span id="opp-follia">0</span>
-                    Echo: <span id="opp-echo">0</span>
-                    Parassiti: <span id="opp-parassiti">0</span>
-                    Mazzo: <span id="opp-deck">40</span>
-                </div>
-            </div>
 
-            <div class="siti-area" id="opp-siti-area">
-                <strong class="zone-title">DOMINI</strong>
-            </div>
-
-            <div class="fronti-area" id="opp-fronti-area">
-                <div class="fronte" id="opp-front-left">
-                    <div class="fronte-title">SINISTRA</div>
-                    <div class="position line" id="opp-left-line">Vuoto</div>
-                    <div class="position support" id="opp-left-supA">Vuoto</div>
-                    <div class="position support" id="opp-left-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="opp-front-center">
-                    <div class="fronte-title">CENTRO</div>
-                    <div class="position line" id="opp-center-line">Vuoto</div>
-                    <div class="position support" id="opp-center-supA">Vuoto</div>
-                    <div class="position support" id="opp-center-supB">Vuoto</div>
-                </div>
-                <div class="fronte" id="opp-front-right">
-                    <div class="fronte-title">DESTRA</div>
-                    <div class="position line" id="opp-right-line">Vuoto</div>
-                    <div class="position support" id="opp-right-supA">Vuoto</div>
-                    <div class="position support" id="opp-right-supB">Vuoto</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- GIOCATORE (BASSO) -->
-        <div class="player-area" id="player-area" role="region" aria-label="Il tuo tavolo">
-            <p class="save-status" id="save-status" role="status" aria-live="polite">Partita salvata automaticamente in questo browser.</p>
-            <details class="deck-builder" id="deck-builder">
-                <summary>Costruisci il tuo mazzo Esercito</summary>
-                <p>Seleziona 40 carte dal catalogo. Le regole non definiscono un limite di copie: non ne viene applicato uno. Le carte con effetti non supportati restano non giocabili e sono segnalate durante la partita.</p>
-                <div class="builder-filters">
-                    <label for="builder-set">Set</label>
-                    <select id="builder-set">
-                        <option value="all">Tutti</option>
-                        <option value="set-1">Furia Giurassica</option>
-                        <option value="set-2">Risveglio Infernale</option>
-                        <option value="set-3">Invasione Silente</option>
-                        <option value="set-4">Ascesa Divina</option>
-                    </select>
-                    <label for="builder-category">Categoria</label>
-                    <select id="builder-category">
-                        <option value="all">Tutte</option>
-                        <option value="unit">Unità</option>
-                        <option value="tactic">Tattiche</option>
-                        <option value="equipment">Equipaggiamenti</option>
-                        <option value="site">Siti</option>
-                        <option value="field">Campi</option>
-                    </select>
-                    <label for="builder-search">Cerca</label>
-                    <input id="builder-search" type="search" maxlength="100" autocomplete="off">
-                </div>
-                <div class="builder-columns">
-                    <section aria-labelledby="builder-catalog-title">
-                        <h2 id="builder-catalog-title">Catalogo</h2>
-                        <div class="builder-list" id="builder-catalog"></div>
-                    </section>
-                    <section aria-labelledby="builder-deck-title">
-                        <h2 id="builder-deck-title">Mazzo <span id="builder-count">0/40</span></h2>
-                        <div class="builder-list" id="builder-deck"></div>
-                    </section>
-                </div>
-                <p id="builder-status" role="status" aria-live="polite"></p>
-                <button class="btn" id="builder-save" type="button" disabled>Salva mazzo</button>
-                <button class="btn btn-draw" id="builder-use" type="button" disabled>Avvia con questo mazzo</button>
-            </details>
-            <details class="roadmap-panel" id="roadmap-panel">
-                <summary>Percorso interno</summary>
-                <p>Questa è la fetta già giocabile da questo tavolo. Il registro completo sta in <code>ROADMAP.md</code>.</p>
-                <ol>
-                    <li>Regole di nucleo, Ritirata, Purga e finestra di reazione: già in partita.</li>
-                    <li>Equipaggiamenti del Risveglio Infernale (79-90) e dell’Invasione Silente (81-88), Mausoleo, Ncrospira, Fenditura, Città, Spira, Abisso, Velo, Era e i Campi 112-117: sul testo stampato.</li>
-                    <li>Poi: gli altri Siti e Campi parziali, le Unità, le 26 Tattiche del set 4. Il 2 contro 2 resta fuori.</li>
-                </ol>
-                <p>Apri l’archivio per leggere la carta. «Gioca la parte aggiornata» prepara un mazzo con queste carte e resta in preparazione.</p>
-            </details>
-            <details class="settings-panel">
-                <summary>Impostazioni</summary>
-                <label><input id="settings-audio" type="checkbox"> Audio</label>
-                <label for="settings-animation-speed">Velocità animazioni</label>
-                <select id="settings-animation-speed">
-                    <option value="0">Disattivate</option>
-                    <option value="0.5">Lenta</option>
-                    <option value="1">Normale</option>
-                    <option value="2">Veloce</option>
-                </select>
-                <p id="settings-status" role="status" aria-live="polite"></p>
-            </details>
-            <div class="deck-selection" id="deck-selection">
-                <label for="player-set-select">Il tuo mazzo demo</label>
-                <select id="player-set-select">
-                    <option value="set-1">Furia Giurassica</option>
-                    <option value="set-2">Risveglio Infernale</option>
-                    <option value="set-3">Invasione Silente</option>
-                    <option value="set-4">Ascesa Divina</option>
-                </select>
-                <label for="opponent-set-select">Mazzo avversario</label>
-                <select id="opponent-set-select">
-                    <option value="set-1">Furia Giurassica</option>
-                    <option value="set-2">Risveglio Infernale</option>
-                    <option value="set-3">Invasione Silente</option>
-                    <option value="set-4">Ascesa Divina</option>
-                </select>
-                <label for="player-commander-select">Il tuo Comandante</label>
-                <select id="player-commander-select"></select>
-                <p>Ogni mazzo demo ha 22 Unità, 12 Tattiche, 4 Equipaggiamenti, 1 Sito e 1 Campo del set selezionato. Usa il deck builder per una lista personalizzata, oppure gioca la parte aggiornata.</p>
-            </div>
-            <div class="commander" id="player-commander">
-                <div class="commander-name" id="player-commander-name">IL TUO COMANDANTE</div>
-                <div class="commander-ability" id="player-commander-ability"></div>
-                <div class="commander-stats">
-                    PC: <span id="player-pc">20</span>
-                    Follia: <span id="player-follia">0</span>
-                    Echo: <span id="player-echo">0</span>
-                    Parassiti: <span id="player-parassiti">0</span>
-                </div>
-                <div class="commander-deck">Mazzo Esercito: <span id="player-deck">40</span></div>
-                <div class="commander-domini">Domini attivi / totali: <span id="player-domini-count">0/0</span></div>
-            </div>
-
-            <div class="siti-area" id="player-siti-area">
-                <strong class="zone-title">DOMINI</strong>
-            </div>
-
-            <div class="log-area" id="log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Registro della partita"><div>> Motore Primal Ruin Core 1.0 inizializzato.</div></div>
-            <div id="game-result" class="game-result" hidden></div>
-        </div>
+        <div class="log-area" id="log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Registro della partita"><div>> Motore Primal Ruin Core 1.0 inizializzato.</div></div>
+        <div id="game-result" class="game-result" hidden></div>
     </main>
-
-    <section class="card-library" aria-labelledby="card-library-title">
-        <h2 id="card-library-title">Archivio carte · 4 set</h2>
-        <div class="library-filters">
-            <label for="library-set">Set</label>
-            <select id="library-set">
-                <option value="all">Tutti i set</option>
-                <option value="set-1">Furia Giurassica</option>
-                <option value="set-2">Risveglio Infernale</option>
-                <option value="set-3">Invasione Silente</option>
-                <option value="set-4">Ascesa Divina</option>
-            </select>
-            <label for="library-category">Categoria</label>
-            <select id="library-category">
-                <option value="all">Tutte</option>
-                <option value="unit">Unità</option>
-                <option value="tactic">Tattiche</option>
-                <option value="equipment">Equipaggiamenti</option>
-                <option value="site">Siti</option>
-                <option value="field">Campi</option>
-            </select>
-            <label for="library-search">Cerca</label>
-            <input id="library-search" type="search" maxlength="100" autocomplete="off" placeholder="Nome, tipo o testo regole">
-        </div>
-        <p class="library-count" id="library-count" aria-live="polite"></p>
-        <div class="catalog-grid" id="catalog-grid"></div>
-    </section>
 
     <script>
         var entry = document.createElement('script');

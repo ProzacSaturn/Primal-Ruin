@@ -2,6 +2,7 @@ import { GameController } from '../game.js';
 import { listCommanders } from './commanders.js';
 import { initCardLibrary } from './card-library.js';
 import { initDeckBuilder } from './deck-builder.js';
+import { initScreens, showScreen } from './screens.js';
 import { initSettings } from './settings.js';
 
 if (window.__primalRuinBooted) {
@@ -15,7 +16,35 @@ function listen(id, type, handler) {
     document.getElementById(id)?.addEventListener(type, handler);
 }
 
+function openArchive() {
+    showScreen('deck');
+    document
+        .getElementById('card-library-title')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('library-search')?.focus();
+}
+
+function prepareUpdatedDeck() {
+    if (!GameController.useUpdatedDeck()) return;
+    showScreen('deck');
+    const roadmap = document.getElementById('roadmap-panel');
+    if (roadmap) roadmap.open = true;
+}
+
+function useDemoDecks() {
+    if (!GameController.useDemoDecks()) return;
+    document.dispatchEvent(new Event('primal-ruin:demo-decks'));
+    showScreen('match');
+}
+
 function boot() {
+    initScreens();
+    listen('btn-intro-deck', 'click', () => showScreen('deck'));
+    listen('btn-intro-match', 'click', () => showScreen('match'));
+    listen('btn-deck-intro', 'click', () => showScreen('intro'));
+    listen('btn-deck-match', 'click', () => showScreen('match'));
+    listen('btn-match-intro', 'click', () => showScreen('intro'));
+    listen('btn-match-deck', 'click', () => showScreen('deck'));
     listen('btn-mulligan', 'click', () => GameController.mulligan());
     listen('btn-start', 'click', () => GameController.startGame());
     listen('btn-principale', 'click', () => GameController.enterMainPhase());
@@ -39,25 +68,14 @@ function boot() {
     listen('btn-new-game', 'click', () => {
         if (window.confirm('Iniziare una nuova partita? La partita salvata verrà sostituita.')) {
             GameController.newGame();
+            showScreen('match');
         }
     });
-    listen('btn-demo-decks', 'click', () => {
-        if (GameController.useDemoDecks()) {
-            document.dispatchEvent(new Event('primal-ruin:demo-decks'));
-        }
-    });
-    listen('btn-updated-deck', 'click', () => {
-        if (GameController.useUpdatedDeck()) {
-            const roadmap = document.getElementById('roadmap-panel');
-            if (roadmap) roadmap.open = true;
-        }
-    });
-    listen('btn-open-archive', 'click', () => {
-        document
-            .getElementById('card-library-title')
-            ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        document.getElementById('library-search')?.focus();
-    });
+    listen('btn-demo-decks', 'click', () => useDemoDecks());
+    listen('btn-deck-demo', 'click', () => useDemoDecks());
+    listen('btn-updated-deck', 'click', () => prepareUpdatedDeck());
+    listen('btn-deck-updated', 'click', () => prepareUpdatedDeck());
+    listen('btn-open-archive', 'click', () => openArchive());
     const commanderSelect = document.getElementById('player-commander-select');
     if (commanderSelect) {
         for (const commander of listCommanders()) {
@@ -71,7 +89,10 @@ function boot() {
     }
     initCardLibrary();
     initSettings();
-    initDeckBuilder((cardIds) => GameController.resetWithDeck(cardIds));
+    initDeckBuilder((cardIds) => {
+        GameController.resetWithDeck(cardIds);
+        showScreen('match');
+    });
 
     const fronts = ['left', 'center', 'right'];
     const slots = ['line', 'supA', 'supB'];
