@@ -61,6 +61,7 @@ Impostazioni audio/velocità animazioni, scorciatoie da tastiera e salvataggio a
 - Tormento presenta al giocatore la scelta tra Follia e danno al Comandante; l'avversario automatico sceglie deterministicamente l'esito con il maggiore progresso relativo verso la vittoria. Il testo libero delle altre abilità di Unità resta non eseguibile o parziale.
 - Il prototipo non ha ancora test di tutte le regole di combattimento, un AI strategico completo, animazioni di combattimento complete o illustrazioni finali. Le immagini carta attuali sono placeholder pixel art procedurali, non asset artistici definitivi.
 - Considerare il progetto incompleto rispetto al Core 1.0; consultare `DialogoAi.md` prima di implementare altre regole.
+- Il percorso della fase successiva è in `ROADMAP.md`. Le roadmap in `.trae/documents/` restano il registro delle decisioni già prese.
 
 ## File principali
 
