@@ -73,8 +73,12 @@ export function initCardLibrary() {
         }
     }
 
+    let searchTimer = 0;
     setFilter.addEventListener('change', render);
     categoryFilter.addEventListener('change', render);
-    searchInput.addEventListener('input', render);
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(render, 150);
+    });
     render();
 }

@@ -196,8 +196,12 @@ export function initDeckBuilder(onUseDeck) {
         useButton.disabled = !validation.valid;
     }
 
+    let searchTimer = 0;
     for (const control of [setFilter, categoryFilter]) control.addEventListener('change', render);
-    searchInput.addEventListener('input', render);
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(render, 150);
+    });
     saveButton.addEventListener('click', () => {
         try {
             saveCustomDeck(cardIds);
