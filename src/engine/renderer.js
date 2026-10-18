@@ -243,7 +243,10 @@ const UIRenderer = {
                     )
                     : { legal: false };
                 element.classList.toggle('selectable',
-                    Boolean(canDeploy && deployment.legal));
+                    Boolean(canDeploy && deployment.legal) ||
+                    Boolean(GameState.retreatMode && slotName !== 'line' &&
+                        player.fronts[frontName][slotName] &&
+                        !player.fronts[frontName][slotName].infiltrated));
                 element.classList.toggle('sacrifice-target',
                     Boolean(GameState.sacrifice?.frontName === frontName &&
                         GameState.players[0].fronts[frontName][slotName]));
@@ -275,6 +278,11 @@ const UIRenderer = {
         commanderBtn.disabled = Boolean(GameState.players[0]?.commanderAbilityUsed) ||
             GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment ||
             GameState.pendingPromotion;
+        const retreatBtn = document.getElementById('btn-retreat');
+        retreatBtn.hidden = !playerTurn || GameState.phase !== 'principale';
+        retreatBtn.disabled = Boolean(GameState.sacrifice || GameState.pendingTactic ||
+            GameState.pendingTorment || GameState.pendingPromotion || GameState.pendingSorvolo);
+        retreatBtn.textContent = GameState.retreatMode ? '↩ SCEGLI IL SUPPORTO' : '↩ RITIRATA';
         const mulliganBtn = document.getElementById('btn-mulligan');
         mulliganBtn.hidden = !setup || GameState.mulliganUsed;
         if (!mulliganBtn.hidden) {

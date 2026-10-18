@@ -217,9 +217,44 @@ const matchMethods = {
     handleSlotClick(frontName, slotName) {
         if (GameState.sacrifice) {
             CombatResolver.sacrifice(frontName, slotName);
+        } else if (GameState.retreatMode) {
+            this.retreat(frontName, slotName);
         } else {
             this.deploy(frontName, slotName);
         }
+    },
+
+    toggleRetreat() {
+        if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.gameOver) return;
+        if (GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment ||
+            GameState.pendingPromotion || GameState.pendingSorvolo) return;
+        GameState.retreatMode = !GameState.retreatMode;
+        if (GameState.retreatMode) {
+            GameState.selectedCard = null;
+            Logger.log('Ritirata: scegli un tuo Supporto da scartare per 1 Dominio attivo.');
+        }
+        UIRenderer.refresh();
+    },
+
+    retreat(frontName, slotName) {
+        if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.gameOver) return false;
+        if (GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment ||
+            GameState.pendingPromotion) return false;
+        if (slotName !== 'supA' && slotName !== 'supB') return false;
+        const player = GameState.current;
+        const unit = player.fronts[frontName]?.[slotName];
+        if (!unit || unit.infiltrated) return false;
+        const available = player.domains.filter(domain => !domain.tapped);
+        if (available.length < 1) {
+            Logger.log('Ritirata: serve 1 Dominio attivo.');
+            return false;
+        }
+        available[0].tapped = true;
+        Logger.log(`Ritirata: paghi 1 Dominio e scarti ${unit.name}.`);
+        CombatResolver.removeUnit(player, frontName, slotName, 'retreat');
+        GameState.retreatMode = false;
+        UIRenderer.refresh();
+        return true;
     },
 
     deployInfiltration(frontName, slotName) {
@@ -241,6 +276,7 @@ const matchMethods = {
     cancelSelection() {
         GameState.selectedCard = null;
         GameState.selectedFromDiscard = false;
+        GameState.retreatMode = false;
         UIRenderer.refresh();
     }
 };

@@ -49,7 +49,7 @@ Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 2. Dominio Totale della Mappa solo all’inizio del proprio turno, non in Fase Principale. Fatto: scatta in Fase di Rifornimento.
 3. Fronte Scoperto solo quando manca la Linea del difensore. Fatto: senza Linea attaccante lo scontro su quel Fronte non infligge danni.
 4. L’Equipaggiamento di un’Unità distrutta va negli scarti come carta a sé. Fatto: viene staccato quando l’Unità lascia il campo, anche se l’Unità viene esiliata.
-5. Ritirata e Rimpiazzo: azione vera, non solo un nome.
+5. Ritirata e Rimpiazzo: azione vera, non solo un nome. Fatto: in Fase Principale, 1 Dominio attivo scarta un tuo Supporto e libera lo slot.
 6. Purga dei Parassiti pagata con 2 Domini. La rimozione automatica a inizio turno, se c’è già, non la sostituisce.
 7. Finestra di reazione: le Tattiche Istantanee durante lo Scontro, un Fronte alla volta.
 8. Un salvataggio di versione precedente viene migrato, non buttato (`DV-7bis`).

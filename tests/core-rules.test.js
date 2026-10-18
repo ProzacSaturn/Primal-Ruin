@@ -523,10 +523,28 @@ test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta se
     assert.equal(GameState.players[0].discard.some(card => card.id === 'arma'), true);
 });
 
-test('Ritirata: scartare un Supporto pagando 1 Dominio', {
-    todo: '§6.2 Ritirata e Rimpiazzo non ha un’azione nell’engine.'
-}, () => {
+test('Ritirata: scartare un Supporto pagando 1 Dominio', () => {
     assert.equal(typeof GameController.retreat, 'function');
+    fresh();
+    clearFronts();
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const player = GameState.players[0];
+    player.fronts.left.line = unit(3, { id: 'linea', name: 'Linea' });
+    player.fronts.left.supA = unit(2, { id: 'retro', name: 'Retro' });
+    const activeBefore = player.domains.filter(domain => !domain.tapped).length;
+
+    assert.equal(GameController.retreat('left', 'line'), false);
+    assert.equal(player.fronts.left.line.id, 'linea');
+    assert.equal(GameController.retreat('left', 'supA'), true);
+    assert.equal(player.fronts.left.supA, null);
+    assert.equal(player.discard.some(card => card.id === 'retro'), true);
+    assert.equal(player.domains.filter(domain => !domain.tapped).length, activeBefore - 1);
+
+    player.domains.forEach(domain => { domain.tapped = true; });
+    player.fronts.left.supB = unit(1, { id: 'resta', name: 'Resta' });
+    assert.equal(GameController.retreat('left', 'supB'), false);
+    assert.equal(player.fronts.left.supB.id, 'resta');
 });
 
 test('Purga: pagare 2 Domini per rimuovere 1 Parassita', {
