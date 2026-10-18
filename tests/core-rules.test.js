@@ -513,9 +513,7 @@ test('un attaccante senza Linea non subisce il Fronte Scoperto', async () => {
     assert.equal(GameState.players[0].pc, 20);
 });
 
-test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta separata', {
-    todo: '§9: removeUnit scarta l’Unità con l’Equipaggiamento ancora annidato, non la carta Equipaggiamento da sola.'
-}, () => {
+test('l’Equipaggiamento di un’Unità distrutta va negli scarti come carta separata', () => {
     fresh();
     clearFronts();
     const gear = { id: 'arma', catalogId: 'set-1-079', name: 'Arma', category: 'equipment' };

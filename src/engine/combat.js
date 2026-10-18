@@ -295,6 +295,12 @@ const CombatResolver = {
             owner = GameState.players.find(candidate => candidate.id === unit.owner) || owner;
         }
         if (control) controller.controlledUnits.splice(controlIndex, 1);
+        if (unit.equipment) {
+            const equipment = unit.equipment;
+            unit.equipment = null;
+            owner.discard.push(equipment);
+            Logger.log(`${equipment.name} va negli scarti.`);
+        }
         const destroyed = reason === 'combat-destroy' || reason === 'effect-destroy';
         owner.discard.push(unit);
         if (unit.keywords?.includes('Divinità') && reason === 'combat-destroy') {
