@@ -1,0 +1,23 @@
+PRIMAL RUIN — come aprire (senza terminale)
+
+1) Scarica QUESTO branch aggiornato (non la cartella vecchia sul Desktop):
+   https://github.com/ProzacSaturn/Primal-Ruin/archive/refs/heads/cursor/reaction-window-e7fc.zip
+
+2) Estrai lo ZIP. Dentro troverai una cartella tipo:
+   Primal-Ruin-cursor-reaction-window-e7fc
+
+3) Apri quella cartella e fai DOPPIO CLIC su:
+   Apri Primal Ruin.bat
+
+   In alternativa: doppio clic su index.html
+
+File che devono stare insieme nella stessa cartella:
+- Apri Primal Ruin.bat
+- index.html
+- styles.css
+- standalone.js
+
+Se manca anche uno solo di questi, il gioco non parte.
+Se vedi una pagina vuota o «Mano vuota» ferma, stai aprendo la copia vecchia.
+
+Non serve npm. Non serve il terminale. Non serve PowerShell.
