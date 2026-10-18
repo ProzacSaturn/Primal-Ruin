@@ -29,6 +29,8 @@ npm run cards:coverage
 npm audit --audit-level=moderate
 ```
 
+Su ogni push e su ogni pull request, GitHub Actions esegue `npm ci`, lint, test, build, `cards:coverage` e i test Playwright su Chromium.
+
 ## Catalogo e mazzi demo
 
 `src/data/cards.json` è il catalogo strutturato delle 480 carte contenute nei quattro file di `sets/`. Conserva costo, forza, tipo, categoria, rarità quando indicata, testo originale, decadimento, salute del Comandante ed eventuale costo di equipaggiamento. Gli ID sono univoci per set, ad esempio `set-1-001`; i valori non specificati nella fonte restano `null`.
