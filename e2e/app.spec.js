@@ -65,6 +65,44 @@ test('si può costruire e salvare un mazzo da 40 carte', async ({ page }) => {
         .toBeTruthy();
 });
 
+test('il tavolo resta nel viewport su desktop e su telefono', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (message) => {
+        if (message.type() !== 'error') return;
+        if (message.text().includes('favicon')) return;
+        errors.push(message.text());
+    });
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('#phase-label')).toHaveText('PREPARAZIONE');
+    await expectNoHorizontalOverflow(page);
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/');
+    await expect(page.locator('#phase-label')).toHaveText('PREPARAZIONE');
+    await expect(page.locator('#btn-start')).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.locator('#btn-start').focus();
+    await expect(page.locator('#btn-start')).toBeFocused();
+    const startBox = await page.locator('#btn-start').boundingBox();
+    expect(startBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+    await page.locator('#deck-builder summary').click();
+    await expect(page.locator('#builder-catalog .builder-card').first()).toBeVisible();
+    await page.locator('#builder-search').fill(CARD_NAME);
+    await expect(page.locator('#builder-catalog .builder-card')).toHaveCount(1);
+    expect(errors).toEqual([]);
+});
+
+async function expectNoHorizontalOverflow(page) {
+    const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+}
+
 test('archivio e salvataggio mostrano gli errori di interfaccia già previsti', async ({ page }) => {
     await page.locator('#library-search').fill('carta-che-non-esiste-nel-catalogo');
     await expect(page.locator('#catalog-grid .library-empty')).toHaveText(
