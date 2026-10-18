@@ -35,9 +35,15 @@ const CombatResolver = {
     async resolveAll() {
         Logger.log('=== FASE DI SCONTRO: SINISTRA → CENTRO → DESTRA ===');
         FX.play('attack');
-        for (const frontName of FRONT_NAMES) {
-            if (GameState.gameOver) break;
-            await this.resolveFront(frontName);
+        GameState.resolveReactions = true;
+        try {
+            for (const frontName of FRONT_NAMES) {
+                if (GameState.gameOver) break;
+                await this.resolveFront(frontName);
+            }
+        } finally {
+            GameState.resolveReactions = false;
+            GameState.reactionWindow = null;
         }
         GameState.checkVictory();
         UIRenderer.refresh();
@@ -150,6 +156,14 @@ const CombatResolver = {
         if (!attackFront.line) {
             Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea attaccante.`);
             return;
+        }
+        if (GameState.resolveReactions) {
+            await GameController.offerReactionWindow(frontName);
+            if (GameState.gameOver) return;
+            if (!attackFront.line) {
+                Logger.log(`${FRONT_LABELS[frontName]}: nessuna Linea attaccante.`);
+                return;
+            }
         }
         const attackStrength = this.strength(attacker, frontName, defendFront.line);
         if (!defendFront.line) {

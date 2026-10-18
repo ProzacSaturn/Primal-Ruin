@@ -56,6 +56,104 @@ const combatMethods = {
         this.continueCombat();
     },
 
+    canPlayInstant(player, opponent, card) {
+        if (!isImmediateTacticSupported(card)) return false;
+        const siteTacticLimit = GameState.players.some(owner =>
+            owner.sites?.some(site => site.catalogId === 'set-2-095')
+        );
+        if ((player.tacticLimitActive || siteTacticLimit) &&
+            (player.tacticsPlayedThisTurn || 0) >= 1) return false;
+        const choices = getTacticChoices(card, player, opponent);
+        if (choices === null || (tacticRequiresChoice(card) && choices.length === 0)) return false;
+        const ready = player.domains.filter(domain => !domain.tapped).length;
+        return this.getCardCost(player, card) <= ready;
+    },
+
+    playEnemyReaction(enemy, opponent) {
+        let guard = 0;
+        while (!GameState.gameOver && guard < 8) {
+            guard += 1;
+            const domains = enemy.domains.filter(domain => !domain.tapped);
+            const candidates = enemy.hand
+                .map((card, index) => ({ card, index }))
+                .filter(({ card }) => this.canPlayInstant(enemy, opponent, card))
+                .map(candidate => {
+                    const choices = getTacticChoices(candidate.card, enemy, opponent);
+                    return {
+                        ...candidate,
+                        tacticChoice: choices?.[0]?.value ?? null,
+                        score: 3 - this.getCardCost(enemy, candidate.card) * 0.1
+                    };
+                })
+                .sort((a, b) => b.score - a.score || a.card.id.localeCompare(b.card.id));
+            if (candidates.length === 0) return;
+            const candidate = candidates[0];
+            domains.slice(0, this.getCardCost(enemy, candidate.card))
+                .forEach(domain => { domain.tapped = true; });
+            enemy.hand.splice(candidate.index, 1);
+            enemy.discard.push(candidate.card);
+            enemy.tacticsPlayedThisTurn = (enemy.tacticsPlayedThisTurn || 0) + 1;
+            Logger.log(`Avversario gioca ${candidate.card.name}.`);
+            Logger.log(resolveImmediateTactic(
+                candidate.card,
+                enemy,
+                opponent,
+                candidate.tacticChoice,
+                {
+                    damageLine: (target, frontName, amount) =>
+                        CombatResolver.damageLine(target, frontName, amount, enemy),
+                    onForceLoss: (target, unit, amount) =>
+                        CombatResolver.onForceLoss(target, unit, amount, enemy),
+                    onUnitPlayed: (owner, unit) => {
+                        GameState.onUnitEntry(owner, unit, unit.front, unit.position, true);
+                    },
+                    removeUnit: (target, frontName, slotName) =>
+                        CombatResolver.removeUnit(target, frontName, slotName, 'sacrifice'),
+                    destroyUnit: (target, frontName, slotName) =>
+                        CombatResolver.destroyUnit(target, frontName, slotName)
+                }
+            ));
+            GameState.checkVictory();
+        }
+    },
+
+    async offerReactionWindow(frontName) {
+        const order = [GameState.currentIndex, 1 - GameState.currentIndex];
+        for (const playerIndex of order) {
+            if (GameState.gameOver) return;
+            const player = GameState.players[playerIndex];
+            const opponent = GameState.players[1 - playerIndex];
+            if (playerIndex !== 0) {
+                this.playEnemyReaction(player, opponent);
+                continue;
+            }
+            if (!player.hand.some(card => this.canPlayInstant(player, opponent, card))) continue;
+            Logger.log(`Finestra di reazione su ${FRONT_LABELS[frontName]}: gioca una Tattica Istantanea o passa.`);
+            await new Promise(resolve => {
+                GameState.reactionWindow = { frontName, playerIndex: 0, resolve };
+                UIRenderer.refresh();
+                document.getElementById('btn-reaction-pass').focus();
+            });
+            GameState.reactionWindow = null;
+        }
+    },
+
+    passReaction() {
+        const pending = GameState.reactionWindow;
+        if (!pending || pending.playerIndex !== 0 || GameState.pendingTactic) return;
+        Logger.log(`Passi la finestra di reazione su ${FRONT_LABELS[pending.frontName]}.`);
+        GameState.reactionWindow = null;
+        UIRenderer.refresh();
+        pending.resolve();
+    },
+
+    closeReactionWindow() {
+        const pending = GameState.reactionWindow;
+        if (!pending) return;
+        GameState.reactionWindow = null;
+        pending.resolve();
+    },
+
     async continueCombat() {
         GameState.pendingSorvolo = false;
         UIRenderer.renderControls();

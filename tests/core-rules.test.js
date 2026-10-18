@@ -583,17 +583,45 @@ test('Purga: pagare 2 Domini per rimuovere 1 Parassita', () => {
     assert.equal(player.parasites, 1);
 });
 
-test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', {
-    todo: '§6.3: le tattiche si giocano solo in Fase Principale. Non c’è una finestra di reazione per Fronte.'
-}, () => {
+test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', async () => {
     fresh();
     GameState.phase = 'scontro';
     GameState.currentIndex = 0;
-    const card = { ...catalog.cards.find(item => item.id === 'set-1-067'), id: 'istantanea', keywords: [] };
+    const source = catalog.cards.find(item => item.id === 'set-1-067');
+    const card = { ...source, id: 'istantanea', catalogId: 'set-1-067', keywords: [] };
     GameState.players[0].hand = [card];
     GameState.selectedCard = card;
     GameController.playImmediateTactic(card);
     assert.equal(GameState.players[0].hand.some(item => item.id === 'istantanea'), false);
+
+    fresh();
+    clearFronts();
+    GameState.phase = 'scontro';
+    GameState.currentIndex = 0;
+    const instant = { ...source, id: 'istantanea', catalogId: 'set-1-067', keywords: [] };
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    player.hand = [instant];
+    opponent.hand = [];
+    player.fronts.left.line = unit(2, { id: 'att', name: 'Att' });
+    opponent.fronts.left.line = unit(2, { id: 'def', name: 'Def' });
+    GameController.selectCard(instant);
+    assert.equal(player.hand.some(item => item.id === 'istantanea'), true);
+
+    const pending = CombatResolver.resolveAll();
+    assert.equal(GameState.reactionWindow?.frontName, 'left');
+    assert.equal(GameState.reactionWindow?.playerIndex, 0);
+    assert.equal(player.fronts.left.line.currentForce, 2);
+    GameController.selectCard(instant);
+    assert.equal(player.hand.some(item => item.id === 'istantanea'), false);
+    assert.equal(player.tacticEffects.breakthrough, 1);
+    assert.equal(player.fronts.left.line.currentForce, 2);
+    assert.equal(GameState.reactionWindow?.frontName, 'left');
+    GameController.passReaction();
+    await pending;
+    assert.equal(GameState.reactionWindow, null);
+    assert.equal(player.fronts.left.line.currentForce, 1);
+    assert.equal(opponent.fronts.left.line.currentForce, 1);
 });
 
 test('Guerra a Squadre 2v2', {

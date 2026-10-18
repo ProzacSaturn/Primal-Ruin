@@ -10,6 +10,16 @@ import { GameState } from './state.js';
 
 const playMethods = {
     selectCard(card) {
+        if (GameState.reactionWindow?.playerIndex === 0) {
+            if (GameState.pendingTactic || GameState.sacrifice || GameState.pendingTorment ||
+                GameState.pendingPromotion) return;
+            if (!isImmediateTacticSupported(card)) {
+                Logger.log(`${card.name}: in questa finestra puoi giocare solo una Tattica Istantanea.`);
+                return;
+            }
+            this.playImmediateTactic(card);
+            return;
+        }
         if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 ||
             GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment) return;
         if (card.category !== 'unit') {

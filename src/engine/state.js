@@ -32,6 +32,8 @@ const GameState = {
     pendingTorment: null,
     pendingPromotion: null,
     pendingSorvolo: false,
+    reactionWindow: null,
+    resolveReactions: false,
     sorvoloUsed: new Set(),
     log: [],
 
@@ -73,6 +75,8 @@ const GameState = {
         this.pendingTorment = null;
         this.pendingPromotion = null;
         this.pendingSorvolo = false;
+        this.reactionWindow = null;
+        this.resolveReactions = false;
         this.retreatMode = false;
         this.sorvoloUsed = new Set();
         this.log = [];
@@ -356,6 +360,8 @@ const GameState = {
         this.pendingTorment = null;
         this.pendingPromotion = null;
         this.pendingSorvolo = false;
+        this.reactionWindow = null;
+        this.resolveReactions = false;
         this.retreatMode = false;
         this.sorvoloUsed = new Set(snapshot.sorvoloUsed || []);
         restoreRandomState(snapshot.randomState);

@@ -170,7 +170,12 @@ const UIRenderer = {
             element.className = 'card' +
                 `${marked ? ' mulligan-marked' : ''}` +
                 `${GameState.selectedCard?.id === card.id ? ' selected' : ''}`;
-            element.disabled = mulliganSetup ? false : GameState.currentIndex !== 0 ||
+            const reaction = GameState.reactionWindow?.playerIndex === 0;
+            element.disabled = mulliganSetup ? false : reaction
+                ? Boolean(GameState.pendingTactic || GameState.sacrifice ||
+                    GameState.pendingTorment || GameState.pendingPromotion) ||
+                    !isImmediateTacticSupported(card)
+                : GameState.currentIndex !== 0 ||
                 GameState.phase !== 'principale' ||
                 GameState.sacrifice !== null || GameState.pendingTorment !== null ||
                 GameState.pendingTactic !== null ||
@@ -305,6 +310,14 @@ const UIRenderer = {
         document.getElementById('sorvolo-panel').hidden = !GameState.pendingSorvolo;
         document.getElementById('torment-panel').hidden = !GameState.pendingTorment;
         document.getElementById('tactic-panel').hidden = !GameState.pendingTactic;
+        const reaction = GameState.reactionWindow?.playerIndex === 0;
+        const reactionPanel = document.getElementById('reaction-panel');
+        reactionPanel.hidden = !reaction;
+        if (reaction) {
+            document.getElementById('reaction-label').textContent =
+                `Finestra di reazione · ${FRONT_LABELS[GameState.reactionWindow.frontName]}. Gioca una Tattica Istantanea o passa.`;
+            document.getElementById('btn-reaction-pass').disabled = Boolean(GameState.pendingTactic);
+        }
         document.getElementById('promotion-panel').hidden = !GameState.pendingPromotion;
         if (GameState.pendingPromotion) {
             const promotionChoice = document.getElementById('promotion-choice');

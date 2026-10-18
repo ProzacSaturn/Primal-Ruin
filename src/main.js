@@ -21,6 +21,7 @@ document.getElementById('btn-torment-madness').addEventListener('click', () => G
 document.getElementById('btn-torment-damage').addEventListener('click', () => GameController.chooseTorment(false));
 document.getElementById('btn-tactic-confirm').addEventListener('click', () => GameController.confirmTactic());
 document.getElementById('btn-tactic-cancel').addEventListener('click', () => GameController.cancelTactic());
+document.getElementById('btn-reaction-pass').addEventListener('click', () => GameController.passReaction());
 document.getElementById('btn-promotion-confirm').addEventListener('click', () => {
     GameController.choosePromotionSlot(document.getElementById('promotion-choice').value);
 });
