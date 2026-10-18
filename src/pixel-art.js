@@ -1,9 +1,36 @@
 const PALETTES = {
-    'set-1': { sky: '#301a3c', light: '#f5d300', ground: '#8b3f34', shadow: '#180f27', creature: '#ee7652' },
-    'set-2': { sky: '#171d3d', light: '#05d9e8', ground: '#464b70', shadow: '#0c1228', creature: '#9da9d6' },
-    'set-3': { sky: '#103339', light: '#75f2bd', ground: '#345e46', shadow: '#0a1d25', creature: '#b9eb91' },
-    'set-4': { sky: '#1b2448', light: '#f3e6b3', ground: '#6d5a32', shadow: '#10162e', creature: '#f7f1dc' }
+    'set-1': {
+        sky: '#301a3c',
+        light: '#f5d300',
+        ground: '#8b3f34',
+        shadow: '#180f27',
+        creature: '#ee7652'
+    },
+    'set-2': {
+        sky: '#171d3d',
+        light: '#05d9e8',
+        ground: '#464b70',
+        shadow: '#0c1228',
+        creature: '#9da9d6'
+    },
+    'set-3': {
+        sky: '#103339',
+        light: '#75f2bd',
+        ground: '#345e46',
+        shadow: '#0a1d25',
+        creature: '#b9eb91'
+    },
+    'set-4': {
+        sky: '#1b2448',
+        light: '#f3e6b3',
+        ground: '#6d5a32',
+        shadow: '#10162e',
+        creature: '#f7f1dc'
+    }
 };
+
+const CACHE_LIMIT = 48;
+const artCache = new Map();
 
 function hashText(text) {
     let hash = 2166136261;
@@ -24,13 +51,20 @@ function randomFrom(seed) {
     };
 }
 
-export function drawCardPixelArt(canvas, card) {
-    const context = canvas.getContext('2d');
-    if (!context) return false;
+function createBuffer(width, height) {
+    if (typeof OffscreenCanvas === 'function') return new OffscreenCanvas(width, height);
+    if (typeof document !== 'undefined' && typeof document.createElement === 'function') {
+        const buffer = document.createElement('canvas');
+        buffer.width = width;
+        buffer.height = height;
+        return buffer;
+    }
+    return null;
+}
+
+function paint(context, card, width, height) {
     const palette = PALETTES[card.setId] || PALETTES['set-1'];
     const random = randomFrom(hashText(card.catalogId || card.id));
-    const width = canvas.width;
-    const height = canvas.height;
     context.imageSmoothingEnabled = false;
     context.fillStyle = palette.sky;
     context.fillRect(0, 0, width, height);
@@ -81,8 +115,7 @@ export function drawCardPixelArt(canvas, card) {
             context.fillRect(30, 28, 5, 3);
             context.fillRect(44, 33, 4, 3);
         }
-        canvas.setAttribute('aria-label', `Illustrazione pixel art generata per ${card.name}`);
-        return true;
+        return;
     }
 
     const center = 31 + Math.floor(random() * 5);
@@ -98,7 +131,36 @@ export function drawCardPixelArt(canvas, card) {
     context.fillRect(center + 15, 22, 3, 1);
     context.fillStyle = palette.light;
     context.fillRect(center - 7, 24, 5, 2);
+}
 
+function remember(key, buffer) {
+    artCache.delete(key);
+    artCache.set(key, buffer);
+    while (artCache.size > CACHE_LIMIT) artCache.delete(artCache.keys().next().value);
+}
+
+export function drawCardPixelArt(canvas, card) {
+    const context = canvas.getContext('2d');
+    if (!context) return false;
+    const width = canvas.width;
+    const height = canvas.height;
+    const key = `${card.catalogId || card.id}|${card.setId || ''}|${card.category || ''}|${width}x${height}`;
+    context.imageSmoothingEnabled = false;
+    let buffer = artCache.get(key);
+    if (buffer) {
+        remember(key, buffer);
+    } else {
+        buffer = createBuffer(width, height);
+        const bufferContext = buffer?.getContext('2d');
+        if (!buffer || !bufferContext) {
+            paint(context, card, width, height);
+            canvas.setAttribute('aria-label', `Illustrazione pixel art generata per ${card.name}`);
+            return true;
+        }
+        paint(bufferContext, card, width, height);
+        remember(key, buffer);
+    }
+    context.drawImage(buffer, 0, 0);
     canvas.setAttribute('aria-label', `Illustrazione pixel art generata per ${card.name}`);
     return true;
 }
