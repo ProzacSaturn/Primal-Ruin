@@ -46,7 +46,7 @@ Si chiude un buco alla volta. Il test che lo descrive esiste già: prima lo si f
 Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 
 1. Cap dei Supporti a +3 anche quando il calcolo della Forza non riceve il tetto dal chiamante. Fatto: il default di `calculateUnitCombatStrength` è 3.
-2. Dominio Totale della Mappa solo all’inizio del proprio turno, non in Fase Principale.
+2. Dominio Totale della Mappa solo all’inizio del proprio turno, non in Fase Principale. Fatto: scatta in Fase di Rifornimento.
 3. Fronte Scoperto solo quando manca la Linea del difensore.
 4. L’Equipaggiamento di un’Unità distrutta va negli scarti come carta a sé.
 5. Ritirata e Rimpiazzo: azione vera, non solo un nome.

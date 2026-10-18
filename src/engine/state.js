@@ -396,11 +396,13 @@ const GameState = {
             persistGame(this.snapshot());
             return true;
         }
-        // §1.3: Dominio Totale della Mappa — il giocatore di turno controlla una
-        // Linea in tutti e 3 i Fronti e l'avversario non ha alcuna Unità in campo.
+        // §1: Dominio Totale della Mappa, solo all'inizio del proprio turno
+        // (Fase di Rifornimento). Il giocatore di turno ha una Linea in tutti
+        // e 3 i Fronti e l'avversario non ha alcuna Unità in campo.
         const dominant = this.players[this.currentIndex];
         const exposed = this.players.find(player => player !== dominant);
-        if (dominant && exposed && this.countUnits(exposed) === 0 &&
+        if (this.phase === 'rifornimento' && dominant && exposed &&
+            this.countUnits(exposed) === 0 &&
             FRONT_NAMES.every(name => dominant.fronts[name].line)) {
             this.gameOver = true;
             this.phase = 'gameover';

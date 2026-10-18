@@ -491,9 +491,7 @@ test('il cap di default del calcolo Forza è +3', () => {
     }), 4);
 });
 
-test('il Dominio Totale scatta solo all’inizio del proprio turno', {
-    todo: '§1: la vittoria è all’inizio del proprio turno. checkVictory la applica anche in Fase Principale.'
-}, () => {
+test('il Dominio Totale scatta solo all’inizio del proprio turno', () => {
     fresh();
     clearFronts();
     GameState.phase = 'principale';
