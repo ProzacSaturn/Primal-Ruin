@@ -110,7 +110,7 @@ Non convertire automaticamente il testo delle abilità in effetti del motore con
 
 - `index.html` — struttura della schermata, selezione dei set e filtri dell'archivio.
 - `styles.css` — layout, stile visivo e adattamento agli schermi più piccoli.
-- `game.js` — stato della partita, logica di turno, schieramento e combattimento.
+- `game.js` — facciata che riesporta `GameController` e `GameState`. Il motore è in `src/engine/`.
 - `src/main.js` — avvio dell'interfaccia e registrazione degli eventi.
 - `src/card-library.js` — ricerca, filtri e rendering dell'archivio.
 - `src/card-effects.js` — classificazione del supporto effettivo delle carte.

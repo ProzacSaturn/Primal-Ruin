@@ -48,7 +48,7 @@ class FakeClassList {
     }
 }
 
-export class FakeElement {
+class FakeElement {
     constructor(tagName = 'div') {
         this.tagName = String(tagName).toUpperCase();
         this.id = '';

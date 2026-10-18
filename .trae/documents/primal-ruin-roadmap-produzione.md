@@ -1,5 +1,7 @@
 # Primal Ruin — Roadmap di produzione verso la pubblicazione
 
+> **Stato: documento storico, non è un'istruzione corrente.** `Set.txt` non è più nel repository: la fonte delle carte è `sets/`. L'engine è in `src/engine/` e `game.js` è solo una facciata. I commenti dei test citano ancora questa roadmap (P0, DV-x), quindi il file resta solo come riferimento.
+
 > **Ruolo assunto:** direttore tecnico e di produzione (giochi di carte strategici browser, HTML5 + JS + Vite).
 > **Sostituisce** la precedente `primal-ruin-roadmap-pubblicabile.md` (REV4), usata qui solo come **fonte dello stato attuale**.
 > **Sviluppatore:** uno, senza scadenza fissata. Questa roadmap non prescrive una sequenza settimanale: ordina il lavoro per dipendenze e gate.

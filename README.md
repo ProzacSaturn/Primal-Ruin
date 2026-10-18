@@ -22,6 +22,8 @@ Test automatici e controlli del catalogo:
 
 ```powershell
 npm test
+npm run lint
+npm run test:e2e
 npm run cards:import
 npm run cards:coverage
 npm audit --audit-level=moderate
@@ -53,8 +55,8 @@ Impostazioni audio/velocità animazioni, scorciatoie da tastiera e salvataggio a
 ## Stato delle regole e limiti noti
 
 - Implementati nel prototipo: preparazione, mano da 5, Mulligan, due Domini iniziali, fasi, pesca, limiti di mano, schieramento di Unità, tre Fronti, parte del combattimento, sacrificio umano, alcune keyword e avversario automatico essenziale.
-- Tutte le 68 Tattiche, i 28 Equipaggiamenti, i 70 Siti e i 26 Campi sono registrati come implementati. Le abilità facoltative dei permanenti possono usare una scelta automatica deterministica invece di un prompt interattivo; le assunzioni operative sono documentate e non sostituiscono i dati canonici.
-- 88 effetti di Unità sono registrati; l’audit marca ancora 44 Unità con abilità non completamente risolte come parziali.
+- Copertura dichiarata da `npm run cards:coverage`: Tattiche 60 implementate e 26 non eseguibili; Equipaggiamenti 12 implementati e 28 parziali; Siti 50 implementati e 37 parziali; Campi 23 implementati e 9 parziali. Le abilità facoltative dei permanenti possono usare una scelta automatica deterministica invece di un prompt interattivo; le assunzioni operative sono documentate e non sostituiscono i dati canonici.
+- 88 effetti di Unità sono registrati come implementati. L’audit marca anche 6 Unità base, 47 con keyword implementata e 91 Unità parziali.
 - Il testo libero delle carte non viene tradotto in effetti eseguibili. Gli effetti non riconosciuti sono esplicitamente marcati come non eseguibili o parzialmente supportati.
 - Tormento presenta al giocatore la scelta tra Follia e danno al Comandante; l'avversario automatico sceglie deterministicamente l'esito con il maggiore progresso relativo verso la vittoria. Il testo libero delle altre abilità di Unità resta non eseguibile o parziale.
 - Il prototipo non ha ancora test di tutte le regole di combattimento, un AI strategico completo, animazioni di combattimento complete o illustrazioni finali. Le immagini carta attuali sono placeholder pixel art procedurali, non asset artistici definitivi.
@@ -64,7 +66,7 @@ Impostazioni audio/velocità animazioni, scorciatoie da tastiera e salvataggio a
 
 - `index.html` - struttura del tavolo e controlli.
 - `styles.css` - stile e animazioni.
-- `game.js` - logica del prototipo.
+- `game.js` - facciata: riesporta `GameController` e `GameState`. Il motore è in `src/engine/`.
 - `src/main.js` - punto d'ingresso Vite e collegamento degli eventi UI.
 - `src/card-library.js` - ricerca e filtri dell'archivio carte.
 - `src/deck-builder.js` - costruzione, validazione e salvataggio locale di mazzi da 40 carte.

@@ -6,9 +6,9 @@ alwaysApply: false
 # Test e debugging
 - Unitari: node:test in tests/*.test.js (npm test). E2E: Playwright in e2e/*.spec.js, solo Chromium.
 - Usa script e config esistenti; non aggiungere framework di test.
-- Debug: riproduci â†’ isola â†’ ipotesi â†’ verifica â†’ fix minimo â†’ test di regressione.
+- Debug: riproduci → isola → ipotesi → verifica → fix minimo → test di regressione.
 - Esegui solo i test pertinenti prima, poi la suite completa; riporta in sintesi solo conteggi e test falliti con l'errore, niente log interi.
 - Selettori e flussi solo se esistono davvero nel codice/HTML; non inventarli.
-- Non cancellare/indebolire test nÃ© silenziare errori (skip, eslint-disable) per farli passare.
+- Non cancellare/indebolire test né silenziare errori (skip, eslint-disable) per farli passare.
 - Mai dichiarare superati test non eseguiti: se non puoi eseguirli, scrivi "non verificato".
-- Max ~10 tentativi fixâ†’run; poi fermati e riporta il blocco.
+- Max ~10 tentativi fix→run; poi fermati e riporta il blocco.

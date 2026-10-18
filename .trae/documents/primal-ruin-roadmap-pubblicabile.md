@@ -1,5 +1,7 @@
 # Primal Ruin — Piano di rifinitura verso una versione pubblicabile
 
+> **Stato: documento storico, non è un'istruzione corrente.** `Set.txt` non è più nel repository: la fonte delle carte è `sets/`. L'engine è in `src/engine/` e `game.js` è solo una facciata. Non seguire i vincoli e i percorsi di questo file.
+
 > **Ruolo assunto:** senior game developer / technical lead / game designer (giochi di carte strategici browser, HTML5 + JS + Vite).
 > **Fonti canoniche:** [Regolamento Ufficiale Avanzato Primal Ruin.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/Regolamento%20Ufficiale%20Avanzato%20Primal%20Ruin.txt) (fonte ufficiale "Edizione Integrata, Aggiornata e Congruente", sostituisce i precedenti `Regolamento.txt`, `regolamento_ufficiale_primal_ruin.txt` e `regolamento_ufficiale_primal_ruin_avanzato.txt`, ora rimossi), [Set.txt](file:///c:/Users/alessio/Desktop/Primal%20Ruin/Set.txt), [cards.json](file:///c:/Users/alessio/Desktop/Primal%20Ruin/src/data/cards.json).
 > **Vincoli inviolabili:** non modificare `Set.txt`; non inventare né alterare `cards.json`. Ogni effetto non implementato o testo ambiguo va **segnalato**. Le interpretazioni sono marcate `[DECISIONE]`.
