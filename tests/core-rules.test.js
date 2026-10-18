@@ -547,10 +547,40 @@ test('Ritirata: scartare un Supporto pagando 1 Dominio', () => {
     assert.equal(player.fronts.left.supB.id, 'resta');
 });
 
-test('Purga: pagare 2 Domini per rimuovere 1 Parassita', {
-    todo: '§6.2 e §7: la Purga manuale non c’è. A inizio turno, con 3+ Parassiti, se ne rimuove uno e si perde 1 PC.'
-}, () => {
+test('Purga: pagare 2 Domini per rimuovere 1 Parassita', () => {
     assert.equal(typeof GameController.purgeParasite, 'function');
+    fresh();
+    clearFronts();
+    GameState.phase = 'principale';
+    GameState.currentIndex = 0;
+    const player = GameState.players[0];
+    const opponent = GameState.players[1];
+    player.parasites = 2;
+    opponent.parasites = 1;
+    const pc = player.pc;
+    const activeBefore = player.domains.filter(domain => !domain.tapped).length;
+
+    assert.equal(GameController.purgeParasite(), true);
+    assert.equal(player.parasites, 1);
+    assert.equal(player.pc, pc);
+    assert.equal(opponent.parasites, 1);
+    assert.equal(player.domains.filter(domain => !domain.tapped).length, activeBefore - 2);
+
+    player.domains.forEach(domain => { domain.tapped = true; });
+    player.domains[0].tapped = false;
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 1);
+
+    player.domains.forEach(domain => { domain.tapped = false; });
+    player.parasites = 0;
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 0);
+    assert.equal(player.domains.every(domain => domain.tapped === false), true);
+
+    player.parasites = 1;
+    GameState.phase = 'rifornimento';
+    assert.equal(GameController.purgeParasite(), false);
+    assert.equal(player.parasites, 1);
 });
 
 test('durante lo Scontro esiste la finestra delle Tattiche Istantanee', {

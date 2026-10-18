@@ -257,6 +257,28 @@ const matchMethods = {
         return true;
     },
 
+    purgeParasite() {
+        if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.gameOver) return false;
+        if (GameState.sacrifice || GameState.pendingTactic || GameState.pendingTorment ||
+            GameState.pendingPromotion || GameState.pendingSorvolo) return false;
+        const player = GameState.current;
+        if ((player.parasites || 0) < 1) {
+            Logger.log('Purga: non hai Parassiti.');
+            return false;
+        }
+        const available = player.domains.filter(domain => !domain.tapped);
+        if (available.length < 2) {
+            Logger.log('Purga: servono 2 Domini attivi.');
+            return false;
+        }
+        available[0].tapped = true;
+        available[1].tapped = true;
+        player.parasites -= 1;
+        Logger.log(`Purga: paghi 2 Domini e rimuovi 1 Parassita (ne restano ${player.parasites}).`);
+        UIRenderer.refresh();
+        return true;
+    },
+
     deployInfiltration(frontName, slotName) {
         this.playInfiltratedUnit(frontName, slotName);
     },

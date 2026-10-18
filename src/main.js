@@ -14,6 +14,7 @@ document.getElementById('btn-canala').addEventListener('click', () => GameContro
 document.getElementById('btn-sacrifice-end').addEventListener('click', () => GameController.finishSacrifice());
 document.getElementById('btn-commander').addEventListener('click', () => GameController.activateCommanderAbility());
 document.getElementById('btn-retreat').addEventListener('click', () => GameController.toggleRetreat());
+document.getElementById('btn-purge').addEventListener('click', () => GameController.purgeParasite());
 document.getElementById('btn-sorvolo').addEventListener('click', () => GameController.useSorvolo());
 document.getElementById('btn-sorvolo-skip').addEventListener('click', () => GameController.skipSorvolo());
 document.getElementById('btn-torment-madness').addEventListener('click', () => GameController.chooseTorment(true));

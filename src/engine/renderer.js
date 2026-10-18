@@ -283,6 +283,10 @@ const UIRenderer = {
         retreatBtn.disabled = Boolean(GameState.sacrifice || GameState.pendingTactic ||
             GameState.pendingTorment || GameState.pendingPromotion || GameState.pendingSorvolo);
         retreatBtn.textContent = GameState.retreatMode ? '↩ SCEGLI IL SUPPORTO' : '↩ RITIRATA';
+        const purgeBtn = document.getElementById('btn-purge');
+        purgeBtn.hidden = !playerTurn || GameState.phase !== 'principale';
+        purgeBtn.disabled = Boolean(GameState.sacrifice || GameState.pendingTactic ||
+            GameState.pendingTorment || GameState.pendingPromotion || GameState.pendingSorvolo);
         const mulliganBtn = document.getElementById('btn-mulligan');
         mulliganBtn.hidden = !setup || GameState.mulliganUsed;
         if (!mulliganBtn.hidden) {
