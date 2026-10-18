@@ -2,13 +2,15 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PRIMAL RUIN - Core 1.0</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <main class="game-container">
+    <a class="skip-link" href="#tavolo">Vai al tavolo di gioco</a>
+    <main class="game-container" id="tavolo" tabindex="-1">
         <!-- AVVERSARIO (ALTO) -->
-        <div class="opponent-area" id="enemy-area">
+        <div class="opponent-area" id="enemy-area" role="region" aria-label="Tavolo avversario">
             <div class="commander" id="opp-commander">
                 <div class="commander-name" id="opp-commander-name">COMANDANTE NEMICO</div>
                 <div class="commander-ability" id="opp-commander-ability"></div>
@@ -48,7 +50,7 @@
         </div>
 
         <!-- GIOCATORE (BASSO) -->
-        <div class="player-area" id="player-area">
+        <div class="player-area" id="player-area" role="region" aria-label="Il tuo tavolo">
             <div class="turn-status">
                 <strong id="phase-label">PREPARAZIONE</strong>
                 <span id="turn-label"></span>
@@ -162,8 +164,8 @@
             </div>
 
             <!-- MANO E CONTROLLI -->
-            <div class="hand-area" id="hand-area">Mano vuota</div>
-            <div class="log-area" id="log"><div>> Motore Primal Ruin Core 1.0 inizializzato.</div></div>
+            <div class="hand-area" id="hand-area" role="region" aria-label="La tua mano">Mano vuota</div>
+            <div class="log-area" id="log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Registro della partita"><div>> Motore Primal Ruin Core 1.0 inizializzato.</div></div>
             <div id="game-result" class="game-result" hidden></div>
             <div class="controls-area">
                 <button class="btn" id="btn-mulligan" type="button">🔁 MULLIGAN</button>
