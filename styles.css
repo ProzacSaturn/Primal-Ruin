@@ -266,6 +266,9 @@ button:disabled { cursor: not-allowed; opacity: 0.55; }
     padding: 10px; flex: 1 1 180px; min-width: 0; max-width: 280px;
 }
 .fronte-title { font-weight: bold; margin-bottom: 8px; color: #f5d300; font-size: 1em; text-transform: uppercase; text-align: center; }
+.fronte-slots { display: flex; flex-direction: column; }
+.opponent-area .fronte { display: flex; flex-direction: column; }
+.opponent-area .fronte-slots { flex-direction: column-reverse; }
 .position {
     background: rgba(255,255,255,0.02); margin: 6px 0; padding: 8px;
     border-radius: 4px; font-size: 0.8em; min-height: 30px; display: flex; align-items: center;
