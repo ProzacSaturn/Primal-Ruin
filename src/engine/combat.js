@@ -475,26 +475,34 @@ const CombatResolver = {
         }
         if (equipmentId === 'set-3-108') GameState.addParasites(sourcePlayer, owner, 1);
         if (equipmentId === 'set-2-108') {
+            // Il Supporto da spostare sta sull'avversario di chi ha l'Equipaggiamento,
+            // non sull'avversario del proprietario della Linea distrutta.
+            const targetPlayer = sourcePlayer === GameState.players[0]
+                ? GameState.players[1]
+                : GameState.players[0];
             const slot = ['supA', 'supB'].find(name => {
-                const unit = enemy.fronts[frontName][name];
-                return unit && !isProtectedFromEnemyMovement(enemy, unit, frontName);
+                const unit = targetPlayer.fronts[frontName][name];
+                return unit && !isProtectedFromEnemyMovement(targetPlayer, unit, frontName);
             });
             if (slot) {
-                const moved = enemy.fronts[frontName][slot];
+                const moved = targetPlayer.fronts[frontName][slot];
                 const destination = FRONT_NAMES.flatMap(targetFront => ['supA', 'supB']
-                    .filter(targetSlot => !enemy.fronts[targetFront][targetSlot])
+                    .filter(targetSlot => !targetPlayer.fronts[targetFront][targetSlot])
                     .map(targetSlot => ({ targetFront, targetSlot })))
                     .find(entry => entry.targetFront !== frontName);
                 if (destination) {
-                    enemy.fronts[frontName][slot] = null;
-                    enemy.fronts[destination.targetFront][destination.targetSlot] = moved;
+                    targetPlayer.fronts[frontName][slot] = null;
+                    targetPlayer.fronts[destination.targetFront][destination.targetSlot] = moved;
                     moved.front = destination.targetFront;
                     moved.position = destination.targetSlot;
                     GameState.onUnitMoved(
-                        enemy,
+                        targetPlayer,
                         moved,
                         frontName,
                         destination.targetFront
+                    );
+                    Logger.log(
+                        `${activeLine.equipment.name}: ${moved.name} si sposta in ${FRONT_LABELS[destination.targetFront]}.`
                     );
                 }
             }

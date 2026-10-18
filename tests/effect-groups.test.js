@@ -267,9 +267,7 @@ test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', 
 
 });
 
-test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipaggiata distrugge', {
-    todo: 'set-2-108: il testo sposta un Supporto avversario. onUnitRemoved cerca il Supporto sul giocatore opposto al proprietario della Linea distrutta, cioè su chi ha equipaggiato.'
-}, () => {
+test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipaggiata distrugge', () => {
     fresh();
     const player = GameState.players[0];
     const opponent = GameState.players[1];
@@ -282,6 +280,8 @@ test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipag
         equipment: { catalogId: 'set-2-108', name: 'Catene' },
         keywords: []
     });
+    const ownSupport = piece('set-1-007', { id: 'proprio', position: 'supA', keywords: [] });
+    player.fronts.left.supA = ownSupport;
     const dragged = piece('set-1-007', { id: 'trascinato', position: 'supA', keywords: [] });
     opponent.fronts.left.supA = dragged;
     CombatResolver.onUnitRemoved(
@@ -291,7 +291,11 @@ test('Catene dell’Abisso sposta un Supporto avversario quando la Linea equipag
         'combat-destroy',
         player
     );
+    assert.equal(opponent.fronts.left.supA, null);
+    assert.equal(opponent.fronts.center.supA, dragged);
     assert.equal(dragged.front, 'center');
+    assert.equal(dragged.position, 'supA');
+    assert.equal(player.fronts.left.supA, ownSupport);
 });
 
 test('keyword Decadenza: a 0 segnalini il Sito è distrutto', () => {
