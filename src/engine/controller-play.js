@@ -318,8 +318,12 @@ const playMethods = {
             Logger.log('Posizione Difensiva: devi assegnare questa Unità alla Linea se possibile.');
             return;
         }
-        if (!deployment.legal && slotName === 'line') {
-            Logger.log('Solo Assalto può entrare in Linea nel turno in cui viene giocata. Scegli un Supporto.');
+        if (!deployment.legal && slotName !== 'line' && !front.line) {
+            Logger.log('Su questo Fronte la Linea è libera: la prima Unità deve entrare in Linea.');
+            return;
+        }
+        if (!deployment.legal && slotName === 'line' && front.line) {
+            Logger.log('La Linea è occupata. Scegli un Supporto, oppure un’Unità con Assalto se può sostituirla.');
             return;
         }
         if (!deployment.legal) return;

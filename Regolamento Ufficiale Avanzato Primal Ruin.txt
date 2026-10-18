@@ -63,7 +63,7 @@ Zona
 	[ Supp. B ] (1)
 	Regole di Posizionamento e Limiti
 * Capacità Fronte: Massimo 3 Unità per Fronte (1 in Linea, massimo 2 in Supporto).
-* Assegnazione Standard: Salvo diversa indicazione (es. Assalto o Posizione Difensiva), le Unità entrano in gioco nella posizione di Supporto.
+* Assegnazione Standard: Su ogni Fronte, la prima Unità entra in Linea. I Supporti si riempiono solo se la Linea di quel Fronte è già occupata. Assalto può sostituire una Linea esistente spostandola in un Supporto libero (con gli effetti che lo permettono). Posizione Difensiva deve entrare in Linea se lo slot è libero.
 * Cap Universale dei Supporti (Regola Aurea): Ogni Unità in Supporto fornisce +1 Forza base alla propria Linea. Nessun effetto combinato di carte, Siti o Campi può mai far superare alla Linea un bonus totale dai Supporti superiore a +3 Forza (Cap Assoluto di Fronte).
 * Limiti Siti e Campi: Un giocatore può controllare al massimo 3 Siti totali. Il Campo conta come Sito e ne occupa uno slot (max 1 Campo attivo per giocatore). Se entra in gioco un 4° Sito dalla mano, il giocatore sceglie uno dei precedenti da distruggere. Se entra un nuovo Campo, il precedente viene distrutto.
 

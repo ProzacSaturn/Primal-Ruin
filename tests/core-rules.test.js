@@ -128,7 +128,7 @@ test('oltre 7 carte in Fase Principale non si scarta prima della Fase Finale', (
     assert.equal(player.discard.length, 0);
 });
 
-test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in Supporto', () => {
+test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in Linea', () => {
     fresh();
     const player = GameState.players[0];
     const card = unit(2, {
@@ -143,14 +143,14 @@ test('giocare un’Unità esaurisce tanti Domini quant’è il costo ed entra in
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
     GameState.selectedCard = card;
-    GameController.deploy('left', 'supA');
-    assert.equal(player.fronts.left.supA?.id, 'ingresso');
-    assert.equal(player.fronts.left.line, null);
+    GameController.deploy('left', 'line');
+    assert.equal(player.fronts.left.line?.id, 'ingresso');
+    assert.equal(player.fronts.left.supA, null);
     assert.equal(player.domains.filter(domain => domain.tapped).length, 1);
     assert.equal(player.hand.length, 0);
 });
 
-test('senza Assalto un’Unità non entra in Linea nel turno in cui è giocata', () => {
+test('senza Linea un’Unità non può entrare in Supporto', () => {
     fresh();
     const player = GameState.players[0];
     const card = unit(2, { id: 'lenta', category: 'unit', cost: 1, keywords: [] });
@@ -158,7 +158,8 @@ test('senza Assalto un’Unità non entra in Linea nel turno in cui è giocata',
     GameState.phase = 'principale';
     GameState.currentIndex = 0;
     GameState.selectedCard = card;
-    GameController.deploy('left', 'line');
+    GameController.deploy('left', 'supA');
+    assert.equal(player.fronts.left.supA, null);
     assert.equal(player.fronts.left.line, null);
     assert.equal(player.hand.length, 1);
 });

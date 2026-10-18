@@ -1809,7 +1809,8 @@
 		const assault = unit.keywords.includes("Assalto");
 		const defensive = unit.keywords.includes("Posizione Difensiva");
 		const assaultSwap = slotName === "line" && assault && Boolean(front.line) && (!front.supA || !front.supB);
-		if (slotName === "line" && (opposingSites.some((site) => site.catalogId === "set-1-105") || Number(unit.force) <= 3 && opposingSites.some((site) => site.catalogId === "set-2-094") || assaultSwap && !ownSites.some((site) => site.catalogId === "set-1-098") || assaultSwap && opposingSites.some((site) => site.catalogId === "set-3-094"))) return {
+		const lineBlockedByBoard = opposingSites.some((site) => site.catalogId === "set-1-105") || Number(unit.force) <= 3 && opposingSites.some((site) => site.catalogId === "set-2-094");
+		if (slotName === "line" && (lineBlockedByBoard || assaultSwap && !ownSites.some((site) => site.catalogId === "set-1-098") || assaultSwap && opposingSites.some((site) => site.catalogId === "set-3-094"))) return {
 			legal: false,
 			assaultSwap: false
 		};
@@ -1818,11 +1819,15 @@
 			assaultSwap: false
 		};
 		const supportWithoutLine = ownField?.catalogId === "set-3-118";
+		if (slotName !== "line" && !front.line && !supportWithoutLine && !lineBlockedByBoard) return {
+			legal: false,
+			assaultSwap: false
+		};
 		if (defensive && slotName !== "line" && !front.line && !supportWithoutLine) return {
 			legal: false,
 			assaultSwap: false
 		};
-		if (slotName === "line" && !assault && !(defensive && !front.line)) return {
+		if (slotName === "line" && front.line && !assaultSwap) return {
 			legal: false,
 			assaultSwap: false
 		};
@@ -12098,11 +12103,9 @@
 				hint.textContent = "Mulligan parziale (§5): seleziona le carte da rimpiazzare, poi premi MULLIGAN.";
 				area.appendChild(hint);
 			} else if (GameState.selectedCard?.category === "unit") {
-				const keywords = GameState.selectedCard.keywords || [];
 				const hint = document.createElement("div");
 				hint.className = "hand-hint";
-				if (keywords.includes("Assalto") || keywords.includes("Posizione Difensiva")) hint.textContent = "Questa Unità può entrare in Linea. Gli slot evidenziati sono legali.";
-				else hint.textContent = "Le Unità entrano in Supporto. Solo Assalto o Posizione Difensiva possono andare subito in Linea.";
+				hint.textContent = "Su ogni Fronte la prima Unità entra in Linea. I Supporti si usano solo se la Linea è già occupata.";
 				area.appendChild(hint);
 			}
 			const renderCard = (card) => {
@@ -14034,8 +14037,12 @@
 				Logger.log("Posizione Difensiva: devi assegnare questa Unità alla Linea se possibile.");
 				return;
 			}
-			if (!deployment.legal && slotName === "line") {
-				Logger.log("Solo Assalto può entrare in Linea nel turno in cui viene giocata. Scegli un Supporto.");
+			if (!deployment.legal && slotName !== "line" && !front.line) {
+				Logger.log("Su questo Fronte la Linea è libera: la prima Unità deve entrare in Linea.");
+				return;
+			}
+			if (!deployment.legal && slotName === "line" && front.line) {
+				Logger.log("La Linea è occupata. Scegli un Supporto, oppure un’Unità con Assalto se può sostituirla.");
 				return;
 			}
 			if (!deployment.legal) return;
