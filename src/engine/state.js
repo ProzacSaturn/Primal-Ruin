@@ -88,7 +88,6 @@ const GameState = {
 
     onEquipmentPositionEntry(player, unit, slotName) {
         const id = unit.equipment?.catalogId || unit.equipment?.id;
-        if (id === 'set-2-107' && slotName === 'line') GameController.drawCards(player, 1, unit.equipment.name);
         if (id === 'set-3-107' && slotName !== 'line') GameController.drawCards(player, 1, unit.equipment.name);
         if (id === 'set-3-111' && slotName === 'line') {
             const opponent = GameState.players[1 - GameState.players.indexOf(player)];
@@ -481,6 +480,17 @@ const GameState = {
                     card.keywords?.includes('Eco Spettrale')
                 );
                 if (index >= 0) player.hand.push(...player.discard.splice(index, 1));
+            }
+            if (id === 'set-2-108') {
+                const index = player.discard.findIndex(card =>
+                    card.category === 'unit' &&
+                    card.keywords?.some(keyword => keyword.startsWith('Eco Spettrale'))
+                );
+                if (index >= 0) {
+                    const [recovered] = player.discard.splice(index, 1);
+                    player.hand.push(recovered);
+                    Logger.log(`${site.name}: ${recovered.name} torna in mano.`);
+                }
             }
             if (id === 'set-3-081') {
                 const frontName = FRONT_NAMES.find(name =>

@@ -435,7 +435,7 @@ Reads `GameState` and renders; contains **no** rule logic beyond display.
 - `dealCommanderDamage(defender, frontName, amount)` — AI pre-sacrifice logic; human sacrifice prompt via `GameState.sacrifice` + Promise.
 - `removeUnit(...)` / `destroyUnit(...)` — Divinità non cade per effetti; a 0 Forza in Scontro va negli scarti come Sigillata. Eco Spettrale, se distrutta, può pagare il costo e tornare in Supporto a Forza 1. Promotion of Support to Line (explicit slot or `defaultPromotionSlot`), and `set-1-117` penalties. Logorare infligge danni all'inizio dello Scontro.
 - `onUnitRemoved(...)` — the large destruction-trigger dispatcher (site/field/equipment reactions, unit destruction reactions, Line-destruction effects, control transfers).
-- `onForceLoss(...)` — force-loss triggers (Eco del Dolore draw, `set-2-110` reflect, `set-2-118` field damage, `set-2-098` destroy).
+- `onForceLoss(...)` — force-loss triggers (Eco del Dolore draw, `set-2-118` field damage, `set-2-098` destroy).
 - `restoreControlledUnits()` / `promoteSupport(...)` / `damageLine(...)` / `sacrifice(...)` / `finishSacrifice()`.
 
 ### `GameController` — public API

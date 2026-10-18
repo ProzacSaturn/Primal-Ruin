@@ -37,8 +37,15 @@ test('all static Equipment force bonuses resolve from their equipped position', 
         ['set-1-087', 2],
         ['set-1-088', 2],
         ['set-1-090', 2],
-        ['set-2-109', 2],
-        ['set-2-112', 2],
+        ['set-2-079', 1],
+        ['set-2-082', 1],
+        ['set-2-083', 2],
+        ['set-2-085', 1],
+        ['set-2-086', 2],
+        ['set-2-087', 2],
+        ['set-2-088', 3],
+        ['set-2-089', 2],
+        ['set-2-090', 3],
         ['set-3-109', 2],
         ['set-3-112', 2]
     ]);
@@ -105,9 +112,11 @@ test('Equipment-granted keywords are included in the equipped Unit keyword set',
         ['set-1-083', 'Ferocia'],
         ['set-1-086', 'Sorvolo'],
         ['set-1-090', 'Ferocia'],
-        ['set-2-105', 'Logorare (1)'],
-        ['set-2-111', 'Sorvolo'],
-        ['set-2-112', 'Logorare (1)'],
+        ['set-2-079', 'Tormento'],
+        ['set-2-080', 'Logorare (1)'],
+        ['set-2-083', 'Logorare (1)'],
+        ['set-2-089', 'Tormento'],
+        ['set-2-090', 'Logorare (1)'],
         ['set-3-105', 'Logorare (1)'],
         ['set-3-110', 'Sorvolo']
     ]);
@@ -118,11 +127,32 @@ test('Equipment-granted keywords are included in the equipped Unit keyword set',
     }
 });
 
+test('Mantello della Disperazione lowers enemy units on the same front', () => {
+    const { player, unit } = playerWithUnit('set-2-082');
+    const opponent = {
+        fronts: {
+            left: {
+                line: { keywords: [], equipment: null, force: 3 },
+                supA: null,
+                supB: null
+            },
+            center: { line: null, supA: null, supB: null },
+            right: { line: null, supA: null, supB: null }
+        }
+    };
+    assert.equal(getUnitForceBonus(player, unit, 'left', 'line', opponent), 1);
+    assert.equal(
+        getUnitForceBonus(opponent, opponent.fronts.left.line, 'left', 'line', player),
+        -1
+    );
+});
+
 test('all Equipment damage-reduction values match their printed text', () => {
     const expectedReductions = new Map([
         ['set-1-080', 1],
         ['set-1-085', 2],
-        ['set-2-106', 1],
+        ['set-2-080', 1],
+        ['set-2-086', 2],
         ['set-3-106', 1]
     ]);
 

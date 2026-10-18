@@ -309,6 +309,16 @@ test('famiglia inizio turno: Decadenza, ricerca, scarti, pedine e spostamento', 
     GameState.resolvePermanentTurnStart(0);
     assert.equal(GameState.players[0].hand[0].id, 'eco-mano');
 
+    prepare();
+    GameState.players[0].sites = [permanent('set-2-108')];
+    GameState.players[0].discard = [
+        { id: 'normale', name: 'Normale', category: 'unit', keywords: [] },
+        { id: 'eco-mausoleo', name: 'Spettro', category: 'unit', keywords: ['Eco Spettrale'] }
+    ];
+    GameState.resolvePermanentTurnStart(0);
+    assert.equal(GameState.players[0].hand[0].id, 'eco-mausoleo');
+    assert.equal(GameState.players[0].discard[0].id, 'normale');
+
     for (const id of ['set-1-093', 'set-2-082', 'set-2-093']) {
         prepare();
         GameState.players[0].sites = [permanent(id)];

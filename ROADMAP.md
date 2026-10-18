@@ -58,7 +58,7 @@ Sono i `todo` di `tests/core-rules.test.js` e `tests/game-engine-flow.test.js`.
 
 Sono i `todo` di `tests/effect-families.test.js` e `tests/effect-groups.test.js`. Un id alla volta, con il testo della carta in `sets/` davanti.
 
-- `set-2-108` — lo spostamento del Supporto avversario guarda il giocatore giusto. Fatto: il testo è del Cacciatore Yautja (`set-3-004`), non del Sito Mausoleo Reale Spettrale. Sposta un Supporto dell’avversario in un Fronte adiacente.
+- `set-2-108` — lo spostamento del Supporto avversario guarda il giocatore giusto. Fatto: quel testo è del Cacciatore Yautja (`set-3-004`). Il Mausoleo Reale Spettrale, all’inizio del tuo turno, rimette in mano un’Unità con Eco Spettrale dal cimitero. Gli Equipaggiamenti del set 2 non usano più gli id dei Siti: Forza, Logorare, Tormento e riduzione danni stanno su `set-2-079` e seguenti.
 - `set-3-099` — il Sito, non il Campo, concede la Linea da Sorvolo.
 - `set-3-100` — lo spostamento dell’altra Linea avversaria guarda il giocatore giusto.
 - `set-3-101` — il bonus di Forza vale quando la carta è in gioco come Sito.

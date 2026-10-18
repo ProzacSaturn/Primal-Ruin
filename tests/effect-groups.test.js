@@ -206,7 +206,7 @@ test('famiglia distruzione in Linea: danno al Comandante o pesca', () => {
     }
 });
 
-test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', async () => {
+test('famiglia Equipaggiamento innescato: pesca, Parassita', async () => {
     fresh();
     const player = GameState.players[0];
     const opponent = GameState.players[1];
@@ -221,17 +221,18 @@ test('famiglia Equipaggiamento innescato: pesca, Logorare riflesso, Parassita', 
         position: 'line',
         currentForce: 3,
         force: 3,
-        equipment: { catalogId: 'set-2-107', name: 'Tomo' }
+        equipment: { catalogId: 'set-2-087', name: 'Sintesi Abissale' }
     });
     player.fronts.left.line = host;
     const hand = player.hand.length;
-    GameState.onEquipmentPositionEntry(player, host, 'line');
+    CombatResolver.onUnitRemoved(
+        opponent,
+        piece('set-1-007', { id: 'preda', position: 'line', keywords: [] }),
+        'left',
+        'combat-destroy',
+        player
+    );
     assert.equal(player.hand.length, hand + 1);
-
-    opponent.fronts.left.line = piece('set-1-007', { id: 'vittima', currentForce: 3, force: 3 });
-    host.equipment = { catalogId: 'set-2-110', name: 'Sigillo' };
-    CombatResolver.onForceLoss(player, host, 1, opponent, true);
-    assert.equal(opponent.fronts.left.line.currentForce, 2);
 
     host.equipment = { catalogId: 'set-3-108', name: 'Lama' };
     const destroyed = piece('set-1-007', { id: 'morta', position: 'line' });
@@ -361,7 +362,7 @@ test('keyword concesse dall’Equipaggiamento entrano nel profilo dell’Unità'
     });
     player.fronts.left.line = host;
     assert.ok(getUnitKeywords(player, host, 'left', 'line').includes('Ferocia'));
-    host.equipment = { catalogId: 'set-2-105', id: 'set-2-105' };
+    host.equipment = { catalogId: 'set-2-080', id: 'set-2-080' };
     assert.ok(getUnitKeywords(player, host, 'left', 'line').some(keyword => keyword.startsWith('Logorare')));
 });
 

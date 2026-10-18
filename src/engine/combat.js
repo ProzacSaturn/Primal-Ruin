@@ -407,6 +407,13 @@ const CombatResolver = {
         if (reason === 'combat-destroy' && enemy.sites?.some(site => site.catalogId === 'set-2-092')) {
             GameController.drawCards(enemy, 1, 'Santuario delle Ombre');
         }
+        if (reason === 'combat-destroy' && sourcePlayer) {
+            const killer = sourcePlayer.fronts[frontName]?.line;
+            const killerEquipment = killer?.equipment?.catalogId || killer?.equipment?.id;
+            if (killerEquipment === 'set-2-087') {
+                GameController.drawCards(sourcePlayer, 1, killer.equipment.name);
+            }
+        }
         if (reason !== 'combat-destroy' || !sourcePlayer || unit.position !== 'line') return;
         const activeLine = sourcePlayer.fronts[frontName].line;
         const equipmentId = activeLine?.equipment?.catalogId;
@@ -552,19 +559,6 @@ const CombatResolver = {
                     site.lastDamageTriggerTurn = GameState.turnNumber;
                     owner.pc = Math.max(0, owner.pc - 1);
                 }
-            }
-            if (triggerEquipment && amount > 0 &&
-                unit.equipment?.catalogId === 'set-2-110') {
-                const targetPlayer = owner === GameState.players[0]
-                    ? GameState.players[1] : GameState.players[0];
-                GameState.applyForceLoss(
-                    targetPlayer,
-                    unit.front,
-                    1,
-                    unit.equipment.name,
-                    owner,
-                    false
-                );
             }
             const fieldOwner = GameState.players.find(player =>
                 player !== owner && player.field?.catalogId === 'set-2-118'

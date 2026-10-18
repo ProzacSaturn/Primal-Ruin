@@ -33,11 +33,11 @@ export function getUnitKeywords(player, unit, frontName, slotName) {
     if (equipment) {
         const id = cardId(equipment);
         if (['set-1-083', 'set-1-090'].includes(id)) keywords.push('Ferocia');
-        if (['set-1-086', 'set-2-111', 'set-3-110'].includes(id)) keywords.push('Sorvolo');
-        if (['set-2-105', 'set-3-105'].includes(id)) {
+        if (['set-1-086', 'set-3-110'].includes(id)) keywords.push('Sorvolo');
+        if (['set-2-080', 'set-2-083', 'set-2-090', 'set-3-105'].includes(id)) {
             keywords.push('Logorare (1)');
         }
-        if (id === 'set-2-112') keywords.push('Logorare (1)');
+        if (['set-2-079', 'set-2-089'].includes(id)) keywords.push('Tormento');
     }
     if (slotName === 'line' && unit.force >= 5 &&
         player.sites?.some(site => cardId(site) === 'set-1-100')) {
@@ -65,10 +65,15 @@ export function getUnitForceBonus(player, unit, frontName, slotName, opponent) {
     const id = cardId(unit.equipment);
     const unitId = cardId(unit);
     const front = player.fronts[frontName];
-    if (['set-1-079', 'set-1-084', 'set-1-090', 'set-2-109', 'set-2-112'].includes(id)) {
-        bonus += id === 'set-1-079' ? 1 : id === 'set-1-084' || id === 'set-1-090' ||
-            id === 'set-2-109' || id === 'set-2-112' ? 2 : 0;
+    if (['set-1-079', 'set-1-084', 'set-1-090'].includes(id)) {
+        bonus += id === 'set-1-079' ? 1 : 2;
     }
+    if (['set-2-079', 'set-2-082', 'set-2-085'].includes(id)) bonus += 1;
+    if (['set-2-083', 'set-2-086', 'set-2-087', 'set-2-089'].includes(id)) bonus += 2;
+    if (['set-2-088', 'set-2-090'].includes(id)) bonus += 3;
+    if (opponent && SLOTS.some(slot =>
+        cardId(opponent.fronts?.[frontName]?.[slot]?.equipment) === 'set-2-082'
+    )) bonus -= 1;
     if (id === 'set-1-081' && slotName === 'line') bonus += 1;
     if (id === 'set-1-087') {
         bonus += FRONT_NAMES.filter(name => name !== frontName && player.fronts[name].line).length;
@@ -174,8 +179,8 @@ export function getFerocityBonus(player, unit, frontName, slotName, fewerUnits) 
 
 export function getDamageReduction(player, unit, frontName, slotName) {
     const equipmentId = cardId(unit.equipment);
-    let reduction = equipmentId === 'set-1-085' ? 2 :
-        ['set-1-080', 'set-2-106', 'set-3-106'].includes(equipmentId) ? 1 : 0;
+    let reduction = ['set-1-085', 'set-2-086'].includes(equipmentId) ? 2 :
+        ['set-1-080', 'set-2-080', 'set-3-106'].includes(equipmentId) ? 1 : 0;
     if (slotName === 'line') {
         if (hasUnitCard(unit, ['set-2-026', 'set-3-032'])) reduction++;
         if (player.fronts[frontName].supA || player.fronts[frontName].supB) {
