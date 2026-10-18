@@ -2,12 +2,30 @@
 
 Prototipo incrementale di gioco di carte browser con interfaccia pixel-art, realizzato con HTML, CSS e JavaScript. **Non è ancora una versione completa del regolamento Core 1.0 né un prodotto di qualità AAA.**
 
+## Aprire senza terminale
+
+Nella cartella del gioco devono stare insieme `index.html`, `styles.css` e `standalone.js`.
+
+Su Windows: doppio clic su `Apri Primal Ruin.bat`.  
+In alternativa: doppio clic su `index.html`.
+
+Su macOS: doppio clic su `Apri-Primal-Ruin.command` (la prima volta macOS può chiedere conferma).  
+Anche qui va bene aprire `index.html` dal Finder.
+
+Non serve `npm`, né il terminale, per giocare. Se vedi la schermata ferma con «Mano vuota», manca `standalone.js` o la cartella non è aggiornata.
+
 ## Avvio in sviluppo
 
-Richiede Node.js 20.19+ (oppure 22.12+) e npm.
+Richiede Node.js 20.19+ (oppure 22.12+) e npm. Serve solo per modificare il codice.
 
 ```powershell
 npm install
+npm run play
+```
+
+`npm run play` apre la partita sul codice vivo e aggiorna `standalone.js` quando salvi. In alternativa:
+
+```powershell
 npm run dev
 ```
 

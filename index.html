@@ -12,12 +12,12 @@
     <section class="app-screen screen-intro" id="screen-intro" data-screen="intro" aria-label="Introduzione">
         <p class="intro-brand">PRIMAL RUIN</p>
         <h1 class="intro-title">Core 1.0</h1>
-        <p class="intro-lead">Tre passi: intro, mazzi e archivio, poi il tavolo di scontro.</p>
+        <p class="intro-lead">Apri il gioco con un doppio clic su «Apri Primal Ruin» o su index.html. Niente terminale.</p>
         <div class="intro-actions">
             <button class="btn btn-draw" id="btn-intro-deck" type="button">Scegli o crea il mazzo</button>
             <button class="btn" id="btn-intro-match" type="button">Vai al tavolo</button>
         </div>
-        <p class="intro-note">Le Unità entrano in Supporto. Solo Assalto o Posizione Difensiva possono andare subito in Linea.</p>
+        <p class="intro-note">Poi: mazzi e archivio, oppure direttamente il tavolo. Le Unità entrano in Supporto; solo Assalto o Posizione Difensiva possono andare subito in Linea.</p>
     </section>
 
     <section class="app-screen screen-deck" id="screen-deck" data-screen="deck" hidden aria-label="Mazzi e archivio">
@@ -285,7 +285,7 @@
                     <select id="promotion-choice"></select>
                     <button class="btn" id="btn-promotion-confirm" type="button">⬆ PROMUOVI A LINEA</button>
                 </div>
-                <p class="keyboard-help">Scorciatoie: Invio avvia · Spazio avanza la fase · Esc deseleziona. Partita di prova: npm run play</p>
+                <p class="keyboard-help">Scorciatoie: Invio avvia · Spazio avanza la fase · Esc deseleziona</p>
             </div>
         </section>
 
@@ -294,14 +294,28 @@
     </main>
 
     <script>
-        var entry = document.createElement('script');
-        if (location.protocol === 'file:') {
-            entry.src = 'standalone.js';
-        } else {
-            entry.type = 'module';
-            entry.src = '/src/main.js';
-        }
-        document.body.appendChild(entry);
+        (function () {
+            var entry = document.createElement('script');
+            if (location.protocol === 'file:') {
+                entry.src = 'standalone.js';
+                entry.onerror = function () {
+                    var note = document.querySelector('#screen-intro .intro-note');
+                    if (note) {
+                        note.textContent =
+                            'Manca standalone.js nella stessa cartella. Tieni insieme index.html, styles.css e standalone.js, poi doppio clic su «Apri Primal Ruin».';
+                    }
+                    var log = document.getElementById('log');
+                    if (log) {
+                        log.innerHTML =
+                            '<div>> Apertura da file fallita: manca standalone.js accanto a index.html.</div>';
+                    }
+                };
+            } else {
+                entry.type = 'module';
+                entry.src = '/src/main.js';
+            }
+            document.body.appendChild(entry);
+        })();
     </script>
 </body>
 </html>
