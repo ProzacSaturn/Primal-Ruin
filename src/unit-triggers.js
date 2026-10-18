@@ -23,6 +23,9 @@ export function getUnitLineDestructionEffects(line) {
     if (id === 'set-3-045') {
         effects.push({ type: 'destroy-enemy-support-in-front' });
     }
+    if (id === 'set-3-004') {
+        effects.push({ type: 'move-enemy-support-adjacent' });
+    }
     if (id === 'set-1-052') effects.push({ type: 'temporary-force', amount: 2 });
 
     return effects;

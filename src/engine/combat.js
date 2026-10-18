@@ -447,6 +447,37 @@ const CombatResolver = {
                 activeLine.currentForce += effect.amount;
                 activeLine.temporaryForce = (activeLine.temporaryForce || 0) + effect.amount;
                 Logger.log(`${activeLine.name}: ottiene +${effect.amount} Forza fino alla fine del turno.`);
+            } else if (effect.type === 'move-enemy-support-adjacent') {
+                const targetPlayer = sourcePlayer === GameState.players[0]
+                    ? GameState.players[1]
+                    : GameState.players[0];
+                const slot = ['supA', 'supB'].find(name => {
+                    const support = targetPlayer.fronts[frontName][name];
+                    return support && !isProtectedFromEnemyMovement(targetPlayer, support, frontName);
+                });
+                if (!slot) continue;
+                const moved = targetPlayer.fronts[frontName][slot];
+                const sourceIndex = FRONT_NAMES.indexOf(frontName);
+                const destination = [sourceIndex - 1, sourceIndex + 1]
+                    .filter(index => FRONT_NAMES[index])
+                    .flatMap(index => ['supA', 'supB']
+                        .filter(targetSlot => !targetPlayer.fronts[FRONT_NAMES[index]][targetSlot])
+                        .map(targetSlot => ({
+                            targetFront: FRONT_NAMES[index],
+                            targetSlot
+                        })))[0];
+                if (!destination) continue;
+                targetPlayer.fronts[frontName][slot] = null;
+                targetPlayer.fronts[destination.targetFront][destination.targetSlot] = moved;
+                moved.front = destination.targetFront;
+                moved.position = destination.targetSlot;
+                GameState.onUnitMoved(
+                    targetPlayer,
+                    moved,
+                    frontName,
+                    destination.targetFront
+                );
+                Logger.log(`${activeLine.name}: ${moved.name} si sposta in ${FRONT_LABELS[destination.targetFront]}.`);
             }
         }
         if (sourcePlayer.sites?.some(site => site.catalogId === 'set-3-100')) {
@@ -474,39 +505,6 @@ const CombatResolver = {
             }
         }
         if (equipmentId === 'set-3-108') GameState.addParasites(sourcePlayer, owner, 1);
-        if (equipmentId === 'set-2-108') {
-            // Il Supporto da spostare sta sull'avversario di chi ha l'Equipaggiamento,
-            // non sull'avversario del proprietario della Linea distrutta.
-            const targetPlayer = sourcePlayer === GameState.players[0]
-                ? GameState.players[1]
-                : GameState.players[0];
-            const slot = ['supA', 'supB'].find(name => {
-                const unit = targetPlayer.fronts[frontName][name];
-                return unit && !isProtectedFromEnemyMovement(targetPlayer, unit, frontName);
-            });
-            if (slot) {
-                const moved = targetPlayer.fronts[frontName][slot];
-                const destination = FRONT_NAMES.flatMap(targetFront => ['supA', 'supB']
-                    .filter(targetSlot => !targetPlayer.fronts[targetFront][targetSlot])
-                    .map(targetSlot => ({ targetFront, targetSlot })))
-                    .find(entry => entry.targetFront !== frontName);
-                if (destination) {
-                    targetPlayer.fronts[frontName][slot] = null;
-                    targetPlayer.fronts[destination.targetFront][destination.targetSlot] = moved;
-                    moved.front = destination.targetFront;
-                    moved.position = destination.targetSlot;
-                    GameState.onUnitMoved(
-                        targetPlayer,
-                        moved,
-                        frontName,
-                        destination.targetFront
-                    );
-                    Logger.log(
-                        `${activeLine.equipment.name}: ${moved.name} si sposta in ${FRONT_LABELS[destination.targetFront]}.`
-                    );
-                }
-            }
-        }
         if (sourcePlayer.sites?.some(site => site.catalogId === 'set-2-102')) {
             const index = owner.discard.findIndex(card => card.id === unit.id);
             if (index >= 0) {
