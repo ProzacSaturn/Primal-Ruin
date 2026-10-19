@@ -40,21 +40,37 @@ const GameState = {
     get current() { return this.players[this.currentIndex]; },
     get opponent() { return this.players[1 - this.currentIndex]; },
 
-    reset(customDeckIds = loadCustomDeck()) {
+    // `options` serve solo al simulatore. Senza secondo argomento la partita
+    // resta quella di prima: seme da crypto, set e Comandante dai menu,
+    // mazzo avversario composto dal set.
+    reset(customDeckIds = loadCustomDeck(), options = null) {
+        const setup = options && typeof options === 'object' ? options : null;
         const randomSeed = new Uint32Array(1);
-        if (globalThis.crypto?.getRandomValues) {
+        if (setup && Number.isInteger(setup.seed)) {
+            randomSeed[0] = setup.seed >>> 0;
+        } else if (globalThis.crypto?.getRandomValues) {
             globalThis.crypto.getRandomValues(randomSeed);
         } else {
             randomSeed[0] = Date.now() >>> 0;
         }
         seedRandom(randomSeed[0]);
-        const playerSetId = document.getElementById('player-set-select')?.value || SETS[0].id;
-        const opponentSetId = document.getElementById('opponent-set-select')?.value || SETS[0].id;
-        const playerCommanderId = document.getElementById('player-commander-select')?.value ||
+        const playerSetId = setup?.playerSetId ||
+            document.getElementById('player-set-select')?.value || SETS[0].id;
+        const opponentSetId = setup?.opponentSetId ||
+            document.getElementById('opponent-set-select')?.value || SETS[0].id;
+        const playerCommanderId = setup?.playerCommanderId ||
+            document.getElementById('player-commander-select')?.value ||
             commanderForSet(playerSetId);
+        const opponentCommanderId = setup?.opponentCommanderId || commanderForSet(opponentSetId);
+        this.enemyCandidatePicker = null;
         this.players = [
             makePlayer('player', playerSetId, customDeckIds, playerCommanderId),
-            makePlayer('opponent', opponentSetId, null, commanderForSet(opponentSetId))
+            makePlayer(
+                'opponent',
+                opponentSetId,
+                setup?.opponentDeckIds ?? null,
+                opponentCommanderId
+            )
         ];
         this.players.forEach(player => {
             for (let i = 0; i < 5; i++) player.hand.push(player.armyDeck.pop());

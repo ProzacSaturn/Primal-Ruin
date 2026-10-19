@@ -116,7 +116,16 @@ function migrateSave(save, version) {
     }
 }
 
+let gamePersistenceSuspended = false;
+
+// Il simulatore headless sospende la scrittura del salvataggio: non cambia le
+// regole e, se resta false, la partita nel browser si salva come prima.
+export function setGamePersistenceSuspended(suspended) {
+    gamePersistenceSuspended = Boolean(suspended);
+}
+
 export function persistGame(snapshot) {
+    if (gamePersistenceSuspended) return;
     try {
         localStorage.setItem(
             STORAGE_KEY,

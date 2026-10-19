@@ -629,7 +629,16 @@ const CombatResolver = {
     async damageLine(player, frontName, amount, sourcePlayer = null, reflected = false) {
         const front = player.fronts[frontName];
         let remaining = amount;
+        let loops = 0;
         while (remaining > 0 && front.line) {
+            // Divinità a 0 Forza nello Scontro avversario: la fase non è `scontro`,
+            // la rimozione vale come effetto e il ciclo non finisce. Solo il
+            // simulatore accende il flag, così la partita normale non cambia.
+            if (GameState.reportDamageLoops && ++loops > 30) {
+                throw new Error(
+                    `Ciclo danni su ${front.line.name} (Forza ${front.line.currentForce}, fase ${GameState.phase}).`
+                );
+            }
             const line = front.line;
             if (line.damageShield > 0) {
                 const prevented = Math.min(remaining, line.damageShield);

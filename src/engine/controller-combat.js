@@ -13,6 +13,15 @@ import { UIRenderer } from './renderer.js';
 import { GameState } from './state.js';
 import { getTacticChoices } from './tactic-choices.js';
 
+// Senza selettore si prende la prima mossa della lista già ordinata.
+// Il simulatore può sostituire solo la scelta, non le regole.
+function pickEnemyCandidate(candidates) {
+    const picker = GameState.enemyCandidatePicker;
+    if (typeof picker !== 'function') return candidates[0];
+    const picked = picker(candidates);
+    return candidates.includes(picked) ? picked : candidates[0];
+}
+
 const combatMethods = {
     async resolveCombat() {
         if (GameState.phase !== 'principale' || GameState.currentIndex !== 0 || GameState.sacrifice) return;
@@ -46,14 +55,14 @@ const combatMethods = {
             option.slotName === 'line', true);
         GameState.sorvoloUsed.add(option.unit.id);
         Logger.log(`${option.unit.name} usa Sorvolo: entra in Supporto a ${FRONT_LABELS[option.targetFront]}.`);
-        if (UIRenderer.getSorvoloOptions().length === 0) this.skipSorvolo();
+        if (UIRenderer.getSorvoloOptions().length === 0) return this.skipSorvolo();
         else UIRenderer.refresh();
     },
 
     skipSorvolo() {
         GameState.pendingSorvolo = false;
         UIRenderer.refresh();
-        this.continueCombat();
+        return this.continueCombat();
     },
 
     canPlayInstant(player, opponent, card) {
@@ -87,7 +96,7 @@ const combatMethods = {
                 })
                 .sort((a, b) => b.score - a.score || a.card.id.localeCompare(b.card.id));
             if (candidates.length === 0) return;
-            const candidate = candidates[0];
+            const candidate = pickEnemyCandidate(candidates);
             domains.slice(0, this.getCardCost(enemy, candidate.card))
                 .forEach(domain => { domain.tapped = true; });
             enemy.hand.splice(candidate.index, 1);
@@ -215,7 +224,7 @@ const combatMethods = {
                     a.card.id.localeCompare(b.card.id) ||
                     FRONT_NAMES.indexOf(a.deployment?.frontName) - FRONT_NAMES.indexOf(b.deployment?.frontName));
             if (candidates.length === 0) break;
-            const candidate = candidates[0];
+            const candidate = pickEnemyCandidate(candidates);
             const cost = this.getCardCost(enemy, candidate.card);
             domains.slice(0, cost).forEach(domain => { domain.tapped = true; });
             enemy.hand.splice(candidate.index, 1);
@@ -337,8 +346,12 @@ const combatMethods = {
                 'line',
                 rules
             );
+            // Con il selettore del simulatore una Linea vuota e legale vale anche
+            // senza Assalto o Posizione Difensiva. Senza selettore non cambia nulla.
+            const scriptedLine = typeof GameState.enemyCandidatePicker === 'function' &&
+                !front.line;
             if (lineDeployment.legal && (!front.line || lineDeployment.assaultSwap) &&
-                (defensive || assault)) {
+                (defensive || assault || scriptedLine)) {
                 return {
                     frontName,
                     slotName: 'line',
