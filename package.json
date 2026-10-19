@@ -11,6 +11,7 @@
         "preview": "vite preview",
         "cards:import": "node scripts/import-cards.mjs",
         "cards:coverage": "node scripts/card-effect-coverage.mjs",
+        "sim": "node scripts/simulate.js",
         "test": "node --test",
         "lint": "eslint .",
         "format:check": "prettier --check .",
